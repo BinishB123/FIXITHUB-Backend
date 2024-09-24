@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",                              // Target JavaScript version (ES2020) for modern syntax features.
+    "module": "commonjs",                            // Module system used by Node.js for importing/exporting (CommonJS).
+    "rootDir": "./src",                              // Source files are located in the `src` directory.
+    "outDir": "./dist",                              // Transpiled JavaScript files will be placed in the `dist` directory.
+    "strict": true,                                  // Enables all strict type-checking options.
+    "esModuleInterop": true,                         // Ensures compatibility with CommonJS modules (like `require` in JS).
+    "skipLibCheck": true,                            // Skips type checking of declaration files in `node_modules` to speed up compilation.
+    "forceConsistentCasingInFileNames": true,        // Ensures consistent file naming casing across platforms.
+    "baseUrl": "./src",                              // Base URL for module resolution (relative to `src` folder).
+  },
+  "exclude": ["node_modules", "dist"]                // Exclude `node_modules` and `dist` from compilation.
+}
