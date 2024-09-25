@@ -3,17 +3,24 @@ import UserRepository from '../../../../interface_adapters/repositories/userRepo
 import Mailer from '../../../services/mailer';
 import UserAuthInteractor from '../../../../usecases/user/auth';
 import AuthController from '../../../../interface_adapters/controllers/user/auth';
+import JwtServices from '../../../services/jwt';
 
 
-
+// starting 
 const userAuthRouter = express.Router();
 const respository = new UserRepository()
-const mailer = new Mailer() 
-const userAuthInteractor = new UserAuthInteractor(respository,mailer)
-const controller  = new AuthController(userAuthInteractor)
+const mailer = new Mailer()
+const jwtServices = new JwtServices(process.env.ACCESSTOKENKEY+"", process.env.REFRESHTOKENKEY+"")
+const userAuthInteractor = new UserAuthInteractor(respository, mailer,jwtServices)
+const controller = new AuthController(userAuthInteractor)
 
 
-userAuthRouter.post('/sendotp',controller.sendotpController.bind(controller))
+//controllers
+userAuthRouter.post('/sendotp', controller.sendotpController.bind(controller))
+userAuthRouter.post('/verify&signup', controller.verifyandSignup.bind(controller))
+userAuthRouter.delete('/logout',controller.logot.bind(controller))
+userAuthRouter.post('/login',controller.signIn.bind(controller))
+
 
 
 export default userAuthRouter;
