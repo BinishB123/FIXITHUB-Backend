@@ -1,12 +1,16 @@
 import IProviderAuthInteractor from "../../entities/provider/Iauth";
 import IProviderRepository from "../../entities/irepositeries/iProviderRepo";
 import { Imailer } from "../../entities/services/mailer";
+import { ProviderRegisterData, RegisterResponse } from "entities/rules/provider";
+import { Ijwtservices } from "../../entities/services/Ijwt";
 
 
 class ProviderAuthInteractor implements IProviderAuthInteractor {
     constructor(
         private readonly providerAuthRepository: IProviderRepository,
-        private readonly Mailer: Imailer
+        private readonly Mailer: Imailer,
+        private readonly jwtServices: Ijwtservices
+
     ) { }
 
     async sendOtp(email: string): Promise<{ created: boolean; message?: string }> {
@@ -44,6 +48,23 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
             return { success: false, message: "Email verification failed with Otp" }
         } catch (error) {
             return { success: false, message: "An error occurred verification failed" }
+        }
+    }
+
+    async registerProvider(registerdata: ProviderRegisterData): Promise<{ created: boolean; message: string; provider?: RegisterResponse; accessToken?: string; refreshToken?: string; }> {
+        try {
+            const providerCreate = await this.providerAuthRepository.registerProvider(registerdata)
+            if (providerCreate.message === "server down") {
+                return { created: false, message: providerCreate.message }
+            } else if (providerCreate.message === "registration failed" && !providerCreate.created) {
+                return { created: false, message: providerCreate.message }
+            }
+            const accessToken = await this.jwtServices.generateToken({ provider: providerCreate.provider, email: registerdata.email }, { expiresIn: '1h' })
+            const refreshToken = await this.jwtServices.generateRefreshToken({ provider: providerCreate.provider, email: registerdata.email }, { expiresIn: '1d' })
+            return { created: true, message: "created", provider: providerCreate.provider, refreshToken: refreshToken, accessToken: accessToken }
+
+        } catch (error) {
+            return { created: false, message: "server down" }
         }
     }
 
