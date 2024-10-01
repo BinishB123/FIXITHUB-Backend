@@ -46,15 +46,13 @@ class UserAuthInteractor implements IuserauthInteractor {
     async signin(userData: userSignIn): Promise<{ user?: userResponseData; success: boolean; message?: string; accesToken?: string; refreshToken?: string; }> {
         const response = await this.userRepository.signin(userData)
         if (!response.success) {
-            if (response.message === "incorrect email") {
-                return response
+            if (response.message === "incorrect email" || response.message === "password is incorrect") {
+                return { success: false, message: "Invalid email or password. Please try again." };
             }
-            if (response.message === "password is incorrect") {
-                return response
-            }
+
         }
-        const acessToken = this.jwtServices.generateToken({ user: response.user, email: userData.email }, { expiresIn: '1h' })
-        const refreshToken = this.jwtServices.generateRefreshToken({ user: response.user, email: userData.email }, { expiresIn: '1d' })
+        const acessToken = this.jwtServices.generateToken({ user: response.user, email: userData.email, role: "user" }, { expiresIn: '1h' })
+        const refreshToken = this.jwtServices.generateRefreshToken({ user: response.user, email: userData.email, role: "user" }, { expiresIn: '1d' })
 
         return { user: response.user, success: response.success, message: response.message, accesToken: acessToken, refreshToken: refreshToken }
     }

@@ -1,7 +1,7 @@
 import IProviderAuthInteractor from "../../entities/provider/Iauth";
 import IProviderRepository from "../../entities/irepositeries/iProviderRepo";
 import { Imailer } from "../../entities/services/mailer";
-import { ProviderRegisterData, RegisterResponse } from "entities/rules/provider";
+import { ProviderRegisterData, RegisterResponse, SigIn, SignResponse } from "entities/rules/provider";
 import { Ijwtservices } from "../../entities/services/Ijwt";
 
 
@@ -53,14 +53,15 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
 
     async registerProvider(registerdata: ProviderRegisterData): Promise<{ created: boolean; message: string; provider?: RegisterResponse; accessToken?: string; refreshToken?: string; }> {
         try {
+        
             const providerCreate = await this.providerAuthRepository.registerProvider(registerdata)
             if (providerCreate.message === "server down") {
                 return { created: false, message: providerCreate.message }
             } else if (providerCreate.message === "registration failed" && !providerCreate.created) {
                 return { created: false, message: providerCreate.message }
             }
-            const accessToken = await this.jwtServices.generateToken({ provider: providerCreate.provider, email: registerdata.email }, { expiresIn: '1h' })
-            const refreshToken = await this.jwtServices.generateRefreshToken({ provider: providerCreate.provider, email: registerdata.email }, { expiresIn: '1d' })
+            const accessToken = await this.jwtServices.generateToken({ provider: providerCreate.provider, email: registerdata.email, role: "provider" }, { expiresIn: '1h' })
+            const refreshToken = await this.jwtServices.generateRefreshToken({ provider: providerCreate.provider, email: registerdata.email, role: "provider" }, { expiresIn: '1d' })
             return { created: true, message: "created", provider: providerCreate.provider, refreshToken: refreshToken, accessToken: accessToken }
 
         } catch (error) {
@@ -68,6 +69,22 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
         }
     }
 
+    async signInProvider(providerSignData: SigIn): Promise<{ success: boolean; message: string; provider?: SignResponse, accessToken?: string, refreshToken?: string }> {
+        try {
+            
+            const provider = await this.providerAuthRepository.signInProvider(providerSignData)
+            if (!provider.success) {
+                return { success: false, message: provider.message }
+            }
+            const acccessToken = await this.jwtServices.generateToken({ provider: provider.provider, email: providerSignData.email, role: "provider" }, { expiresIn: '1h' })
+            const refreshToken = await this.jwtServices.generateRefreshToken({ provider: provider.provider, email: providerSignData.email, role: "provider" }, { expiresIn: '1d' })
+            return { success: true, message: provider.message, provider: provider.provider, accessToken: acccessToken, refreshToken: refreshToken }
+
+
+        } catch (error) {
+             return {success:false ,message:"server error"}
+        }
+    }
 
 }
 

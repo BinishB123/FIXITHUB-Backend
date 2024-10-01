@@ -23,8 +23,9 @@ class UserRepository implements isUserRepository {
     //this method is for checking the user with given email is exist or not 
     // userexist
     async userexist(email: string): Promise<boolean> {
-        const userExist = await userModel.findOne({ email: email })
-        console.log(userExist);
+        
+        const userExist = await userModel.findOne({ email: email.trim() })
+       
         if (!userExist) {
             return false
 
@@ -46,6 +47,8 @@ class UserRepository implements isUserRepository {
     
     // creating the user after otp verification
     async signup(userData: user): Promise<{ user: userResponseData, created: boolean }> {
+       
+        
         const saltRounds: number = 10;
         const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
         const userCreated = await userModel.create({
@@ -72,7 +75,9 @@ class UserRepository implements isUserRepository {
 
 
     async signin(userData: userSignIn): Promise<{ user?: userResponseData; success: boolean; message?: string }> {
-        const findedUser = await userModel.findOne({ email: userData.email });
+        const findedUser = await userModel.findOne({ email: userData.email.trim() });
+        console.log(userData,findedUser);
+        
         if (!findedUser) {
             return { success: false, message: "incorrect email" }
         }

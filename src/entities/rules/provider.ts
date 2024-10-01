@@ -15,7 +15,7 @@ export interface ProviderModel {
     password: string
     workshopDetails: workshopDetails,
     blocked: boolean,
-    requestAccept: boolean
+    requestAccept: boolean | null
 }
 
 export interface RegisterResponse {
@@ -24,7 +24,7 @@ export interface RegisterResponse {
     workshopname: string,
     email: string,
     mobile: string,
-    requested: boolean,
+    requested: boolean | null,
     blocked: boolean
 }
 
@@ -44,3 +44,22 @@ export interface ProviderRegisterData {
     password: string
     workshopDetails: workshopDetails,
 }
+
+export interface SigIn{
+    email:string,
+    password:string
+}
+
+
+export interface SignResponse{
+    id: string,
+    ownername: string
+    workshopname: string,
+    email: string,
+    mobile: string,
+    requested: boolean | null;
+    blocked: boolean
+}
+
+
+
