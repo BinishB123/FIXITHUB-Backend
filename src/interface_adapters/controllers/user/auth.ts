@@ -1,6 +1,6 @@
 import IuserauthInteractor from "../../../entities/user/iauth";
 import { Request, Response } from 'express';
-import jwt from "jsonwebtoken";
+
 
 class AuthController {
     constructor(private readonly interactor: IuserauthInteractor) { }
@@ -34,14 +34,14 @@ class AuthController {
             const response = await this.interactor.verifyAndSignup(userData, finalotp);
             // If OTP is verified and signup is successful
             if (response.success) {
-                res.cookie('refreshToken', response.refreshToken, {
+                res.cookie('userRefreshToken', response.refreshToken, {
                     httpOnly: true,
                     sameSite: true,
                     path: '/',
                     maxAge: 15 * 60 * 1000
                 })
 
-                res.cookie('accessToken', response.acessToken, {
+                res.cookie('userAccessToken', response.acessToken, {
                     httpOnly: true,
                     sameSite: true,
                     maxAge: 7 * 24 * 60 * 60 * 1000
@@ -58,7 +58,12 @@ class AuthController {
     }
 
     async logot(req: Request, res: Response) {
-        res.clearCookie('refreshToken', {
+        res.clearCookie('userRefreshToken', {
+            httpOnly: true,
+            sameSite: true,
+            path: '/'
+        })
+        res.clearCookie('userAccessToken', {
             httpOnly: true,
             sameSite: true,
             path: '/'
@@ -66,30 +71,30 @@ class AuthController {
         return res.status(200).json({ success: true, message: 'Logged out successfully' })
     }
 
-   async signIn(req:Request,res:Response){
-      const { SignInData} = req.body
-      const response = await this.interactor.signin(SignInData)
-       if (!response.success) {
-        return res.status(400).json({ success: false, message: response.message });
-       }else{
-        res.cookie('refreshToken', response.refreshToken, {
-            httpOnly: true,
-            sameSite: true,
-            path: '/',
-            maxAge: 15 * 60 * 1000
-        })
-
-        res.cookie('accessToken', response.accesToken, {
-            httpOnly: true,
-            sameSite: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        })
-        return res.status(200).json({user:response.user,success:response.success,message:"LOGGED IN"})
-       }
+    async signIn(req: Request, res: Response) {
+        const { SignInData } = req.body
+        const response = await this.interactor.signin(SignInData)
 
 
+        if (!response.success) {
+            return res.status(400).json({ success: false, message: response.message });
+        } else {
+            res.cookie('userRefreshToken', response.refreshToken, {
+                httpOnly: true,
+                sameSite: true,
+                path: '/',
+                maxAge: 15 * 60 * 1000
+            })
 
-   }
+            res.cookie('userAccessToken', response.accesToken, {
+                httpOnly: true,
+                sameSite: true,
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            })
+            return res.status(200).json({ user: response.user, success: response.success, message: "LOGGED IN" })
+        }
+
+    }
 
 
 }

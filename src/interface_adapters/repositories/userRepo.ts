@@ -76,7 +76,6 @@ class UserRepository implements isUserRepository {
 
     async signin(userData: userSignIn): Promise<{ user?: userResponseData; success: boolean; message?: string }> {
         const findedUser = await userModel.findOne({ email: userData.email.trim() });
-        console.log(userData,findedUser);
         
         if (!findedUser) {
             return { success: false, message: "incorrect email" }
@@ -85,6 +84,10 @@ class UserRepository implements isUserRepository {
         if (!passwordMatch) {
             return { success: false, message: "password is incorrect" }
         }
+        if(findedUser.blocked){
+            return { success: false, message: "Access denied. Your account is blocked" };
+        }
+        
         const user: userResponseData = {
             id: findedUser._id.toString(),
             name: findedUser.name,

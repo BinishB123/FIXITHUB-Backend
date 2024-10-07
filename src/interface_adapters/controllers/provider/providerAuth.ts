@@ -43,33 +43,22 @@ class ProviderAuthController {
         } else if (!interactorResponse.created && interactorResponse.message === "registration failed") {
             res.status(409).json({ message: "registration failed try again" })
         }
-        res.cookie('providerRefreshToken', interactorResponse.refreshToken, {
-            httpOnly: true,
-            sameSite: true,
-            path: '/',
-            maxAge: 15 * 60 * 1000
-        })
-
-        res.cookie('providerAccessToken', interactorResponse.accessToken, {
-            httpOnly: true,
-            sameSite: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        })
+       
 
         res.status(200).json({ created: true, message: "Registration success", provider: interactorResponse.provider })
     }
 
     async signInProvider(req: Request, res: Response) {
         const signData = req.body.registerData
-        
-       
+
+
         if (!signData) {
             res.status(400).json({ created: false, message: "something went wrong" })
             return
         }
         const interactorResponse = await this.providerAuthInteractor.signInProvider(signData)
-        
-        
+
+
         if (interactorResponse.message === "incorrect password") {
             return res.status(401).json({ success: false, message: "The password you entered is incorrect. Please try again.", })
         } else if (interactorResponse.message === "registration request not accepted") {
@@ -80,6 +69,8 @@ class ProviderAuthController {
             return res.status(500).json({ success: false, message: "The server is currently unavailable. Please try again later." })
         } else if (interactorResponse.message === "rejected your request") {
             return res.status(403).json({ success: false, message: "Your registration request has been rejected" })
+        } else if (interactorResponse.message === "Access denied. Your account has been blocked. ") {
+            return res.status(403).json({ success: false, message: "Your account is currently blocked" });
         }
 
         res.cookie('providerRefreshToken', interactorResponse.refreshToken, {
@@ -97,6 +88,20 @@ class ProviderAuthController {
 
         res.status(200).json({ success: true, message: "Sign-in successful. Welcome back!", provider: interactorResponse.provider })
 
+    }
+
+    async logot(req: Request, res: Response) {
+        res.clearCookie('providerRefreshToken', {
+            httpOnly: true,
+            sameSite: true,
+            path: '/'
+        })
+        res.clearCookie('providerAccessToken', {
+            httpOnly: true,
+            sameSite: true,
+            path: '/'
+        })
+        return res.status(200).json({ success: true, message: 'Logged out successfully' })
     }
 }
 

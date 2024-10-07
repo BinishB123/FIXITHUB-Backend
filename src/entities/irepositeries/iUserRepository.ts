@@ -7,6 +7,7 @@ interface isUserRepository{
     otpverification(email:string,otp:string):Promise<boolean>
     signup(userData:user):Promise<{user:userResponseData,created:boolean}>
     signin(userData:userSignIn):Promise<{user?:userResponseData,success:boolean,message?:string}>
+    
 }
 
 

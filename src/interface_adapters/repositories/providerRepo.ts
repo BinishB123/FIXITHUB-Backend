@@ -98,6 +98,10 @@ class ProviderRepository implements IProviderRepository {
             if (providerExist.requestAccept === null) {
                 return { success: false, message: "rejected your request" }
             }
+            if (providerExist.blocked === true) {
+                return {success: false, message: "Access denied. Your account has been blocked. "};
+            }
+            
 
             const provider = {
                 id: providerExist._id + "",

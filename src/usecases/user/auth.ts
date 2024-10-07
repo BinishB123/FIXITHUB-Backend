@@ -29,15 +29,15 @@ class UserAuthInteractor implements IuserauthInteractor {
 
         const otpverified = await this.userRepository.otpverification(userData.email, otp)
         if (!otpverified) {
-            return { success: false, message: "otp verification failed" }
+            return { success: false, message: "Inavlid otp" }
         }
 
         const signup = await this.userRepository.signup(userData)
         if (!signup.created) {
             return { success: false, message: "Signup failed try again" }
         }
-        const acessToken = this.jwtServices.generateToken({ user: signup.user, email: userData.email }, { expiresIn: '1h' })
-        const refreshToken = this.jwtServices.generateRefreshToken({ user: signup.user, email: userData.email }, { expiresIn: '1d' })
+        const acessToken = this.jwtServices.generateToken({ user: signup.user, email: userData.email, role: "user" }, { expiresIn: '1h' })
+        const refreshToken = this.jwtServices.generateRefreshToken({ user: signup.user, email: userData.email, role: "user" }, { expiresIn: '1d' })
 
 
         return { user: signup.user, success: true, message: "Signup successfull", acessToken: acessToken, refreshToken: refreshToken }
@@ -48,6 +48,9 @@ class UserAuthInteractor implements IuserauthInteractor {
         if (!response.success) {
             if (response.message === "incorrect email" || response.message === "password is incorrect") {
                 return { success: false, message: "Invalid email or password. Please try again." };
+            }
+            if (response.message === "Access denied. Your account is blocked") {
+                return { success: false, message: response.message }
             }
 
         }

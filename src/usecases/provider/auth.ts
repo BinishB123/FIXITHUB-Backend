@@ -12,7 +12,7 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
         private readonly jwtServices: Ijwtservices
 
     ) { }
-
+    //this function is for sending the otp to providers email 
     async sendOtp(email: string): Promise<{ created: boolean; message?: string }> {
         try {
             const mailResponse = await this.Mailer.sendMail(email);
@@ -38,19 +38,19 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
             return { created: false, message: "An error occurred while sending OTP." };
         }
     }
-
+    // this function is for verify the providers otp
     async verify(email: string, otp: string): Promise<{ success: boolean; message?: string; }> {
         try {
             const verifyResponse = await this.providerAuthRepository.verifyOtp(email, otp)
             if (verifyResponse) {
                 return { success: true, message: "Email verified " }
             }
-            return { success: false, message: "Email verification failed with Otp" }
+            return { success: false, message: "Invalid otp" }
         } catch (error) {
             return { success: false, message: "An error occurred verification failed" }
         }
     }
-
+    //this function is for provider signup
     async registerProvider(registerdata: ProviderRegisterData): Promise<{ created: boolean; message: string; provider?: RegisterResponse; accessToken?: string; refreshToken?: string; }> {
         try {
         

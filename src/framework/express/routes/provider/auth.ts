@@ -17,6 +17,7 @@ providerAuthRouter.post('/sendotp', providerAuthController.sendOtp.bind(provider
 providerAuthRouter.post('/verifyotp', providerAuthController.verifyOtp.bind(providerAuthController))
 providerAuthRouter.post('/register', providerAuthController.registerProvider.bind(providerAuthController))
 providerAuthRouter.post('/signin', providerAuthController.signInProvider.bind(providerAuthController))
+providerAuthRouter.delete('/logout', providerAuthController.logot.bind(providerAuthController))
 
 
 export default providerAuthRouter
