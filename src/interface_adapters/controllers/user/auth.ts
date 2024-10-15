@@ -1,3 +1,4 @@
+import HttpStatus from "../../../entities/rules/statusCode";
 import IuserauthInteractor from "../../../entities/user/iauth";
 import { Request, Response } from 'express';
 
@@ -94,6 +95,14 @@ class AuthController {
             return res.status(200).json({ user: response.user, success: response.success, message: "LOGGED IN" })
         }
 
+    }
+
+    async checker(req:Request,res:Response){
+        try {
+           return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({success:true,message:"verification"})        
+        } catch (error) {
+           return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({success:false,message:"Internal Server Error"})
+        }
     }
 
 

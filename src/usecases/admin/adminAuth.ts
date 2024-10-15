@@ -10,8 +10,8 @@ class AdminAuthInteractor implements IAdminInteractor  {
             if (!response.success) {
                 return {success:false,message:response.message}
             }
-            const accessToken = await this.jwtservice.generateToken({ admin:email, role: "admin" }, { expiresIn: '1h' })
-            const refreshToken = await this.jwtservice.generateRefreshToken({admin:email, role: "admin" }, { expiresIn: '1d' })
+            const accessToken = await this.jwtservice.generateToken({ id:response.admin?.id ,email:response.admin?.email, role: "admin" }, { expiresIn: '1h' })
+            const refreshToken = await this.jwtservice.generateRefreshToken({ id:response.admin?.id ,email:response.admin?.email, role: "admin" }, { expiresIn: '1d' })
             return {success:true,accessToken:accessToken, refreshToken:refreshToken}
         } catch (error) {
             return {success:false,message:"something went wrong"}

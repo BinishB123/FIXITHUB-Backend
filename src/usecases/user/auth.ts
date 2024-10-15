@@ -3,6 +3,7 @@ import isUserRepository from "../../entities/irepositeries/iUserRepository";
 import { Imailer } from "../../entities/services/mailer";
 import { Ijwtservices } from "../../entities/services/Ijwt";
 import user, { userResponseData, userSignIn } from "entities/rules/user";
+import { access } from "fs";
 
 
 
@@ -36,8 +37,10 @@ class UserAuthInteractor implements IuserauthInteractor {
         if (!signup.created) {
             return { success: false, message: "Signup failed try again" }
         }
-        const acessToken = this.jwtServices.generateToken({ user: signup.user, email: userData.email, role: "user" }, { expiresIn: '1h' })
-        const refreshToken = this.jwtServices.generateRefreshToken({ user: signup.user, email: userData.email, role: "user" }, { expiresIn: '1d' })
+        const acessToken = this.jwtServices.generateToken({ id: signup.user.id, email: userData.email, role: "user" }, { expiresIn: '1h' })
+        
+        
+        const refreshToken = this.jwtServices.generateRefreshToken({ id: signup.user.id, email: userData.email, role: "user" }, { expiresIn: '1d' })
 
 
         return { user: signup.user, success: true, message: "Signup successfull", acessToken: acessToken, refreshToken: refreshToken }
@@ -54,8 +57,11 @@ class UserAuthInteractor implements IuserauthInteractor {
             }
 
         }
-        const acessToken = this.jwtServices.generateToken({ user: response.user, email: userData.email, role: "user" }, { expiresIn: '1h' })
-        const refreshToken = this.jwtServices.generateRefreshToken({ user: response.user, email: userData.email, role: "user" }, { expiresIn: '1d' })
+        const acessToken = this.jwtServices.generateToken({ id: response.user?.id, email: userData.email, role: "user" }, { expiresIn: '1h' })
+        const refreshToken = this.jwtServices.generateRefreshToken({ id: response.user?.id, email: userData.email, role: "user" }, { expiresIn: '1d' })
+        const respons = this.jwtServices.verifyjwt(refreshToken)
+        console.log(respons.newAccessToken);
+        
 
         return { user: response.user, success: response.success, message: response.message, accesToken: acessToken, refreshToken: refreshToken }
     }

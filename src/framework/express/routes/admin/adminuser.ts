@@ -10,8 +10,8 @@ const adminuserinteractor =  new AdminUser(adminUserRepo)
 const controller = new AdminUserController(adminuserinteractor)
 
 
-adminUserRouter.get('/getuser',verification("admin"),controller.getUser.bind(controller))
-adminUserRouter.patch('/blockAndUnblock',verification("admin"),controller.userBlockAndUnblock.bind(controller))
+adminUserRouter.get('/getuser',controller.getUser.bind(controller))
+adminUserRouter.patch('/blockAndUnblock',controller.userBlockAndUnblock.bind(controller))
 
 
 

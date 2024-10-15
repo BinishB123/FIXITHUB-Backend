@@ -3,6 +3,7 @@ import Mailer from "../../../../framework/services/mailer";
 import ProviderAuthInteractor from "../../../../usecases/provider/auth";
 import ProviderAuthController from "../../../../interface_adapters/controllers/provider/providerAuth";
 import JwtServices from "../../../services/jwt";
+import verification from "../../../../framework/express/middleware/jwtAuthenticate";
 import express from "express";
 
 const providerAuthRouter = express.Router()
@@ -17,6 +18,7 @@ providerAuthRouter.post('/sendotp', providerAuthController.sendOtp.bind(provider
 providerAuthRouter.post('/verifyotp', providerAuthController.verifyOtp.bind(providerAuthController))
 providerAuthRouter.post('/register', providerAuthController.registerProvider.bind(providerAuthController))
 providerAuthRouter.post('/signin', providerAuthController.signInProvider.bind(providerAuthController))
+providerAuthRouter.get('/checker',verification("provider"),providerAuthController.checker.bind(providerAuthController))
 providerAuthRouter.delete('/logout', providerAuthController.logot.bind(providerAuthController))
 
 

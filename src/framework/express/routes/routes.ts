@@ -5,9 +5,9 @@ import adminRoute from "../../express/routes/admin/adminRoute";
 
 const routes = (app: Application) => {
     // Set up the base /api/user route
-    app.use('/api/user', userRoute);
-    app.use('/api/provider',providerRouter)
-    app.use('/api/admin',adminRoute)
+    app.use('/api/user', userRoute,);
+    app.use('/api/provider',providerRouter,)
+    app.use('/api/admin',adminRoute,)
 }
 
 export default routes;

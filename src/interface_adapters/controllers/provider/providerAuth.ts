@@ -1,3 +1,4 @@
+import HttpStatus from "../../../entities/rules/statusCode";
 import IProviderAuthInteractor from "../../../entities/provider/Iauth";
 import { Request, Response } from "express";
 
@@ -102,6 +103,14 @@ class ProviderAuthController {
             path: '/'
         })
         return res.status(200).json({ success: true, message: 'Logged out successfully' })
+    }
+
+    async checker(req:Request,res:Response){
+        try {
+            return res.status(HttpStatus.OK).json({success:true})
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({success:false,message:"Internal server error"})
+        }
     }
 }
 

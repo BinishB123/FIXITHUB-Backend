@@ -60,8 +60,9 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
             } else if (providerCreate.message === "registration failed" && !providerCreate.created) {
                 return { created: false, message: providerCreate.message }
             }
-            const accessToken = await this.jwtServices.generateToken({ provider: providerCreate.provider, email: registerdata.email, role: "provider" }, { expiresIn: '1h' })
-            const refreshToken = await this.jwtServices.generateRefreshToken({ provider: providerCreate.provider, email: registerdata.email, role: "provider" }, { expiresIn: '1d' })
+            const accessToken = await this.jwtServices.generateToken({ id: providerCreate.provider?.id, email: registerdata.email, role: "provider" }, { expiresIn: '1h' })
+            
+            const refreshToken = await this.jwtServices.generateRefreshToken({ id: providerCreate.provider?.id, email: registerdata.email, role: "provider" }, { expiresIn: '1d' })
             return { created: true, message: "created", provider: providerCreate.provider, refreshToken: refreshToken, accessToken: accessToken }
 
         } catch (error) {
@@ -76,8 +77,8 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
             if (!provider.success) {
                 return { success: false, message: provider.message }
             }
-            const acccessToken = await this.jwtServices.generateToken({ provider: provider.provider, email: providerSignData.email, role: "provider" }, { expiresIn: '1h' })
-            const refreshToken = await this.jwtServices.generateRefreshToken({ provider: provider.provider, email: providerSignData.email, role: "provider" }, { expiresIn: '1d' })
+            const acccessToken = await this.jwtServices.generateToken({id: provider.provider?.id, email: providerSignData.email, role: "provider" }, { expiresIn: '1h' })
+            const refreshToken = await this.jwtServices.generateRefreshToken({ id: provider.provider?.id, email: providerSignData.email, role: "provider" }, { expiresIn: '1d' })
             return { success: true, message: provider.message, provider: provider.provider, accessToken: acccessToken, refreshToken: refreshToken }
 
 
