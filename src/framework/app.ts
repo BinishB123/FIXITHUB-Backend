@@ -10,7 +10,7 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
-dontenv.config()
+dontenv.config()  
 
 // Setups CORS to allow requests from the frontend
 app.use(cors({

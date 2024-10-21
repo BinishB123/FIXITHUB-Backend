@@ -27,11 +27,20 @@ export interface IdatasOfGeneralService {
     imageUrl: string
 }
 
-export interface servicetypeSchema {
+export interface servicetypeSchemaModel {
     category: "general" | "road",
     serviceType: string
     imageUrl:string
     subTypes: string[]
+
+
+}
+export interface servicetype {
+    _id:string
+    category:  "general" | "road",
+    serviceType: string
+    imageUrl:string
+    subTypes?: string[]
 
 
 }

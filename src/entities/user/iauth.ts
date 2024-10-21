@@ -9,4 +9,4 @@ interface IuserauthInteractor{
     signin(userData:userSignIn):Promise<{user?:userResponseData ,success:boolean ,message?:string,accesToken?:string,refreshToken?:string}>
 }
 
-export default IuserauthInteractor
+export default IuserauthInteractor   

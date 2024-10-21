@@ -9,6 +9,7 @@ import brandModel from "../../framework/mongoose/brandSchema";
 import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
 import server from "framework/app";
 import { serialize } from "v8";
+import providingServicesModel from "../../framework/mongoose/providingServicesSchema";
 
 class AdminRepository implements IAdminRepo {
   async adminSignIn(
@@ -156,6 +157,12 @@ class AdminRepository implements IAdminRepo {
       const updated = await providerModel.findByIdAndUpdate(id, {
         $set: { requestAccept: state },
       });
+      if (state && updated) {
+        const created = await providingServicesModel.create({
+          workshopId: id,
+          
+        });
+      }
       if (updated) {
         return { success: true };
       }
@@ -227,7 +234,8 @@ class AdminRepository implements IAdminRepo {
     brand: string
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      const created = await brandModel.create({ brand: brand });
+
+      const created = await brandModel.create({ brand: brand.trim() });
       if (created) {
         return { success: true };
       }

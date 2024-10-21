@@ -3,6 +3,8 @@ import isUserRepository from "../../entities/irepositeries/iUserRepository";
 import otpModel from "../../framework/mongoose/otpSchema";
 import userModel from "../../framework/mongoose/userSchema";
 import bcrypt from 'bcrypt'
+import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
+import { IgetservicesResponse } from "../../entities/user/IuserResponse";
 
 
 
@@ -98,7 +100,17 @@ class UserRepository implements isUserRepository {
 
         return { user: user, success: true };
     }
+    
 
+     async getServices(category: string): Promise<{ success: boolean; message: string; services?: IgetservicesResponse[]; }> {
+        try {
+            const response :IgetservicesResponse[] = await ServiceTypeModel.aggregate([{$match:{category:category}},{$project:{_id:1,category:1,serviceType:1,imageUrl:1}}])
+            return {success:response?true:false,message:"success",services:response}
+        } catch (error) {
+            return {success:false,message:"500"}
+        }
+        
+    }
 
 }
 

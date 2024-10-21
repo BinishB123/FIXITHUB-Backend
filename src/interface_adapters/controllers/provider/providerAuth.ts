@@ -78,13 +78,14 @@ class ProviderAuthController {
             httpOnly: true,
             sameSite: true,
             path: '/',
-            maxAge: 15 * 60 * 1000
+            maxAge: 7 * 24 * 60 * 60 * 1000
+            
         })
 
         res.cookie('providerAccessToken', interactorResponse.accessToken, {
             httpOnly: true,
             sameSite: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge: 30 * 60 * 1000
         })
 
         res.status(200).json({ success: true, message: "Sign-in successful. Welcome back!", provider: interactorResponse.provider })
