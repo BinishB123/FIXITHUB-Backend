@@ -17,7 +17,9 @@ const providerSchema = new Schema<ProviderModeSchema>({
     requestAccept: { type: Boolean, required: true, default: false },
     supportedBrands:[{
         brand:{type:Schema.Types.ObjectId ,ref: 'brand'}
-    }]
+    }],
+    logoUrl:{type:String},
+    about:{type:String}
    
 });
 

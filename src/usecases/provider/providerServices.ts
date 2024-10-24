@@ -78,13 +78,16 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
               isAdded: true,
               subType:
                 service.subTypes?.map((item) => {
-                  console.log(item);
+                  
+                  
                   return { 
-                    isAdded: checker.subtype?.some((sub) => sub.type === item), // Safely checking if subtype exists and includes item
+                    isAdded: checker.subtype?.some((sub) => sub.type+"" === item._id+""), 
                     priceRange:
-                      checker.subtype?.find((sub) => sub.type === item)
+                      checker.subtype?.find((sub) => sub.type+"" === item._id+"")
                         ?.startingPrice ?? undefined,
-                    type: item,
+                    type:item.type,
+                    _id:item._id
+                    
                   };
                 }) || [],
             };
@@ -100,7 +103,8 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
                 service.subTypes?.map((item) => {
                   return {
                     isAdded: false,
-                    type: item,
+                    type: item.type,
+                    _id:item._id
                   };
                 }) || [],
             };
@@ -167,7 +171,8 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
             subType:
               service.subTypes?.map((item) => ({
                 isAdded: false,
-                type: item,
+                type: item.type,
+                _id:item._id
               })) || [],
           };
           providerGeneralService.push(generalService);

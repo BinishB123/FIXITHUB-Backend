@@ -102,7 +102,7 @@ class AdminSettingInteractor implements IadminSettingInteractor {
   }
   async addSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; }> {
     try {
-      const response = await this.adminRepo.addSubType(data)
+      const response = await this.adminRepo.addOrUpdateSubType(data)
       if (!response.success) {
         return response
       }

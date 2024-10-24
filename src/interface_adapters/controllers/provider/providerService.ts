@@ -87,9 +87,9 @@ class ProviderAddServiceController {
 
   async deleteSubTpe(req: Request, res: Response) {
     try {
-      const serviceid = req.query.serviceid as string; // casting to string
-      const providerId = req.query.providerId as string; // casting to string
-      const type = req.query.type as string; // casting to string
+      const serviceid = req.query.serviceid as string; 
+      const providerId = req.query.providerId as string; 
+      const type = req.query.type as string; 
       const servicetype = req.query.servicetype as string
   console.log(req.query);
   

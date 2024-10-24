@@ -31,7 +31,7 @@ export interface servicetypeSchemaModel {
     category: "general" | "road",
     serviceType: string
     imageUrl:string
-    subTypes: string[]
+    subTypes: {_id:string,type:string}[]
 
 
 }
@@ -40,7 +40,12 @@ export interface servicetype {
     category:  "general" | "road",
     serviceType: string
     imageUrl:string
-    subTypes?: string[]
+    subTypes?: {_id:string,type:string}[]
 
 
+}
+
+export interface subtypeSchemaModel{
+    _id: string;
+     type:string
 }

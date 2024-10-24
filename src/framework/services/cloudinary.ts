@@ -18,9 +18,9 @@ class Cloudinary implements IUploadToCloudinary {
             cloudinary.uploader.upload_stream(
                 {
                     folder: folder,
-                    public_id: publicId,
+                    public_id: publicId, 
                     resource_type: 'image',
-                },
+                }, 
                 (error, result) => {
                     if (error) {
                         console.error('Error uploading to Cloudinary:', error);
@@ -31,6 +31,8 @@ class Cloudinary implements IUploadToCloudinary {
             ).end(fileBuffer);
         });
     }
+
+    
 }
 
 export default Cloudinary;

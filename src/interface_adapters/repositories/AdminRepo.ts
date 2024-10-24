@@ -321,23 +321,51 @@ class AdminRepository implements IAdminRepo {
     }
   }
    
-  async addSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; }> {
-      try {
-        const updated = await ServiceTypeModel.updateOne({_id:data.id},{$addToSet:{subTypes:data.type.trim()}})
-        if (updated.modifiedCount===0) {
-          return {success:false,message:"Cannot add"}
-        }
-        
-        return {success:true}
-        
-      } catch (error) {
-        return {success:false,message:"500"}
+  async addOrUpdateSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; updatedData?: any }> {
+    try {
+     
+      const existingDocument = await ServiceTypeModel.findOne({
+        _id: data.id,
+        'subTypes.type': data.type.trim(),  
+      });
+  
+      let updated;
+      
+      if (existingDocument) {
+      
+        updated = await ServiceTypeModel.findOneAndUpdate(
+          { _id: data.id, 'subTypes.type': data.type.trim() }, 
+          { $set: { 'subTypes.$.type': data.type.trim() } },    
+          { new: true } 
+        );
+      } else {
+       
+        updated = await ServiceTypeModel.findOneAndUpdate(
+          { _id: data.id },
+          { $push: { subTypes: { type: data.type.trim() } } },  
+          { new: true } 
+        );
       }
+      
+      if (!updated) {
+        return { success: false, message: "Cannot update or add subType" };
+      }
+      const newSubtypeId = updated.subTypes[updated.subTypes.length - 1]  
+      return { success: true, updatedData: newSubtypeId };  
+  
+    } catch (error) {
+      console.log(error);
+      return { success: false, message: "500" };
+    }
   }
-
+  
   async deleteSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; }> {
       try {
-        const deleted = await ServiceTypeModel.updateOne({_id:data.id},{$pull:{subTypes:data.type}})
+        const deleted = await ServiceTypeModel.updateOne(
+          { _id: data.id },
+          { $pull: { subTypes: { _id: data.type } } }  
+        );
+        
         if (deleted.modifiedCount===0) {
           return {success:false,message:"409"}
         }
@@ -347,6 +375,7 @@ class AdminRepository implements IAdminRepo {
       }
   }
 
+ 
 
 
 }

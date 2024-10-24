@@ -32,8 +32,7 @@ const refreshAccessToken = (
 
     return newAccessToken;
   } catch (err) {
-    console.error("Error verifying refresh token:", err);
-    return null;
+    return 401;
   }
 };
 

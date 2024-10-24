@@ -3,6 +3,7 @@ import otpModel from "../../framework/mongoose/otpSchema";
 import IProviderRepository from "entities/irepositeries/iProviderRepo";
 import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
 import {
+  IproviderReponseData,
   ProviderRegisterData,
   RegisterResponse,
   SigIn,
@@ -59,9 +60,7 @@ class ProviderRepository implements IProviderRepository {
       return false;
     }
   }
-  async registerProvider(
-    registerdata: ProviderRegisterData
-  ): Promise<{
+  async registerProvider(registerdata: ProviderRegisterData): Promise<{
     created: boolean;
     message: string;
     provider?: RegisterResponse;
@@ -84,7 +83,6 @@ class ProviderRepository implements IProviderRepository {
         password: hashedPassword,
         mobile: registerdata.mobile,
         workshopDetails: registerdata.workshopDetails,
-        
       });
       if (!created) {
         return { created: false, message: "registration failed" };
@@ -169,7 +167,7 @@ class ProviderRepository implements IProviderRepository {
         await providingServicesModel.find({ workshopId: id });
       const service = allService.map((service) => ({
         ...service,
-        _id: service._id.toString(), // Convert ObjectId to string
+        _id: service._id.toString(),
       }));
 
       return {
@@ -196,7 +194,7 @@ class ProviderRepository implements IProviderRepository {
       const serviceData = {
         typeId: data.typeid,
         category: data.category,
-        subtype: [], // Initialize subtype if provided
+        subtype: [],
       };
 
       // Check the vehicle type
@@ -210,10 +208,8 @@ class ProviderRepository implements IProviderRepository {
           workshopId: data.providerid,
           "twoWheeler.typeId": data.typeid,
         });
-        //  console.log("fsdhgf",provider);
 
         if (provider) {
-          // Update the existing two-wheeler service by replacing it
           const updatedProvider = await providingServicesModel.findOneAndUpdate(
             { workshopId: data.providerid, "twoWheeler.typeId": data.typeid },
             {
@@ -227,7 +223,6 @@ class ProviderRepository implements IProviderRepository {
             message: "Two-wheeler service updated successfully",
           };
         } else {
-          // Create a new two-wheeler service entry
           const createdProvider = await providingServicesModel.findOneAndUpdate(
             { workshopId: data.providerid },
             {
@@ -344,159 +339,304 @@ class ProviderRepository implements IProviderRepository {
   async editSubType(
     providerid: string,
     serviceid: string,
-    subtype: { type: string; startingprice: number; vechileType: string; }
-  ): Promise<{ success: boolean; message: string; }> {
+    subtype: { type: string; startingprice: number; vechileType: string }
+  ): Promise<{ success: boolean; message: string }> {
     try {
-
-      const updated = parseInt(subtype.vechileType) === 4
-        ? await providingServicesModel.updateOne(
-          {
-            workshopId: providerid,
-            "fourWheeler.typeId": serviceid,
-            "fourWheeler.subtype.type": subtype.type // Matching subtype based on type
-          },
-          {
-            $set: {
-              "fourWheeler.$[w].subtype.$[s].startingPrice": subtype.startingprice
-            }
-          },
-          {
-            arrayFilters: [
-              { "w.typeId": serviceid },
-              { "s.type": subtype.type }
-            ]
-          }
-        )
-        : await providingServicesModel.updateOne(
-          {
-            workshopId: providerid,
-            "twoWheeler.typeId": serviceid,
-            "twoWheeler.subtype.type": subtype.type 
-          },
-          {
-            $set: {
-              "twoWheeler.$[w].subtype.$[s].startingPrice": subtype.startingprice
-            }
-          },
-          {
-            arrayFilters: [
-              { "w.typeId": serviceid },
-              { "s.type": subtype.type }
-            ]
-          }
-        );
-
-
-  
-
+      const updated =
+        parseInt(subtype.vechileType) === 4
+          ? await providingServicesModel.updateOne(
+              {
+                workshopId: providerid,
+                "fourWheeler.typeId": serviceid,
+                "fourWheeler.subtype.type": subtype.type, // Matching subtype based on type
+              },
+              {
+                $set: {
+                  "fourWheeler.$[w].subtype.$[s].startingPrice":
+                    subtype.startingprice,
+                },
+              },
+              {
+                arrayFilters: [
+                  { "w.typeId": serviceid },
+                  { "s.type": subtype.type },
+                ],
+              }
+            )
+          : await providingServicesModel.updateOne(
+              {
+                workshopId: providerid,
+                "twoWheeler.typeId": serviceid,
+                "twoWheeler.subtype.type": subtype.type,
+              },
+              {
+                $set: {
+                  "twoWheeler.$[w].subtype.$[s].startingPrice":
+                    subtype.startingprice,
+                },
+              },
+              {
+                arrayFilters: [
+                  { "w.typeId": serviceid },
+                  { "s.type": subtype.type },
+                ],
+              }
+            );
 
       if (updated.modifiedCount > 0) {
         return { success: true, message: "Subtype updated successfully" };
       } else {
-        return { success: false, message: "Subtype not found or no changes made" };
+        return {
+          success: false,
+          message: "Subtype not found or no changes made",
+        };
       }
     } catch (error: any) {
       console.error("Error while updating subtype:", error.message);
-      return { success: false, message: "Error occurred while updating subtype" };
+      return {
+        success: false,
+        message: "Error occurred while updating subtype",
+      };
     }
   }
 
-  async deleteSubtype(providerid: string, serviceid: string, subtype: { type: string }, vechileType: string): Promise<{ success: boolean; message: string; }> {
+  async deleteSubtype(
+    providerid: string,
+    serviceid: string,
+    subtype: { type: string },
+    vechileType: string
+  ): Promise<{ success: boolean; message: string }> {
     try {
-
-      const deleted = parseInt(vechileType) === 2 ? await providingServicesModel.updateOne(
-        { workshopId: providerid, "twoWheeler.typeId": serviceid },
-        {
-          $pull: {
-            "twoWheeler.$.subtype": { type: subtype.type }
-          }
-        }
-      )
-        : await providingServicesModel.updateOne(
-          { workshopId: providerid, "fourWheeler.typeId": serviceid },
-          {
-            $pull: {
-              "fourWheeler.$.subtype": { type: subtype.type }
-            }
-          }
-        );
-
-
-
+      const deleted =
+        parseInt(vechileType) === 2
+          ? await providingServicesModel.updateOne(
+              { workshopId: providerid, "twoWheeler.typeId": serviceid },
+              {
+                $pull: {
+                  "twoWheeler.$.subtype": { type: subtype.type },
+                },
+              }
+            )
+          : await providingServicesModel.updateOne(
+              { workshopId: providerid, "fourWheeler.typeId": serviceid },
+              {
+                $pull: {
+                  "fourWheeler.$.subtype": { type: subtype.type },
+                },
+              }
+            );
 
       if (deleted.modifiedCount > 0) {
         return { success: true, message: "Subtype deleted successfully." };
       } else {
-        return { success: false, message: "Subtype not found or already deleted." };
+        return {
+          success: false,
+          message: "Subtype not found or already deleted.",
+        };
       }
-
     } catch (error: any) {
       console.error("Error deleting subtype:", error.message);
-      return { success: false, message: "An error occurred while deleting the subtype." };
+      return {
+        success: false,
+        message: "An error occurred while deleting the subtype.",
+      };
     }
   }
 
-  async getallBrands(id:string): Promise<{ succes: boolean; message: string; brands?: { _id: string; brand: string; }[] ,supportedBrands?:{brand:string}[]|[]}> {
+  async getallBrands(
+    id: string
+  ): Promise<{
+    succes: boolean;
+    message: string;
+    brands?: { _id: string; brand: string }[];
+    supportedBrands?: { brand: string }[] | [];
+  }> {
     try {
-      const data = await brandModel.find().lean(); 
-      const[ providerData ] = await providerModel.aggregate([{$match:{_id:new mongoose.Types.ObjectId(id)}},{$project:{_id:0,supportedBrands:1}}])
-      
-      
-      
-      const formattedBrands = data.map(brand => ({
-        _id: brand._id.toString(),  
+      const data = await brandModel.find().lean();
+      const [providerData] = await providerModel.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(id) } },
+        { $project: { _id: 0, supportedBrands: 1 } },
+      ]);
+
+      const formattedBrands = data.map((brand) => ({
+        _id: brand._id.toString(),
         brand: brand.brand,
       }));
-  
-      return { succes: true, message: "200", brands: formattedBrands ,supportedBrands:providerData.supportedBrands.length>0?providerData.supportedBrands:[] };
+
+      return {
+        succes: true,
+        message: "200",
+        brands: formattedBrands,
+        supportedBrands:
+          providerData.supportedBrands.length > 0
+            ? providerData.supportedBrands
+            : [],
+      };
     } catch (error) {
       return { succes: false, message: "500" };
     }
-
   }
-  
 
-  async addBrands(data: { id: string; brandid: string; }): Promise<{ success: boolean; message: string; }> {
-      try {
-        const updated = await providerModel.updateOne({_id:new mongoose.Types.ObjectId(data.id)},
-          {$push:{
-            supportedBrands:{brand: data.brandid}
-          } }
-        )
-        if (updated.modifiedCount === 1) {
-          return { success: true, message: "Brand Added successfully " };
-        } else {
-          return { success: false, message: "Brand not found or not removed" }; 
-        }
-        
-      } catch (error:any) {
-        console.log(error.message);
-        
-        return {success:false,message:"500"}
-      }
-  }
-  
-  async deleteBrand(data: { id: string; brandid: string; }): Promise<{ success: boolean; message: string; }> {
+  async addBrands(data: {
+    id: string;
+    brandid: string;
+  }): Promise<{ success: boolean; message: string }> {
     try {
-      const updated = await providerModel.updateOne({_id:new mongoose.Types.ObjectId(data.id)},
-        {$pull:{
-          supportedBrands:{brand: data.brandid}
-        } }
-      )
+      const updated = await providerModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(data.id) },
+        {
+          $push: {
+            supportedBrands: { brand: data.brandid },
+          },
+        }
+      );
       if (updated.modifiedCount === 1) {
-        return { success: true, message: "Brand Removed successfully " };
+        return { success: true, message: "Brand Added successfully " };
       } else {
-        return { success: false, message: "Brand not found or not removed" }; 
+        return { success: false, message: "Brand not found or not removed" };
       }
-      
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error.message);
-      
-      return {success:false,message:"500"}
+
+      return { success: false, message: "500" };
     }
   }
 
+  async deleteBrand(data: {
+    id: string;
+    brandid: string;
+  }): Promise<{ success: boolean; message: string }> {
+    try {
+      const updated = await providerModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(data.id) },
+        {
+          $pull: {
+            supportedBrands: { brand: data.brandid },
+          },
+        }
+      );
+      if (updated.modifiedCount === 1) {
+        return { success: true, message: "Brand Removed successfully " };
+      } else {
+        return { success: false, message: "Brand not found or not removed" };
+      }
+    } catch (error: any) {
+      return { success: false, message: "500" };
+    }
+  }
 
+  async getDataToProfile(
+    id: string
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    providerData?: IproviderReponseData | null;
+  }> {
+    try {
+      const aggregateResult = await providerModel.aggregate([
+        {
+          $match: { _id: new mongoose.Types.ObjectId(id) },
+        },
+        {
+          $project: {
+            _id: 1,
+            workshopName: 1,
+            ownerName: 1,
+            email: 1,
+            workshopDetails: 1,
+            blocked: 1,
+            requestAccept: 1,
+            supportedBrands: 1,
+            logoUrl: 1,
+            about: 1,
+            mobile: 1,
+          },
+        },
+      ]);
+
+      const getData = aggregateResult[0] as IproviderReponseData | undefined;
+      if (!getData) {
+        return { success: false, message: "404", providerData: getData };
+      }
+      return { success: true, message: "200", providerData: getData };
+    } catch (error) {
+      return { success: false, message: "500" };
+    }
+  }
+
+  async editabout(data: {
+    id: string;
+    about: string;
+  }): Promise<{ success: boolean; message?: string }> {
+    try {
+      const update = await providerModel.updateOne(
+        { id: data.id },
+        {
+          $set: {
+            about: data.about,
+          },
+        }
+      );
+
+      if (update.modifiedCount === 1) {
+        return { success: true, message: "updated" };
+      }
+      return { success: false, message: "422" };
+    } catch (error) {
+      return { success: false, message: "500" };
+    }
+  }
+
+  async addImage(data: {
+    id: string;
+    url: string;
+  }): Promise<{ success: boolean; message: string; url?: string }> {
+    try {
+      const updated = await providerModel.updateOne(
+        { _id: data.id },
+        {
+          $set: {
+            logoUrl: data.url,
+          },
+        }
+      );
+      if (updated.modifiedCount === 1) {
+        return { success: true, message: "updated", url: data.url };
+      }
+      return { success: false, message: "422" };
+    } catch (error) {
+      return { success: false, message: "500" };
+    }
+  }
+
+  async updateProfiledatas(data: {
+    id: string;
+    whichisTotChange: string;
+    newOne: string;
+  }): Promise<{ success: boolean; message?: string }> {
+    try {
+      
+      const updated = await providerModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(data.id) },
+        {
+          $set: {
+            [data.whichisTotChange]: data.newOne,
+          },
+        }
+      );
+      if (updated.matchedCount === 0) {
+        return { success: false };
+      }
+      return updated.modifiedCount === 1
+        ? { success: true, message: "Document updated successfully" }
+        : { success: false, message: "No changes were made" };
+  
+    } catch (error) {
+      console.error("Error updating document:", error);
+      return { success: false, message: "500" };
+    }
+  }
+  
 }
 
 export default ProviderRepository;

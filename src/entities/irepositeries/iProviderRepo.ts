@@ -3,10 +3,10 @@ import {
     ProviderRegisterData,
     SigIn,
     SignResponse,
+    IproviderReponseData
 } from "../../entities/rules/provider";
 import { ProvidingServices } from "../../entities/provider/IService";
 import { servicetype } from "../../entities/rules/admin";
-import { promises } from "dns";
 
 interface IProviderRepository {
     sendOtp(otp: string, email: string): Promise<{ created: boolean }>;
@@ -57,6 +57,11 @@ interface IProviderRepository {
     getallBrands(id:string):Promise<{succes:boolean,message:string,brands?:{_id:string,brand:string}[],supportedBrands?:{brand:string}[]|[]}>
     addBrands(data:{id:string,brandid:string}):Promise<{success:boolean,message:string}>
     deleteBrand(data:{id:string,brandid:string}):Promise<{success:boolean,message:string}>
+    getDataToProfile(id:string):Promise<{success:boolean,message?:string,providerData?:IproviderReponseData|null}>
+    editabout(data:{id:string,about:string}):Promise<{success:boolean,message?:string,}>
+    addImage(data:{id:string,url:string}):Promise<{success:boolean,message:string,url?:string}>
+    updateProfiledatas(data:{id:string,whichisTotChange:string,newOne:string}):Promise<{success:boolean,message?:string}>
+
 }
 
 export default IProviderRepository;

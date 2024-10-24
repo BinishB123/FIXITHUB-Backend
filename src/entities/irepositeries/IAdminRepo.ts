@@ -47,7 +47,7 @@ interface IAdminRepo {
   settingsDatas():Promise<{success:boolean,brands?:string[],generalServices?:any[],roadAssistance?:any[]}>
   checkserviceAllreadyExistOrNot(serviceName:string):Promise<{success:boolean,message?:string}>
   addGeneralserviceOrRoadAssistance(data:IdatasOfGeneralService):Promise<{success:boolean,message?:string,created?:Object}>
-  addSubType(data:{id:string,type:string}):Promise<{success:boolean,message?:string}>
+  addOrUpdateSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; updatedData?: any }>
   deleteSubType(data:{id:string,type:string}):Promise<{success:boolean,message?:string}>
 
 
