@@ -36,10 +36,10 @@ interface IAdminRepo {
     id: string,
     state: boolean
   ): Promise<{ success: boolean; message?: string }>;
-  vechileTypealreadyExistOrNot(
+  vehicleTypealreadyExistOrNot(
     type: number
   ): Promise<{ success: boolean; message?: string }>;
-  adminSettingsAddVechileType(
+  adminSettingsAddvehicleType(
     type: number
   ): Promise<{ success: boolean; message?: string }>;
   brandExistOrNot(brand: string): Promise<{ success: boolean, message?: string }>

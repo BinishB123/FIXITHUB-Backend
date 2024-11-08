@@ -24,7 +24,7 @@ interface IProviderRepository {
     ): Promise<{ success: boolean; message: string; provider?: SignResponse }>;
     getProviderServices(
         id: string,
-        vechileType: number
+        vehicleType: number
     ): Promise<{
         success: boolean;
         message: string;
@@ -35,23 +35,23 @@ interface IProviderRepository {
         providerid: string;
         typeid: string;
         category: string;
-        vechileType: string;
+        vehicleType: string;
     }): Promise<{ success: boolean; message: string }>;
     addSubTypes(
         providerid: string,
         serviceid: string,
-        newSubType: { type: string; startingprice: number; vechileType: string }
+        newSubType: { type: string; startingprice: number; vehicleType: string }
     ): Promise<{ success: boolean; message: string }>;
     editSubType(
         providerid: string,
         serviceid: string,
-        subtype: { type: string; startingprice: number; vechileType: string }
+        subtype: { type: string; startingprice: number; vehicleType: string }
     ): Promise<{ success: boolean; message: string }>;
     deleteSubtype(
         providerid: string,
         serviceid: string,
         subtype: { type: string },
-        vechileType: string
+        vehicleType: string
     ): Promise<{ success: boolean; message: string }>;
     
     getallBrands(id:string):Promise<{succes:boolean,message:string,brands?:{_id:string,brand:string}[],supportedBrands?:{brand:string}[]|[]}>
@@ -61,6 +61,9 @@ interface IProviderRepository {
     editabout(data:{id:string,about:string}):Promise<{success:boolean,message?:string,}>
     addImage(data:{id:string,url:string}):Promise<{success:boolean,message:string,url?:string}>
     updateProfiledatas(data:{id:string,whichisTotChange:string,newOne:string}):Promise<{success:boolean,message?:string}>
+    getAllBrand(id:string):Promise<{success:boolean,message?:string,brandData?:{_id:string,brand:string}[]|null}>
+    changepassword(data:{id:string,currentpassowrd:string,newpassowrd:string}):Promise<{success?:boolean,message?:string}>
+    updateLogo(url:string,id:string):Promise<{success?:boolean,message?:string,url?:string}>
 
 }
 

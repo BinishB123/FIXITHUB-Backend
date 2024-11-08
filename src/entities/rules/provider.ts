@@ -64,11 +64,11 @@ export interface services {
 }
 
 // Define the workshopDetails interface
-interface workshopDetails {
+interface WorkshopDetails {
   address: string;
-  coordinates: {
-    lat: number;
-    long: number;
+  location: {
+    type: "Point";
+    coordinates: [number, number]; // [longitude, latitude]
   };
 }
 
@@ -79,11 +79,11 @@ export interface ProviderModeSchema {
   email: string;
   mobile: string;
   password: string;
-  workshopDetails: workshopDetails;
+  workshopDetails: WorkshopDetails;
   blocked: boolean;
   requestAccept: boolean | null;
   supportedBrands: { brand: ObjectId }[];
-  logoUrl:string
+  logoUrl: string;
   about: string;
 }
 

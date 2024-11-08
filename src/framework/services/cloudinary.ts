@@ -1,6 +1,9 @@
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 import { IUploadToCloudinary } from '../../entities/services/Iclodinary';
+import { error } from 'console';
+import CustomError from './errorInstance';
+import HttpStatus from '../../entities/rules/statusCode';
 
 dotenv.config();
 
@@ -13,14 +16,17 @@ cloudinary.config({
 
 class Cloudinary implements IUploadToCloudinary {
    
-    async uploadToCloudinary(fileBuffer: Buffer, folder: string="FixitHub", publicId: string="FixithubImages"): Promise<{ success: boolean; url?: string; message?: string; }> {
+    async uploadToCloudinary(fileBuffer: Buffer, folder: string = "FixitHub"): Promise<{ success: boolean; url?: string; message?: string; }> {
+        const uniqueId = `FixithubImages_${Date.now()}`;
+    
         return new Promise((resolve, reject) => {
-            cloudinary.uploader.upload_stream(
+            cloudinary.uploader.upload(
+                `data:image/jpeg;base64,${fileBuffer.toString('base64')}`,
                 {
                     folder: folder,
-                    public_id: publicId, 
+                    public_id: uniqueId,
                     resource_type: 'image',
-                }, 
+                },
                 (error, result) => {
                     if (error) {
                         console.error('Error uploading to Cloudinary:', error);
@@ -28,11 +34,35 @@ class Cloudinary implements IUploadToCloudinary {
                     }
                     resolve({ success: true, url: result?.secure_url });
                 }
-            ).end(fileBuffer);
+            );
         });
     }
 
+    async deleteFromCloudinary(url: string, FolderNameThatContainImage: string ): Promise<{ success?: boolean; message?: string; }> {
+        try {
+            const publicId = url?.split("/").reverse()[0].split(".")[0];
+            console.log(FolderNameThatContainImage + "/" + publicId);
+            
+            const result = await cloudinary.uploader.destroy(FolderNameThatContainImage + "/" + publicId);
+            console.log(result);
+            
+            if (result.result !== 'ok') {
+              throw new CustomError("Something went Wrong", HttpStatus.Unprocessable_Entity);
+            }
+          
+            console.log("Deletion result", result);
+            return { success: true };
+            
+          } catch (error: any) {
+            throw new CustomError(error.message, error.status);
+          }
+          
+    }
     
-}
+    
+    }
+
+    
+
 
 export default Cloudinary;

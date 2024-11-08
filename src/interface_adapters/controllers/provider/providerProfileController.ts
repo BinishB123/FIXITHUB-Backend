@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import IProfileInteractor from "../../../entities/provider/IprofileInteractor";
 import HttpStatus from "../../../entities/rules/statusCode";
 import { IUploadToCloudinary } from "../../../entities/services/Iclodinary";
+import CustomError from "../../../framework/services/errorInstance";
 
 class ProviderProfileController {
   constructor(
@@ -64,6 +65,7 @@ class ProviderProfileController {
          
       const { id } = req.body;
       const image = req.file?.buffer;
+
       if (image instanceof Buffer) {
         const cloudinaryresponse = await this.cloudinary.uploadToCloudinary(
           image,
@@ -108,6 +110,77 @@ class ProviderProfileController {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"internal server"})
     }
   }
+  async getAllBrands(req:Request,res:Response){
+    try {
+      const id = req.query.id+"" 
+      const response = await this.providerProfileInteractor.getAllBrand(id)
+      if (!response.success) {
+        if (response.message==="500") {
+          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"failed internal server error"})
+        }
+        return res.status(HttpStatus.Unprocessable_Entity).json({message:"failed to Fetch Data"})
+      }
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"failed internal server error"})
+    }
+  }
+
+  async changePassword(req:Request,res:Response,next:NextFunction){
+    try {
+      const {id,currentpassowrd,newpassowrd} = req.body
+      if (!id||!currentpassowrd||!newpassowrd) {
+        return res.status(HttpStatus.Unprocessable_Entity).json({message:"Data missing something went wrong"})
+      }
+      const response = await this.providerProfileInteractor.changepassword({id,currentpassowrd,newpassowrd})
+     
+      return res.status(HttpStatus.OK).json({message:"password changed"})
+    } catch (error) {
+      next(error)
+     }
+  }
+  
+  async updateLogo(req:Request,res:Response,next:NextFunction){
+    try {
+      
+       
+             
+        const {id,url} = req.body
+        const image = req.file?.buffer;
+       
+        
+        
+        if(!id||!url||!image){
+          throw new CustomError("Data are Not Provided",HttpStatus.Unprocessable_Entity)
+        }
+        const deleted = await this.cloudinary.deleteFromCloudinary(url,"FixitHub")
+         
+        if (!deleted) {
+          throw new CustomError("Something Went Wrong",HttpStatus.Unprocessable_Entity)
+
+        }
+        if (image instanceof Buffer) {
+          const cloudinaryresponse = await this.cloudinary.uploadToCloudinary(
+            image,
+            "FixitHub",
+            "FixithubImages"
+          ); 
+          if (cloudinaryresponse.success) {
+            const data = {
+              id: id, 
+              url: cloudinaryresponse.url ? cloudinaryresponse.url : "",
+            };
+            const response = await this.providerProfileInteractor.updateLogo(data.url,data.id);
+            if (response.success) {
+              return res.status(HttpStatus.OK).json({ url: response.url });
+            }
+          }
+        } 
+    } catch (error) {
+      next(error)
+    }
+  }
+
 }
 
 export default ProviderProfileController;

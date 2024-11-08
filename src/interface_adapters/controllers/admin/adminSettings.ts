@@ -8,7 +8,7 @@ class AdminSettingController {
   async adminSettings(req: Request, res: Response) {
     try {
       const { type } = req.body;
-      const response = await this.adminSettingsInter.adminAddvechileType(type);
+      const response = await this.adminSettingsInter.adminAddvehicleType(type);
       if (response.success) {
         return res
           .status(HttpStatus.CREATED)
@@ -78,6 +78,8 @@ class AdminSettingController {
     try {
       const { category, servicetype } = req.body;
       const image = req.file?.buffer;
+
+      
       const interactorResponse =
         await this.adminSettingsInter.addGeneralserviceOrRoadAssistance({
           category,

@@ -1,12 +1,13 @@
 import express from 'express';
 import userAuthRouter from './auth';
 import userServiceRoute from './userServiceRoute';
-
+import userprofileRouter from './userProfileRoute';
+import verification from '../../../../framework/express/middleware/jwtAuthenticate';
 const userRoute = express.Router();
 
-// Set up the nested /auth route
 userRoute.use('/auth', userAuthRouter);
-userRoute.use('/service',userServiceRoute)
+userRoute.use('/service',verification("user"),userServiceRoute)
+userRoute.use('/profile',verification("user"),userprofileRouter)
 
 
 export default userRoute;

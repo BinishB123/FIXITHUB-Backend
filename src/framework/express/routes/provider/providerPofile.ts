@@ -20,6 +20,9 @@ providerProfileRoute.get('/getproviderProfileData',providerProfileController.get
 providerProfileRoute.patch('/editabout',providerProfileController.editAbout.bind(providerProfileController))
 providerProfileRoute.patch('/addlogo',upload.single("files"),providerProfileController.addLogo.bind(providerProfileController))
 providerProfileRoute.patch('/updataprofileData',providerProfileController.updateProfile.bind(providerProfileController))
+providerProfileRoute.get('/getallBrands',providerProfileController.getAllBrands.bind(providerProfileController))
+providerProfileRoute.patch('/changepassword',providerProfileController.changePassword.bind(providerProfileController))
+providerProfileRoute.patch('/changelogo',upload.single("files") ,providerProfileController.updateLogo.bind(providerProfileController))
 
 
 export default providerProfileRoute

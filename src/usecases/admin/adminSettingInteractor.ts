@@ -6,17 +6,17 @@ class AdminSettingInteractor implements IadminSettingInteractor {
     private readonly adminRepo: IAdminRepo,
     private readonly Cloudinary: IUploadToCloudinary
   ) { }
-  async adminAddvechileType(
+  async adminAddvehicleType(
     type: number
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      const exist = await this.adminRepo.vechileTypealreadyExistOrNot(type);
+      const exist = await this.adminRepo.vehicleTypealreadyExistOrNot(type);
       if (!exist.success) {
         return { success: false, message: "409" };
       }
-      const adminRepoVechileTypeResponse =
-        await this.adminRepo.adminSettingsAddVechileType(type);
-      if (adminRepoVechileTypeResponse.success) {
+      const adminRepovehicleTypeResponse =
+        await this.adminRepo.adminSettingsAddvehicleType(type);
+      if (adminRepovehicleTypeResponse.success) {
         return { success: true };
       }
       return {

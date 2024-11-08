@@ -16,8 +16,8 @@ export interface Iproviders {
     requestAccept: boolean | null
 
 }
-export interface VechileType {
-    vechileType: number
+export interface vehicleType {
+    vehicleType: number
 }
 
 

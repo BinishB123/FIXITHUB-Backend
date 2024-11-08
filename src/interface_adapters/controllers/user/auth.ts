@@ -1,6 +1,6 @@
 import HttpStatus from "../../../entities/rules/statusCode";
 import IuserauthInteractor from "../../../entities/user/iauth";
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
 
 class AuthController {
@@ -98,11 +98,13 @@ class AuthController {
 
     }
 
-    async checker(req:Request,res:Response){
+    async checker(req:Request,res:Response,next:NextFunction){
         try {
-           return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({success:true,message:"verification"})        
+            const id = req.query.id+""
+            const response = await this.interactor.checker(id)
+            return res.status(HttpStatus.OK).json(response)
         } catch (error) {
-           return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({success:false,message:"Internal Server Error"})
+            next(error)
         }
     }
 

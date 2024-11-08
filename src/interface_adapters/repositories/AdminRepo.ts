@@ -4,7 +4,7 @@ import adminModel from "../../framework/mongoose/adminSchema";
 import useModel from "../../framework/mongoose/userSchema";
 import userModel from "../../framework/mongoose/userSchema";
 import providerModel from "../../framework/mongoose/providerSchema";
-import vechileModel from "../../framework/mongoose/vechileSchema";
+import vehicleModel from "../../framework/mongoose/vehicleSchema";
 import brandModel from "../../framework/mongoose/brandSchema";
 import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
 import server from "framework/app";
@@ -188,11 +188,11 @@ class AdminRepository implements IAdminRepo {
     }
   }
 
-  async vechileTypealreadyExistOrNot(
+  async vehicleTypealreadyExistOrNot(
     type: number
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      const exist = await vechileModel.findOne({ vechileType: type });
+      const exist = await vehicleModel.findOne({ vehicleType: type });
       if (exist) {
         return { success: false };
       }
@@ -202,12 +202,12 @@ class AdminRepository implements IAdminRepo {
     }
   }
 
-  async adminSettingsAddVechileType(
+  async adminSettingsAddvehicleType(
     type: number
   ): Promise<{ success: boolean; message?: string }> {
     try {
-      const vechileCreated = await vechileModel.create({ vechileType: type });
-      if (vechileCreated) {
+      const vehicleCreated = await vehicleModel.create({ vehicleType: type });
+      if (vehicleCreated) {
         return { success: true };
       }
       return { success: false };

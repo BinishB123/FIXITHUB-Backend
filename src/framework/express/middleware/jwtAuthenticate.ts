@@ -1,6 +1,10 @@
 import HttpStatus from "../../../entities/rules/statusCode";
 import { Request, Response, NextFunction } from "express";
+import userModel from "../../../framework/mongoose/userSchema";
+import providerModel from "../../../framework/mongoose/providerSchema";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+import CustomError from "../../../framework/services/errorInstance";
 
 type DecodedToken = {
   id: string;
@@ -10,27 +14,32 @@ type DecodedToken = {
   exp: number;
 };
 
-const refreshAccessToken = (
+const refreshAccessToken = async (
   refreshToken: string,
   type: string
-): string | null | number => {
+): Promise<string | null | number> => {
   try {
-    const decoded: DecodedToken = jwt.verify(
+    const decoded = jwt.verify(
       refreshToken,
       process.env.REFRESHTOKENKEY as string
-    ) as DecodedToken;  console.log(decoded);
-  
+    ) as DecodedToken;
+
+    if (type !== "admin") {
+      const isAllowed = await checkBlockOrNot(decoded.id, type);
+      if (!isAllowed) {
+        return 401;
+      }
+    }
+
     if (decoded.role !== type) {
       return 401;
     }
 
-    const newAccessToken = jwt.sign(
+    return jwt.sign(
       { id: decoded.id, email: decoded.email, role: decoded.role },
       process.env.ACCESSTOKENKEY as string,
-      { expiresIn: "1h" } 
+      { expiresIn: "1h" }
     );
-
-    return newAccessToken;
   } catch (err) {
     return 401;
   }
@@ -38,51 +47,74 @@ const refreshAccessToken = (
 
 const verification = (type: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const accessToken = req.cookies?.[type + "AccessToken"];
+    try {
+      const accessToken = req.cookies?.[`${type}AccessToken`];
 
-    jwt.verify(
-      accessToken,
-      process.env.ACCESSTOKENKEY as string,
-      (err: any) => {
-        if (err) {
-          const refreshToken = req.cookies?.[type + "RefreshToken"];
-
-          if (refreshToken) {
-            const newAccessToken = refreshAccessToken(refreshToken, type);
-            if (newAccessToken === 401) {
-              return res
-                .status(HttpStatus.UNAUTHORIZED)
-                .json({ message: "Unauthorized: Invalid role" });
-              res.status(HttpStatus.UNAUTHORIZED).json({});
-            }
-            if (newAccessToken) {
-              // Set the new access token in the cookie
-              res.cookie(`${type}AccessToken`, newAccessToken, {
-                httpOnly: true,
-                sameSite: "strict",
-                path: "/",
-                maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
-              });
-
-              // Update the request with the new access token
-              req.cookies[type + "AccessToken"] = newAccessToken;
-
-              return next();
-            }
+      if (!accessToken) {
+        const refreshToken = req.cookies?.[`${type}RefreshToken`];
+        if (refreshToken) {
+          const newAccessToken = await refreshAccessToken(refreshToken, type);
+          if (newAccessToken === 401) {
+            throw new CustomError("Access expired", HttpStatus.FORBIDDEN);
           }
-
-          return res
-            .status(403)
-            .json({
-              message: "Access token is expired and refresh token is missing.",
+          if (newAccessToken) {
+            res.cookie(`${type}AccessToken`, newAccessToken, {
+              httpOnly: true,
+              sameSite: "strict",
+              path: "/",
+              maxAge: 60 * 60 * 1000,
             });
-        }
+            req.cookies[`${type}AccessToken`] = newAccessToken;
+            return next();
+          }
+        } else {
 
-        // Proceed to the next middleware if access token is valid
-        next();
+          throw new CustomError("Access expired", HttpStatus.FORBIDDEN);
+        }
       }
-    );
+      const decoded = jwt.verify(
+        accessToken,
+        process.env.ACCESSTOKENKEY as string
+      ) as DecodedToken;
+
+      if (type !== "admin") {
+        const isAllowed = await checkBlockOrNot(decoded.id, type);
+        if (!isAllowed) {
+          throw new CustomError("You are blocked by admin", HttpStatus.FORBIDDEN);
+        }
+      }
+
+      next();
+    } catch (err) {
+      res.clearCookie(`${type}AccessToken`, {
+        httpOnly: true,
+        sameSite: true,
+        path: '/'
+      })
+      res.clearCookie(`${type}RefreshToken`, {
+        httpOnly: true,
+        sameSite: true,
+        path: '/'
+      })
+      next(err);
+    }
   };
+};
+
+const checkBlockOrNot = async (id: string, type: string): Promise<boolean> => {
+  try {
+    const user =
+      type === "user"
+        ? await userModel.findById(new mongoose.Types.ObjectId(id))
+        : await providerModel.findById(new mongoose.Types.ObjectId(id));
+
+    if (!user || user.blocked) {
+      return false
+    }
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 export default verification;

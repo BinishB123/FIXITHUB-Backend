@@ -3,7 +3,7 @@ import isUserRepository from "../../entities/irepositeries/iUserRepository";
 import { Imailer } from "../../entities/services/mailer";
 import { Ijwtservices } from "../../entities/services/Ijwt";
 import user, { userResponseData, userSignIn } from "entities/rules/user";
-import { access } from "fs";
+import CustomError from "../../framework/services/errorInstance";
 
 
 
@@ -14,7 +14,7 @@ class UserAuthInteractor implements IuserauthInteractor {
         const userExist = await this.userRepository.userexist(email)
         if (!userExist) {
             const mailresponse = await this.Mailer.sendMail(email)
-            await this.userRepository.tempOTp(mailresponse.otp, email)
+            await this.userRepository.tempOTp(mailresponse.otp+"", email)
             if (mailresponse.success) {
                 return { success: true, message: "Otp send to your email" }
             } else {
@@ -65,7 +65,16 @@ class UserAuthInteractor implements IuserauthInteractor {
 
         return { user: response.user, success: response.success, message: response.message, accesToken: acessToken, refreshToken: refreshToken }
     }
+  
 
+    async checker(id: string): Promise<{ success?: boolean; message?: string; }> {
+        try {
+            const response = await this.userRepository.checker(id)
+            return response
+        } catch (error:any) {
+            throw new CustomError(error.message,error.statusCode,error.reasons)
+        }
+    }
 
 
 }

@@ -10,7 +10,7 @@ const cloudinary = new Cloudinary()
 const adminSettingInteractor = new AdminSettingInteractor(AdminRepo, cloudinary)
 const adminSettingsController = new AdminSettingController(adminSettingInteractor)
 
-adminSettingsRoute.post('/vechiletype', adminSettingsController.adminSettings.bind(adminSettingsController))
+adminSettingsRoute.post('/vehicletype', adminSettingsController.adminSettings.bind(adminSettingsController))
 adminSettingsRoute.post('/addbrand', adminSettingsController.addBrand.bind(adminSettingsController))
 adminSettingsRoute.get('/settingsDatas', adminSettingsController.getAllSettingsDatas.bind(adminSettingsController))
 adminSettingsRoute.post('/addservices', upload.single("files"), adminSettingsController.addGeneralServiceOrRoadAssistanceServices.bind(adminSettingsController))

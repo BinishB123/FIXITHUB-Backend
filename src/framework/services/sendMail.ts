@@ -3,7 +3,7 @@ import { Mailer } from '../../entities/services/mailer'
 import dotenv from 'dotenv';
 dotenv.config();
 // send mail using nodemail to user 
-const sendMail = async (email: string, otp: string): Promise<{ success: boolean }> => {
+const sendMail = async (email: string, otp?: string,subject?:string,text?:string): Promise<{ success: boolean }> => {
 
 
     const transporter = nodemailer.createTransport({
@@ -17,8 +17,8 @@ const sendMail = async (email: string, otp: string): Promise<{ success: boolean 
         }
     })
     const info = {
-        subject: "Signup Verification Mail from FIXITHUB",
-        text: `Your OTP is ${otp}. Use this OTP to complete your signup process.`
+        subject: subject!=undefined?subject:"Signup Verification Mail from FIXITHUB",
+        text: otp?`Your OTP is ${otp}. Use this OTP to complete your signup process.`:text
     }
 
     const mailOptions = {

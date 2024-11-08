@@ -9,13 +9,15 @@ import {
   SigIn,
   SignResponse,
 } from "entities/rules/provider";
-import { servicetype, VechileType } from "entities/rules/admin";
+import { servicetype, vehicleType } from "entities/rules/admin";
 import bcrypt from "bcrypt";
-import vechileModel from "../../framework/mongoose/vechileSchema";
+import vehicleModel from "../../framework/mongoose/vehicleSchema";
 import { ProvidingServices } from "../../entities/provider/IService";
 import providingServicesModel from "../../framework/mongoose/providingServicesSchema";
 import brandModel from "../../framework/mongoose/brandSchema";
 import mongoose from "mongoose";
+import CustomError from "../../framework/services/errorInstance";
+import HttpStatus from "../../entities/rules/statusCode";
 
 class ProviderRepository implements IProviderRepository {
   async sendOtp(otp: string, email: string): Promise<{ created: boolean }> {
@@ -64,44 +66,58 @@ class ProviderRepository implements IProviderRepository {
     created: boolean;
     message: string;
     provider?: RegisterResponse;
-  }> {
+}> {
     try {
-      const saltRounds: number = 10;
-      const vechileTypes = await vechileModel.find();
-      const providingService = vechileTypes.map((data) => {
-        return { vechileType: data._id + "", services: [] };
-      });
+        const saltRounds: number = 10;
+        const vehicleTypes = await vehicleModel.find();
+        const providingService = vehicleTypes.map((data) => {
+            return { vehicleType: data._id + "", services: [] };
+        });
+        const hashedPassword = await bcrypt.hash(
+            registerdata.password,
+            saltRounds
+        );
 
-      const hashedPassword = await bcrypt.hash(
-        registerdata.password,
-        saltRounds
-      );
-      const created = await providerModel.create({
-        workshopName: registerdata.workshopName,
-        ownerName: registerdata.ownerName,
-        email: registerdata.email,
-        password: hashedPassword,
-        mobile: registerdata.mobile,
-        workshopDetails: registerdata.workshopDetails,
-      });
-      if (!created) {
-        return { created: false, message: "registration failed" };
-      }
-      const provider = {
-        id: created._id + "",
-        ownername: created.ownerName,
-        workshopname: created.workshopName,
-        email: created.email,
-        mobile: created.mobile,
-        requested: created.requestAccept,
-        blocked: created.blocked,
-      };
+        const created = await providerModel.create({
+            workshopName: registerdata.workshopName,
+            ownerName: registerdata.ownerName,
+            email: registerdata.email,
+            password: hashedPassword,
+            mobile: registerdata.mobile,
+            workshopDetails: {
+                address: registerdata.workshopDetails.address, 
+                location: {                                    
+                    type: "Point",
+                    coordinates: [
+                        registerdata.workshopDetails.coordinates.long, 
+                        registerdata.workshopDetails.coordinates.lat  
+                    ]
+                }
+            },
+            blocked: false,
+            requestAccept: false
+        });
 
-      return { created: true, message: "register", provider: provider };
+        if (!created) {
+            return { created: false, message: "registration failed" };
+        }
+
+        const provider = {
+            id: created._id + "",
+            ownername: created.ownerName,
+            workshopname: created.workshopName,
+            email: created.email,
+            mobile: created.mobile,
+            requested: created.requestAccept,
+            blocked: created.blocked,
+        };
+
+        return { created: true, message: "register", provider: provider };
     } catch (error) {
-      return { created: false, message: "server down" };
+        return { created: false, message: "server down" };
     }
-  }
+}
+
 
   async signInProvider(
     providerSignData: SigIn
@@ -154,7 +170,7 @@ class ProviderRepository implements IProviderRepository {
 
   async getProviderServices(
     id: string,
-    vechileType: number
+    vehicleType: number
   ): Promise<{
     success: boolean;
     message: string;
@@ -187,7 +203,7 @@ class ProviderRepository implements IProviderRepository {
     providerid: string;
     typeid: string;
     category: string;
-    vechileType: string;
+    vehicleType: string;
   }): Promise<{ success: boolean; message: string }> {
     try {
       //  service data based on the category (general or road)
@@ -198,11 +214,11 @@ class ProviderRepository implements IProviderRepository {
       };
 
       // Check the vehicle type
-      const vechile = await vechileModel.findOne<VechileType>({
-        _id: data.vechileType,
+      const vehicle = await vehicleModel.findOne<vehicleType>({
+        _id: data.vehicleType,
       });
 
-      if (vechile?.vechileType === 2) {
+      if (vehicle?.vehicleType === 2) {
         // Two-wheeler
         const provider = await providingServicesModel.findOne({
           workshopId: data.providerid,
@@ -289,7 +305,7 @@ class ProviderRepository implements IProviderRepository {
   async addSubTypes(
     providerid: string,
     serviceid: string,
-    newSubType: { type: string; startingprice: number; vechileType: string }
+    newSubType: { type: string; startingprice: number; vehicleType: string }
   ): Promise<{ success: boolean; message: string }> {
     try {
       const newData = {
@@ -297,7 +313,7 @@ class ProviderRepository implements IProviderRepository {
         startingPrice: newSubType.startingprice,
       };
 
-      if (parseInt(newSubType.vechileType) === 2) {
+      if (parseInt(newSubType.vehicleType) === 2) {
         // For two-wheelers
         const update = await providingServicesModel.findOneAndUpdate(
           { workshopId: providerid, "twoWheeler.typeId": serviceid },
@@ -339,49 +355,49 @@ class ProviderRepository implements IProviderRepository {
   async editSubType(
     providerid: string,
     serviceid: string,
-    subtype: { type: string; startingprice: number; vechileType: string }
+    subtype: { type: string; startingprice: number; vehicleType: string }
   ): Promise<{ success: boolean; message: string }> {
     try {
       const updated =
-        parseInt(subtype.vechileType) === 4
+        parseInt(subtype.vehicleType) === 4
           ? await providingServicesModel.updateOne(
-              {
-                workshopId: providerid,
-                "fourWheeler.typeId": serviceid,
-                "fourWheeler.subtype.type": subtype.type, // Matching subtype based on type
+            {
+              workshopId: providerid,
+              "fourWheeler.typeId": serviceid,
+              "fourWheeler.subtype.type": subtype.type, // Matching subtype based on type
+            },
+            {
+              $set: {
+                "fourWheeler.$[w].subtype.$[s].startingPrice":
+                  subtype.startingprice,
               },
-              {
-                $set: {
-                  "fourWheeler.$[w].subtype.$[s].startingPrice":
-                    subtype.startingprice,
-                },
-              },
-              {
-                arrayFilters: [
-                  { "w.typeId": serviceid },
-                  { "s.type": subtype.type },
-                ],
-              }
-            )
+            },
+            {
+              arrayFilters: [
+                { "w.typeId": serviceid },
+                { "s.type": subtype.type },
+              ],
+            }
+          )
           : await providingServicesModel.updateOne(
-              {
-                workshopId: providerid,
-                "twoWheeler.typeId": serviceid,
-                "twoWheeler.subtype.type": subtype.type,
+            {
+              workshopId: providerid,
+              "twoWheeler.typeId": serviceid,
+              "twoWheeler.subtype.type": subtype.type,
+            },
+            {
+              $set: {
+                "twoWheeler.$[w].subtype.$[s].startingPrice":
+                  subtype.startingprice,
               },
-              {
-                $set: {
-                  "twoWheeler.$[w].subtype.$[s].startingPrice":
-                    subtype.startingprice,
-                },
-              },
-              {
-                arrayFilters: [
-                  { "w.typeId": serviceid },
-                  { "s.type": subtype.type },
-                ],
-              }
-            );
+            },
+            {
+              arrayFilters: [
+                { "w.typeId": serviceid },
+                { "s.type": subtype.type },
+              ],
+            }
+          );
 
       if (updated.modifiedCount > 0) {
         return { success: true, message: "Subtype updated successfully" };
@@ -404,27 +420,27 @@ class ProviderRepository implements IProviderRepository {
     providerid: string,
     serviceid: string,
     subtype: { type: string },
-    vechileType: string
+    vehicleType: string
   ): Promise<{ success: boolean; message: string }> {
     try {
       const deleted =
-        parseInt(vechileType) === 2
+        parseInt(vehicleType) === 2
           ? await providingServicesModel.updateOne(
-              { workshopId: providerid, "twoWheeler.typeId": serviceid },
-              {
-                $pull: {
-                  "twoWheeler.$.subtype": { type: subtype.type },
-                },
-              }
-            )
+            { workshopId: providerid, "twoWheeler.typeId": serviceid },
+            {
+              $pull: {
+                "twoWheeler.$.subtype": { type: subtype.type },
+              },
+            }
+          )
           : await providingServicesModel.updateOne(
-              { workshopId: providerid, "fourWheeler.typeId": serviceid },
-              {
-                $pull: {
-                  "fourWheeler.$.subtype": { type: subtype.type },
-                },
-              }
-            );
+            { workshopId: providerid, "fourWheeler.typeId": serviceid },
+            {
+              $pull: {
+                "fourWheeler.$.subtype": { type: subtype.type },
+              },
+            }
+          );
 
       if (deleted.modifiedCount > 0) {
         return { success: true, message: "Subtype deleted successfully." };
@@ -443,9 +459,7 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
-  async getallBrands(
-    id: string
-  ): Promise<{
+  async getallBrands(id: string): Promise<{
     succes: boolean;
     message: string;
     brands?: { _id: string; brand: string }[];
@@ -525,9 +539,7 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
-  async getDataToProfile(
-    id: string
-  ): Promise<{
+  async getDataToProfile(id: string): Promise<{
     success: boolean;
     message?: string;
     providerData?: IproviderReponseData | null;
@@ -568,16 +580,19 @@ class ProviderRepository implements IProviderRepository {
     id: string;
     about: string;
   }): Promise<{ success: boolean; message?: string }> {
+    console.log(data.id)
     try {
       const update = await providerModel.updateOne(
-        { id: data.id },
+        { _id: new mongoose.Types.ObjectId(data.id) },
         {
           $set: {
             about: data.about,
           },
         }
       );
-
+      const d = await providerModel.findOne({_id:data.id})
+       
+       
       if (update.modifiedCount === 1) {
         return { success: true, message: "updated" };
       }
@@ -615,7 +630,6 @@ class ProviderRepository implements IProviderRepository {
     newOne: string;
   }): Promise<{ success: boolean; message?: string }> {
     try {
-      
       const updated = await providerModel.updateOne(
         { _id: new mongoose.Types.ObjectId(data.id) },
         {
@@ -630,13 +644,99 @@ class ProviderRepository implements IProviderRepository {
       return updated.modifiedCount === 1
         ? { success: true, message: "Document updated successfully" }
         : { success: false, message: "No changes were made" };
-  
     } catch (error) {
       console.error("Error updating document:", error);
       return { success: false, message: "500" };
     }
   }
+
+  async getAllBrand(
+    id: string
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    brandData?: { _id: string; brand: string }[] | null;
+  }> {
+    try {
+      const brandData = await providerModel.aggregate([
+        { $unwind: "$supportedBrands" },
+        {
+          $lookup: {
+            from: "brands",
+            localField: "supportedBrands.brand",
+            foreignField: "_id",
+            as: "providerbrands",
+          },
+        },
+        { $unwind: "$providerbrands" },
+        { $project: { _id: 0, providerbrands: 1 } },
+      ]);
+      if (brandData) {
+        return { success: true, message: "200", brandData: brandData };
+      }
+      return { success: false, message: "" };
+    } catch (error) {
+      return { success: false, message: "500" };
+    }
+  }
+
+  async changepassword(data: { id: string; currentpassowrd: string; newpassowrd: string; }): Promise<{ success?: boolean; message?: string; }> {
+    try {
+     
+      
+      const provider = await providerModel.findOne({ _id: new mongoose.Types.ObjectId(data.id) });
+      
+      
+      if (provider) {
+        const passwordMatch = await bcrypt.compare(
+          data.currentpassowrd,
+          provider.password
+        );
+        if (!passwordMatch) {
+         throw new CustomError("Incorrect Password",HttpStatus.UNAUTHORIZED)
+        }
+        const saltRounds: number = 10;
+        const hashedPassword = await bcrypt.hash(data.newpassowrd, saltRounds);
+
+        const updated = await providerModel.updateOne(
+          { _id: data.id },
+          {
+            $set: {
+              password: hashedPassword,
+            },
+          }
+        );
+
+        if (updated.modifiedCount === 1) {
+          return { success: true, message: "updated" };
+        }
+        throw new CustomError("New password must be different from the old password.",HttpStatus.CONFLICT)
+      }
+      throw new CustomError("User Not Found",HttpStatus.NOT_FOUND)
+    } catch (error:any) {
+      throw new CustomError(error.message,error.statusCode,error.reasons)
+
+    }
+
+  }
+
+  async updateLogo(url: string, id: string): Promise<{ success?: boolean; message?: string; url?:string}> {
+      try {
+           const updated = await providerModel.updateOne({_id:new mongoose.Types.ObjectId(id)},{
+            $set:{
+              logoUrl:url
+            }
+           })
+           if(updated.modifiedCount===0){
+            throw new CustomError("Something Went Wrong While Updating",HttpStatus.FORBIDDEN)
+           }
+         return {success:true ,url:url}
+      } catch (error:any) {
+        throw new CustomError(error.message,error.status)
+      }
+  }
   
+
 }
 
 export default ProviderRepository;

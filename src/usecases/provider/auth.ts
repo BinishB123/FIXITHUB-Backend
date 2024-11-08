@@ -27,7 +27,7 @@ class ProviderAuthInteractor implements IProviderAuthInteractor {
                 return { created: false, message: "Email already exists." };
             }
 
-            const repositoryResponse = await this.providerAuthRepository.sendOtp(mailResponse.otp, email);
+            const repositoryResponse = await this.providerAuthRepository.sendOtp(mailResponse.otp+"", email);
 
             if (!repositoryResponse.created) {
                 return { created: false, message: "Failed to create OTP." };

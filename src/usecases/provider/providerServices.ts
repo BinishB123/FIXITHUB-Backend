@@ -13,7 +13,7 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
 
   async getProviderServices(
     id: string,
-    vechiletype: number
+    vehicletype: number
   ): Promise<{
     success: boolean;
     message: string;
@@ -23,11 +23,11 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
     try {
       const getProvider = await this.providerRepo.getProviderServices(
         id,
-        vechiletype
+        vehicletype
       );
 
       const providerServices: Services[] | any =
-        vechiletype == 2
+        vehicletype == 2
           ? getProvider?.providerService?.twoWheeler || []
           : getProvider?.providerService?.fourWheeler || [];
 
@@ -201,7 +201,7 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
     providerid: string;
     typeid: string;
     category: string;
-    vechileType: string;
+    vehicleType: string;
   }): Promise<{ success: boolean; message: string }> {
     try {
       const response = await this.providerRepo.addGeneralOrRoadService(data);
@@ -214,7 +214,7 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
   async addSubTypes(
     providerid: string,
     serviceid: string,
-    newSubType: { type: string; startingprice: number; vechileType: string }
+    newSubType: { type: string; startingprice: number; vehicleType: string }
   ): Promise<{ success: boolean; message: string }> {
     try {
       const response = await this.providerRepo.addSubTypes(
@@ -228,7 +228,7 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
     }
   }
   
-  async editSubType(providerid: string, serviceid: string, subtype: { type: string; startingprice: number; vechileType: string; }): Promise<{ success: boolean; message: string; }> {
+  async editSubType(providerid: string, serviceid: string, subtype: { type: string; startingprice: number; vehicleType: string; }): Promise<{ success: boolean; message: string; }> {
       try {
         const updated = await this.providerRepo.editSubType(providerid,serviceid,subtype)
         return updated
@@ -237,9 +237,9 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
       }
   }
   
-  async deleteSubtype(providerid: string, serviceid: string, subtype: { type: string; }, vechileType: string): Promise<{ success: boolean; message: string; }> {
+  async deleteSubtype(providerid: string, serviceid: string, subtype: { type: string; }, vehicleType: string): Promise<{ success: boolean; message: string; }> {
       try {
-         const subTypeDeleteResponse = await this.providerRepo.deleteSubtype(providerid,serviceid,subtype,vechileType)
+         const subTypeDeleteResponse = await this.providerRepo.deleteSubtype(providerid,serviceid,subtype,vehicleType)
          return subTypeDeleteResponse
       } catch (error) {
         return {success:false,message:""}

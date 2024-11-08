@@ -1,6 +1,7 @@
-import { IproviderReponseData } from "entities/rules/provider";
+import { IproviderReponseData } from "../../entities/rules/provider";
 import IProviderRepository from "../../entities/irepositeries/iProviderRepo";
 import IProfileInteractor from "../../entities/provider/IprofileInteractor";
+import CustomError from "../../framework/services/errorInstance";
 
 
 class ProviderProfileInteractor implements IProfileInteractor{
@@ -40,6 +41,33 @@ class ProviderProfileInteractor implements IProfileInteractor{
             return response
         } catch (error) {
             return {success:false,message:"500"}
+        }
+    }
+
+     async getAllBrand(id: string): Promise<{ success: boolean; message?: string; brandData?: { _id: string; brand: string; }[] | null; }> {
+             try {
+                const response = await this.providerRepo.getAllBrand(id)
+                return response
+             } catch (error) {
+                return {success:false,message:"500"}
+             }
+    }
+
+    async changepassword(data: { id: string; currentpassowrd: string; newpassowrd: string; }): Promise<{ success?: boolean; message?: string; }> {
+        try {
+            const response = await this.providerRepo.changepassword(data)
+            return response
+        } catch (error:any) {
+           throw new CustomError(error.message,error.statusCode)
+        }
+    }
+
+    async updateLogo(url: string, id: string): Promise<{ success?: boolean; message?: string; url?:string }> {
+        try {
+           const  response = await this.providerRepo.updateLogo(url,id)
+           return response
+        } catch (error:any) {
+            throw new CustomError(error.message,error.statusCode)
         }
     }
 }

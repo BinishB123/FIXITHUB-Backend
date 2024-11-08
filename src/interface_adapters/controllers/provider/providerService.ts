@@ -33,12 +33,12 @@ class ProviderAddServiceController {
   }
   async addGeneralOrRoadService(req: Request, res: Response) {
     try {
-      const { id, typeid, category, vechileType } = req.body
+      const { id, typeid, category, vehicleType } = req.body
       const data = {
         providerid: id,
         typeid: typeid,
         category: category,
-        vechileType: vechileType
+        vehicleType: vehicleType
       }
       const response = await this.providerServiceInteractor.addGeneralOrRoadService(data)
 
@@ -91,7 +91,6 @@ class ProviderAddServiceController {
       const providerId = req.query.providerId as string; 
       const type = req.query.type as string; 
       const servicetype = req.query.servicetype as string
-  console.log(req.query);
   
 
       const newsubtype = {
@@ -152,6 +151,8 @@ class ProviderAddServiceController {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(response)
     }
   }
+
+  
 
 
 }

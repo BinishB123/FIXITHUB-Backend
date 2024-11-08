@@ -2,7 +2,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export interface Imailer{
-    sendMail(email:string):Promise<{otp:string,success:boolean}>
+    sendMail(email:string):Promise<{otp?:string,success:boolean}>
+    sendMailToUsers(email:string,subject:string,text:string):Promise<{success:boolean}>
 }
 
 interface mailConfig{
