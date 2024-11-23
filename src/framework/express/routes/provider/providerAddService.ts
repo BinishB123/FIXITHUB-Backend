@@ -16,6 +16,7 @@ providerAddServiceRoute.delete('/deletesubtype',controller.deleteSubTpe.bind(con
 providerAddServiceRoute.get('/getallbrands',controller.getallBrands.bind(controller))
 providerAddServiceRoute.post('/addbrands',controller.addBrands.bind(controller))
 providerAddServiceRoute.patch('/removeBrand',controller.deleteBrand.bind(controller))
+providerAddServiceRoute.patch('/removerservice/:typeid/:workshopId/:vehicleType',controller.removeGeneralOrRoadService.bind(controller))
 
 
 

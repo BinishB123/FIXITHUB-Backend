@@ -1,4 +1,4 @@
-import { Provider, user, userResponseData, userSignIn } from "../../entities/rules/user";
+import { IRequiredDataDForBooking, Provider, user, userResponseData, userSignIn } from "../../entities/rules/user";
 import isUserRepository from "../../entities/irepositeries/iUserRepository";
 import otpModel from "../../framework/mongoose/otpSchema";
 import userModel from "../../framework/mongoose/userSchema";
@@ -14,6 +14,9 @@ import mongoose from "mongoose";
 import providingServicesModel from "../../framework/mongoose/providingServicesSchema";
 import HttpStatus from "../../entities/rules/statusCode";
 import CustomError from "../../framework/services/errorInstance";
+import BookingDateModel from "../../framework/mongoose/BookingDates";
+import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
+import { count } from "console";
 
 class UserRepository implements isUserRepository {
     // this method is for saving the otp in dbs
@@ -362,10 +365,67 @@ class UserRepository implements isUserRepository {
             return { success: true, message: "ok", url: data.url }
 
         } catch (error: any) {
-            throw new CustomError(error.statusCode, error.message)
+            throw new CustomError( error.message,error.statusCode)
         }
     }
 
+    async getBookingDates(id: string): Promise<{ success?: boolean; data?: { _id: mongoose.ObjectId; date: Date; count: number; }[] | []; }> {
+        try {
+           
+            const date = new Date()
+            date.setDate(date.getDate() + 1)
+            date.setHours(0, 0, 0, 0)
+            const data = await BookingDateModel.aggregate([
+                { $match: { providerid: new mongoose.Types.ObjectId(id), date: { $gte: date }, count: { $gt: 0 } } },
+                { $sort: { date: 1 } },
+                {
+                    $project: {
+                        _id: 1,
+                        date: 1,
+                        count: 1,
+                    }
+                }
+            ])
+            if (date) {
+                return { success: true, data: data }
+            }
+            throw new CustomError("Something Went Wrong", HttpStatus.BAD_REQUEST)
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+    async SuccessBooking(data: IRequiredDataDForBooking,payment_intentId:string): Promise<{ success?: boolean; }> {
+        try {
+         
+            const created = await ServiceBookingModel.create({
+                providerId: data.providerId,
+                userId: data.userId,
+                date: data.date,
+                amountPaid: 0,  
+                vechileType:data.vehicleType,
+                serviceType: data.serviceType,
+                selectedService: data.selectedService,
+                suggestions: data.suggestions,
+                status: "pending",
+                vechileDetails:data.vehicleDetails,
+                bookingfee: 1000,
+                bookingfeeStatus: true,
+                paymentIntentId:payment_intentId
+
+            })
+            const update = await BookingDateModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(data.date), count: { $gt: 0 } }, 
+                { $inc: { count: -1 } } 
+              );
+            return {success:true}
+
+        } catch (error) {
+            console.log(error);
+            
+             throw new CustomError("Internal Server Error",HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
 }
 
 export default UserRepository;

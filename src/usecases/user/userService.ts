@@ -6,6 +6,8 @@ import {
   ProviderShopSelectedServiceFinalData,
 } from "../../entities/user/IuserResponse";
 import { ObjectId } from "mongoose";
+import CustomError from "../../framework/services/errorInstance";
+import { IRequiredDataDForBooking } from "../../entities/rules/user";
 
 class UserServiceInteractor implements IuserService {
   constructor(private readonly userRepo: isUserRepository) {}
@@ -129,6 +131,25 @@ class UserServiceInteractor implements IuserService {
     } catch (error) {
       return { success: false, message: "500" };
     }
+  }
+
+  async getBookingDates(id: string): Promise<{ success?: boolean; data?: { _id: ObjectId; date: Date; count: number; }[] | []; }> {
+      try {
+        const response = await this.userRepo.getBookingDates(id)
+        return response
+      } catch (error:any) {
+        throw new CustomError(error.message,error.statusCode)
+      }
+  }
+
+  async SuccessBooking(data: IRequiredDataDForBooking,sessionId:string): Promise<{ success?: boolean; }> {
+    try {
+      const response = await this.userRepo.SuccessBooking(data,sessionId)
+      return response
+    } catch (error:any) {
+      throw new CustomError(error.message,error.statusCode)
+    }
+      
   }
 }
 

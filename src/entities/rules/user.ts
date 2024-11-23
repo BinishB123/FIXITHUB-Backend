@@ -91,4 +91,23 @@ interface WorkshopDetails {
 
 
 
+export interface  IRequiredDataDForBooking {
+  providerId:string ,
+  userId:string,
+  date:string ,
+  vehicleType:string,
+  serviceType:string ,
+  selectedService:{typeId:string,serviceName:string,price:number}[] ,
+  suggestions?:string,
+  vehicleDetails: {
+      vehicleId:string ,
+      brand:string ,
+      model:string,
+      fueltype:string, 
+      kilometer:string
+  },
+}
+
+
+
 export default user

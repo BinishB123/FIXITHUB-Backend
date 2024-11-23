@@ -6,6 +6,8 @@ import {
   IproviderReponseData,
   ProviderRegisterData,
   RegisterResponse,
+  ResponseAccordingToDate,
+  ResponsegetBookingStillTodaysDate,
   SigIn,
   SignResponse,
 } from "entities/rules/provider";
@@ -15,9 +17,13 @@ import vehicleModel from "../../framework/mongoose/vehicleSchema";
 import { ProvidingServices } from "../../entities/provider/IService";
 import providingServicesModel from "../../framework/mongoose/providingServicesSchema";
 import brandModel from "../../framework/mongoose/brandSchema";
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 import CustomError from "../../framework/services/errorInstance";
 import HttpStatus from "../../entities/rules/statusCode";
+import BookingDateModel from "../../framework/mongoose/BookingDates";
+import { count, error } from "console";
+import { todo } from "node:test";
+import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
 
 class ProviderRepository implements IProviderRepository {
   async sendOtp(otp: string, email: string): Promise<{ created: boolean }> {
@@ -66,58 +72,57 @@ class ProviderRepository implements IProviderRepository {
     created: boolean;
     message: string;
     provider?: RegisterResponse;
-}> {
+  }> {
     try {
-        const saltRounds: number = 10;
-        const vehicleTypes = await vehicleModel.find();
-        const providingService = vehicleTypes.map((data) => {
-            return { vehicleType: data._id + "", services: [] };
-        });
-        const hashedPassword = await bcrypt.hash(
-            registerdata.password,
-            saltRounds
-        );
+      const saltRounds: number = 10;
+      const vehicleTypes = await vehicleModel.find();
+      const providingService = vehicleTypes.map((data) => {
+        return { vehicleType: data._id + "", services: [] };
+      });
+      const hashedPassword = await bcrypt.hash(
+        registerdata.password,
+        saltRounds
+      );
 
-        const created = await providerModel.create({
-            workshopName: registerdata.workshopName,
-            ownerName: registerdata.ownerName,
-            email: registerdata.email,
-            password: hashedPassword,
-            mobile: registerdata.mobile,
-            workshopDetails: {
-                address: registerdata.workshopDetails.address, 
-                location: {                                    
-                    type: "Point",
-                    coordinates: [
-                        registerdata.workshopDetails.coordinates.long, 
-                        registerdata.workshopDetails.coordinates.lat  
-                    ]
-                }
-            },
-            blocked: false,
-            requestAccept: false
-        });
+      const created = await providerModel.create({
+        workshopName: registerdata.workshopName,
+        ownerName: registerdata.ownerName,
+        email: registerdata.email,
+        password: hashedPassword,
+        mobile: registerdata.mobile,
+        workshopDetails: {
+          address: registerdata.workshopDetails.address,
+          location: {
+            type: "Point",
+            coordinates: [
+              registerdata.workshopDetails.coordinates.long,
+              registerdata.workshopDetails.coordinates.lat,
+            ],
+          },
+        },
+        blocked: false,
+        requestAccept: false,
+      });
 
-        if (!created) {
-            return { created: false, message: "registration failed" };
-        }
+      if (!created) {
+        return { created: false, message: "registration failed" };
+      }
 
-        const provider = {
-            id: created._id + "",
-            ownername: created.ownerName,
-            workshopname: created.workshopName,
-            email: created.email,
-            mobile: created.mobile,
-            requested: created.requestAccept,
-            blocked: created.blocked,
-        };
+      const provider = {
+        id: created._id + "",
+        ownername: created.ownerName,
+        workshopname: created.workshopName,
+        email: created.email,
+        mobile: created.mobile,
+        requested: created.requestAccept,
+        blocked: created.blocked,
+      };
 
-        return { created: true, message: "register", provider: provider };
+      return { created: true, message: "register", provider: provider };
     } catch (error) {
-        return { created: false, message: "server down" };
+      return { created: false, message: "server down" };
     }
-}
-
+  }
 
   async signInProvider(
     providerSignData: SigIn
@@ -221,64 +226,65 @@ class ProviderRepository implements IProviderRepository {
       if (vehicle?.vehicleType === 2) {
         // Two-wheeler
         const provider = await providingServicesModel.findOne({
-          workshopId: data.providerid,
-          "twoWheeler.typeId": data.typeid,
+          workshopId:new mongoose.Types.ObjectId(data.providerid),
+          "twoWheeler.typeId": new mongoose.Types.ObjectId(data.typeid ),
         });
 
         if (provider) {
           const updatedProvider = await providingServicesModel.findOneAndUpdate(
-            { workshopId: data.providerid, "twoWheeler.typeId": data.typeid },
+            { workshopId: new mongoose.Types.ObjectId(data.providerid), "twoWheeler.typeId": new mongoose.Types.ObjectId(data.typeid )},
             {
-              $push: { "twoWheeler.$": serviceData }, // Replace the existing service data
+              $push: { twoWheeler: serviceData }
+, 
             },
             { new: true }
           );
-          console.log("Updated two-wheeler service:", updatedProvider);
+         
           return {
             success: true,
             message: "Two-wheeler service updated successfully",
           };
         } else {
           const createdProvider = await providingServicesModel.findOneAndUpdate(
-            { workshopId: data.providerid },
+            { workshopId: new mongoose.Types.ObjectId(data.providerid) },
             {
               $push: {
-                twoWheeler: serviceData, // Add the new service
+                twoWheeler: serviceData, 
               },
             },
             { new: true, upsert: true }
           );
-          console.log("Created new two-wheeler service:", createdProvider);
           return {
             success: true,
             message: "New two-wheeler service created successfully",
           };
         }
       } else {
-        // Four-wheeler
+       
         const provider = await providingServicesModel.findOne({
-          workshopId: data.providerid,
-          "fourWheeler.typeId": data.typeid,
+          workshopId: new mongoose.Types.ObjectId(data.providerid),
+          "fourWheeler.typeId":  new mongoose.Types.ObjectId(data.typeid),
         });
 
         if (provider) {
-          // Update the existing four-wheeler service by replacing it
+          
           const updatedProvider = await providingServicesModel.findOneAndUpdate(
-            { workshopId: data.providerid, "fourWheeler.typeId": data.typeid },
+            { workshopId: new mongoose.Types.ObjectId(data.providerid), "fourWheeler.typeId": new mongoose.Types.ObjectId(data.typeid) },
             {
-              $push: { "fourWheeler.$": serviceData }, // Replace the existing service data
+              $push: { twoWheeler: serviceData }
+, 
             },
             { new: true }
           );
-          console.log("Updated four-wheeler service:", updatedProvider);
+          
           return {
             success: true,
             message: "Four-wheeler service updated successfully",
           };
         } else {
-          // Create a new four-wheeler service entry
+         
           const createdProvider = await providingServicesModel.findOneAndUpdate(
-            { workshopId: data.providerid },
+            { workshopId:new mongoose.Types.ObjectId(data.providerid)},
             {
               $push: {
                 fourWheeler: serviceData,
@@ -286,7 +292,7 @@ class ProviderRepository implements IProviderRepository {
             },
             { new: true, upsert: true }
           );
-          console.log("Created new four-wheeler service:", createdProvider);
+          
           return {
             success: true,
             message: "New four-wheeler service created successfully",
@@ -301,6 +307,26 @@ class ProviderRepository implements IProviderRepository {
       };
     }
   }
+
+ async removeGeneralOrRoadService(data: { workshopId: string; typeid: string;  vehicleType: string; }): Promise<{ success?: boolean; }> {
+  try {
+    const updateOne = await providingServicesModel.updateOne({workshopId:data.workshopId},{
+      $pull:{
+        [data.vehicleType]:{typeId:new mongoose.Types.ObjectId(data.typeid)}
+      }
+    })
+    if (updateOne.modifiedCount===0) {
+      throw new CustomError("Can't Remove something went wrong ",HttpStatus.Unprocessable_Entity)
+    }
+    return {success:true}
+  } catch (error:any) {
+    console.log(error);
+    
+    throw new CustomError(error.message,error.statusCode)
+  }
+ }
+
+
 
   async addSubTypes(
     providerid: string,
@@ -580,7 +606,7 @@ class ProviderRepository implements IProviderRepository {
     id: string;
     about: string;
   }): Promise<{ success: boolean; message?: string }> {
-    console.log(data.id)
+    console.log(data.id);
     try {
       const update = await providerModel.updateOne(
         { _id: new mongoose.Types.ObjectId(data.id) },
@@ -590,9 +616,8 @@ class ProviderRepository implements IProviderRepository {
           },
         }
       );
-      const d = await providerModel.findOne({_id:data.id})
-       
-       
+      const d = await providerModel.findOne({ _id: data.id });
+
       if (update.modifiedCount === 1) {
         return { success: true, message: "updated" };
       }
@@ -650,9 +675,7 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
-  async getAllBrand(
-    id: string
-  ): Promise<{
+  async getAllBrand(id: string): Promise<{
     success: boolean;
     message?: string;
     brandData?: { _id: string; brand: string }[] | null;
@@ -680,20 +703,23 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
-  async changepassword(data: { id: string; currentpassowrd: string; newpassowrd: string; }): Promise<{ success?: boolean; message?: string; }> {
+  async changepassword(data: {
+    id: string;
+    currentpassowrd: string;
+    newpassowrd: string;
+  }): Promise<{ success?: boolean; message?: string }> {
     try {
-     
-      
-      const provider = await providerModel.findOne({ _id: new mongoose.Types.ObjectId(data.id) });
-      
-      
+      const provider = await providerModel.findOne({
+        _id: new mongoose.Types.ObjectId(data.id),
+      });
+
       if (provider) {
         const passwordMatch = await bcrypt.compare(
           data.currentpassowrd,
           provider.password
         );
         if (!passwordMatch) {
-         throw new CustomError("Incorrect Password",HttpStatus.UNAUTHORIZED)
+          throw new CustomError("Incorrect Password", HttpStatus.UNAUTHORIZED);
         }
         const saltRounds: number = 10;
         const hashedPassword = await bcrypt.hash(data.newpassowrd, saltRounds);
@@ -710,33 +736,304 @@ class ProviderRepository implements IProviderRepository {
         if (updated.modifiedCount === 1) {
           return { success: true, message: "updated" };
         }
-        throw new CustomError("New password must be different from the old password.",HttpStatus.CONFLICT)
+        throw new CustomError(
+          "New password must be different from the old password.",
+          HttpStatus.CONFLICT
+        );
       }
-      throw new CustomError("User Not Found",HttpStatus.NOT_FOUND)
-    } catch (error:any) {
-      throw new CustomError(error.message,error.statusCode,error.reasons)
-
+      throw new CustomError("User Not Found", HttpStatus.NOT_FOUND);
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode, error.reasons);
     }
-
   }
 
-  async updateLogo(url: string, id: string): Promise<{ success?: boolean; message?: string; url?:string}> {
-      try {
-           const updated = await providerModel.updateOne({_id:new mongoose.Types.ObjectId(id)},{
-            $set:{
-              logoUrl:url
-            }
-           })
-           if(updated.modifiedCount===0){
-            throw new CustomError("Something Went Wrong While Updating",HttpStatus.FORBIDDEN)
-           }
-         return {success:true ,url:url}
-      } catch (error:any) {
-        throw new CustomError(error.message,error.status)
+  async updateLogo(
+    url: string,
+    id: string
+  ): Promise<{ success?: boolean; message?: string; url?: string }> {
+    try {
+      const updated = await providerModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(id) },
+        {
+          $set: {
+            logoUrl: url,
+          },
+        }
+      );
+      if (updated.modifiedCount === 0) {
+        throw new CustomError(
+          "Something Went Wrong While Updating",
+          HttpStatus.FORBIDDEN
+        );
       }
+      return { success: true, url: url };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.status);
+    }
   }
-  
 
+  async addDate(
+    date: Date,
+    id: string
+  ): Promise<{ success?: boolean; id: string }> {
+    try {
+      const created = await BookingDateModel.create({
+        providerid: id,
+        date: date,
+      });
+      if (created) {
+        return { success: true, id: created._id + "" };
+      }
+      throw new CustomError("Date Adding Failed", HttpStatus.BAD_REQUEST);
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async providerAddedDates(id: string): Promise<{
+    success?: boolean;
+    data: { _id: mongoose.ObjectId; date: Date }[] | [];
+  }> {
+    try {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      date.setDate(date.getDate() + 1);
+      const data = await BookingDateModel.aggregate([
+        {
+          $match: {
+            providerid: new mongoose.Types.ObjectId(id),
+            date: { $gte: date },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            date: 1,
+            count: 1,
+            bookedCount: 1,
+          },
+        },
+        { $sort: { date: 1 } },
+      ]);
+
+      return { success: true, data: !data ? [] : data };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async updateCount(id: string, toDo: string): Promise<{ success?: boolean }> {
+    try {
+      console.log("id", id, "tofo,", toDo);
+
+      const update =
+        toDo === "add"
+          ? await BookingDateModel.updateOne(
+            { _id: new mongoose.Types.ObjectId(id) },
+            {
+              $inc: {
+                count: 1,
+              },
+            }
+          )
+          : await BookingDateModel.updateOne(
+            { _id: new mongoose.Types.ObjectId(id), count: { $gt: 0 } },
+            {
+              $inc: {
+                count: -1,
+              },
+            }
+          );
+
+      if (update.modifiedCount === 1) {
+        return { success: true };
+      }
+      throw new CustomError(
+        "Can't Update Something went wrong",
+        HttpStatus.BAD_REQUEST
+      );
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getBookingsAccordingToDates(
+    id: string,
+    date: Date
+  ): Promise<{ success?: boolean; data?: ResponseAccordingToDate[] | [] }> {
+    try {
+      const data: ResponseAccordingToDate[] =
+        await ServiceBookingModel.aggregate([
+          { $match: { providerId: new mongoose.Types.ObjectId(id) } },
+          {
+            $lookup: {
+              from: "bookingdates",
+              localField: "date",
+              foreignField: "_id",
+              as: "bookeddate",
+            },
+          },
+          { $unwind: "$bookeddate" },
+
+          { $match: { "bookeddate.date": new Date(date) } },
+
+          {
+            $lookup: {
+              from: "users",
+              localField: "userId",
+              foreignField: "_id",
+              as: "user",
+            },
+          },
+          {
+            $lookup: {
+              from: "servicetypes",
+              localField: "serviceType",
+              foreignField: "_id",
+              as: "servicename",
+            },
+          },
+          { $unwind: "$servicename" },
+          { $unwind: "$user" },
+
+          {
+            $project: {
+              _id: 1,
+              vechileDetails: 1,
+              selectedService: 1,
+              bookingfee: 1,
+              bookingfeeStatus: 1,
+              status: 1,
+              amountpaid: 1,
+              paymentStatus: 1,
+              "user.name": 1,
+              "bookeddate.date": 1,
+              "servicename.serviceType": 1,
+              "user.mobile": 1,
+            },
+          },
+        ]);
+
+      if (data.length === 0) {
+        throw new CustomError(
+          "No Booking Registerd On this Date",
+          HttpStatus.NOT_FOUND
+        );
+      }
+
+      return { success: true, data: data.length > 0 ? data : [] };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getBookingStillTodaysDate(
+    id: string,
+    status?: string
+  ): Promise<{
+    success?: boolean;
+    data?: ResponsegetBookingStillTodaysDate[] | [];
+  }> {
+    try {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+
+      const query: any = [
+        { $match: { providerId: new mongoose.Types.ObjectId(id) } },
+        ...(status ? [{ $match: { status: status } }] : []),
+        {
+          $lookup: {
+            from: "bookingdates",
+            localField: "date",
+            foreignField: "_id",
+            as: "bookeddate",
+          },
+        },
+        { $unwind: "$bookeddate" },
+        { $sort: { "bookeddate.date": -1 } },
+        { $match: { "bookeddate.date": { $lte: date } } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $lookup: {
+            from: "servicetypes",
+            localField: "serviceType",
+            foreignField: "_id",
+            as: "servicename",
+          },
+        },
+        {
+          $lookup: {
+            from: "brands",
+            localField: "vechileDetails.brand",
+            foreignField: "_id",
+            as: "brand",
+          },
+        },
+        { $unwind: "$brand" },
+        { $unwind: "$servicename" },
+        { $unwind: "$user" },
+        {
+          $project: {
+            _id: 1,
+            vechileDetails: 1,
+            selectedService: 1,
+            bookingfee: 1,
+            bookingfeeStatus: 1,
+            status: 1,
+            amountpaid: 1,
+            paymentStatus: 1,
+            "user.name": 1,
+            "user.logoUrl": 1,
+            "bookeddate.date": 1,
+            "servicename.serviceType": 1,
+            "user.mobile": 1,
+            "brand.brand": 1,
+            suggestions: 1,
+          },
+        },
+      ];
+
+      const data: ResponsegetBookingStillTodaysDate[] =
+        await ServiceBookingModel.aggregate(query);
+
+      if (data.length === 0) {
+        throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
+      }
+
+      return { success: true, data: data.length > 0 ? data : [] };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async updateStatus(
+    id: string,
+    status: string
+  ): Promise<{ success?: boolean }> {
+    try {
+      const update = await ServiceBookingModel.updateOne({ _id: new mongoose.Types.ObjectId(id) },
+        {
+          $set: {
+            status: status
+          }
+
+        })
+        if (update.modifiedCount===0) {
+          throw new CustomError("Updation Failed Something Went Wrong",HttpStatus.FORBIDDEN)
+        }
+        return {success:true}
+
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
 }
 
 export default ProviderRepository;

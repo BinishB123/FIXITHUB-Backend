@@ -5,6 +5,8 @@ import routes from './express/routes/routes';
 import dontenv from 'dotenv'
 import cookieParser from 'cookie-parser';
 import errorHandler from './express/middleware/Errorhandler';
+import session from 'express-session';
+import '../entities/services/session';
 
 const app = express();
 const server = http.createServer(app);
@@ -14,8 +16,18 @@ app.use(cookieParser())
 dontenv.config()  
 
 
+app.use(session({
+    secret: "763473rugefhfgdgdhfygf6g", 
+    resave: false, 
+    saveUninitialized: false, 
+    cookie: {
+      httpOnly: true, 
+      maxAge: 30000 ,   
+    },
+  }));
+
 app.use((req,res,next) =>{
-   console.log(req.method,req.hostname, req.path,req.body);
+   console.log(req.method,req.hostname, req.path,req.body,req.params);
     next();
 });
 
@@ -23,9 +35,11 @@ app.use((req,res,next) =>{
 app.use(cors({
     origin: 'http://localhost:5173',  //  frontend URL
     methods: 'GET,PUT,POST,PATCH,OPTIONS,DELETE',
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
     credentials: true,
+    
 }));
+
 
 
 

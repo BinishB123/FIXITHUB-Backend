@@ -34,20 +34,24 @@ class AdminProvideController {
 
     }
     async adminAcceptOrReject(req:Request,res:Response){
-        const {id,state,reason,email} = req.body 
-        if(!id||!reason||!email){
-            return res.status(HttpStatus.Unprocessable_Entity).json({message:"failed to Reject"})
+        const {id,state,reason,email,accept} = req.body 
+        if (accept===false) {
+            if(!id||!reason||!email){
+                return res.status(HttpStatus.Unprocessable_Entity).json({message:"failed to Reject"})
+            }
         }
         const response = await this.adminProviderInteractor.adminAcceptAndReject(id,state)
-       if (response.success) {
-        const data = {
-            email:email,subject:"Rejected From FixitHub",text:reason
-        }
-         const response = await this.mailer.sendMailToUsers(data.email,data.subject,data.text)
-         
-         if (!response.success) {
-            return res.status(HttpStatus.BAD_REQUEST).json({message:"Email Sending Failed"})
-         }
+         if (response.success) {
+            if (accept===false) {
+                const data = {
+                    email:email,subject:"Rejected From FixitHub",text:reason
+                }
+                 const response = await this.mailer.sendMailToUsers(data.email,data.subject,data.text)
+                 
+                 if (!response.success) {
+                    return res.status(HttpStatus.BAD_REQUEST).json({message:"Email Sending Failed"})
+                 }
+            }
         return res.status(200).json({success:true,message:"updated"})
        }
        return res.status(400).json({succes:false})

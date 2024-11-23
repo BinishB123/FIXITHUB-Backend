@@ -30,7 +30,7 @@ class AdminAuthController {
             res.cookie('adminAccessToken', response.accessToken, {
                 httpOnly: true,
                 sameSite: true,
-                maxAge: 30 * 60 * 1000
+                maxAge: 60 * 60 * 1000
             })
             return res.status(200).json({ success: true })
 

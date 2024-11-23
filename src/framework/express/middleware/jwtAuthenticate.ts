@@ -76,11 +76,15 @@ const verification = (type: string) => {
         accessToken,
         process.env.ACCESSTOKENKEY as string
       ) as DecodedToken;
-
+       
+      // const currentTime = Math.floor(Date.now()/1000)
+      // console.log(currentTime<decoded.exp)
+     
+     
       if (type !== "admin") {
         const isAllowed = await checkBlockOrNot(decoded.id, type);
         if (!isAllowed) {
-          throw new CustomError("You are blocked by admin", HttpStatus.FORBIDDEN);
+          throw new CustomError("You are blocked by admin", HttpStatus.UNAUTHORIZED);
         }
       }
 

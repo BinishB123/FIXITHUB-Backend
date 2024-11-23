@@ -159,3 +159,75 @@ export interface IproviderReponseData {
   logoUrl?:string
   mobile:number
 }
+
+
+
+
+
+interface SelectedService {
+  typeId: ObjectId;
+  serviceName: string;
+  price: number;
+  _id: ObjectId;
+}
+
+interface VehicleDetails {
+  brand: ObjectId;
+  model: string;
+  fueltype: string;
+  kilometer: number;
+}
+
+interface User {
+  name: string;
+  mobile: number;
+  
+}
+
+interface BookedDate {
+  date: Date;
+}
+
+interface ServiceName {
+  serviceType: string;
+}
+
+export interface ResponseAccordingToDate {
+  _id: ObjectId;
+  selectedService: SelectedService[];
+  vechileDetails: VehicleDetails;
+  bookingfee: number;
+  bookingfeeStatus: boolean,
+  status:string,
+  amountpaid: number,
+  paymentStatus:string,
+  user: User;
+  bookeddate: BookedDate;
+  servicename: ServiceName;
+}
+
+export interface ResponsegetBookingStillTodaysDate{
+  _id: ObjectId;
+  selectedService: SelectedService[];
+  vechileDetails: VehicleDetails;
+  bookingfee: number;
+  bookingfeeStatus: boolean,
+  status:string,
+  amountpaid: number,
+  paymentStatus:string,
+  user: {
+  name: string;
+  mobile: number;
+  logoUrl:string
+  };
+  bookeddate: BookedDate;
+  servicename: ServiceName;
+
+  brand:{
+    brand:string
+  }
+  suggestions:string
+}
+
+
+

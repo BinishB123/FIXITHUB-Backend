@@ -1,4 +1,4 @@
-import { Request, response, Response } from "express";
+import { NextFunction, Request, response, Response } from "express";
 import IproviderServiceInteractor from "../../../entities/provider/IproviderService";
 import HttpStatus from "../../../entities/rules/statusCode";
 
@@ -53,14 +53,23 @@ class ProviderAddServiceController {
     } catch (error) {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "Internal Server error" })
     }
+  } 
+
+  async removeGeneralOrRoadService(req:Request,res:Response,next:NextFunction){
+    try {
+        const {typeid,workshopId,vehicleType} = req.params
+        const response = await this.providerServiceInteractor.removeGeneralOrRoadService({workshopId,typeid,vehicleType})
+        return res.status(HttpStatus.OK).json(response)
+      
+    } catch (error) {
+      next(error)
+    }
   }
 
 
   async addSubTypes(req: Request, res: Response) {
     try {
       const { serviceid, providerId, newSubtype } = req.body
-
-
       const response = await this.providerServiceInteractor.addSubTypes(providerId, serviceid, newSubtype)
       if (response.success) {
         return res.status(HttpStatus.OK).json({ message: "success" })

@@ -1,9 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import IuserServiceInteractor from "../../../entities/user/IuserServiceInteractor";
 import HttpStatus from "../../../entities/rules/statusCode";
+import IStripe from "entities/services/Istripe";
+
+
 
 class UserServiceContoller {
-  constructor(private readonly UserServiceInteractor: IuserServiceInteractor) { }
+  constructor(private readonly UserServiceInteractor: IuserServiceInteractor,private readonly stripe :IStripe) { }
   async getServices(req: Request, res: Response) {
     try {
       const { category } = req.params;
@@ -48,8 +51,6 @@ class UserServiceContoller {
 
   async getAllshops(req: Request, res: Response) {
     try {
-      console.log(req.query);
-
       const long = parseFloat(req.query.long + "");
       const lat = parseFloat(req.query.lat + "");
 
@@ -78,9 +79,9 @@ class UserServiceContoller {
     try {
 
       const data = {
-        serviceId: req.query.serviceId+"",
-        vehicleType: req.query.vehicleType+"", 
-        providerId: req.query.providerId+""
+        serviceId: req.query.serviceId + "",
+        vehicleType: req.query.vehicleType + "",
+        providerId: req.query.providerId + ""
       }
       const response = await this.UserServiceInteractor.getshopProfileWithSelectedServices(data)
       return res.status(HttpStatus.OK).json(response)
@@ -89,6 +90,33 @@ class UserServiceContoller {
       return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "failed" })
     }
   }
+
+  async getBookingDates(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+      const response = await this.UserServiceInteractor.getBookingDates(id)
+      res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+
+  async checkOut_Session(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {dataRequiredBooking} = req.body
+      req.session.dataRequiredForBooking  = dataRequiredBooking
+      console.log(req.session.dataRequiredForBooking);
+      
+      req.session.save()
+      const response  = await this.stripe.userCheckoutSession()
+      return res.status(HttpStatus.OK).json({ sessionId: response.sessionid, url: response.url });
+    } catch (error: any) {
+      next(error);
+    }
+  }
+  
+
 
 }
 
