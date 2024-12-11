@@ -3,17 +3,19 @@ import IProfileInteractor from "../../../entities/provider/IprofileInteractor";
 import HttpStatus from "../../../entities/rules/statusCode";
 import { IUploadToCloudinary } from "../../../entities/services/Iclodinary";
 import CustomError from "../../../framework/services/errorInstance";
+import { IChatInteractor } from "../../../entities/common/IChatInteractor";
 
 class ProviderProfileController {
   constructor(
     private readonly providerProfileInteractor: IProfileInteractor,
-    private readonly cloudinary: IUploadToCloudinary
+    private readonly cloudinary: IUploadToCloudinary,
+    private readonly chatInteractor :IChatInteractor
   ) {}
   async getDataToProfile(req: Request, res: Response) {
     try {
       const id: string | undefined = req.query.id + "";
 
-      if (!id)
+      if (!id) 
         return res
           .status(HttpStatus.FORBIDDEN)
           .json({ message: "provided id not passed" });
@@ -180,6 +182,59 @@ class ProviderProfileController {
       next(error)
     }
   }
+
+  async getChatId(req:Request,res:Response,next:NextFunction){
+    
+     console.log("vannu");
+     
+    try {
+      const {providerId,userId} = req.params
+      console.log(providerId,userId);
+      
+      const response  = await this.chatInteractor.getChatid(providerId,userId)
+      console.log("ress",response);
+      
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error:any) {
+      console.log("56789",error.message);
+      
+      next(error)
+    }
+  }
+
+  async getOneToneChat(req:Request,res:Response,next:NextFunction){
+    try {
+        const {chatid} = req.params
+        const response = await this.chatInteractor.getChatOfOneToOne(chatid)
+        return res.status(HttpStatus.OK).json(response)
+      
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async fetchChat(req:Request,res:Response,next:NextFunction){
+    try {
+        const {whom,id} = req.params
+        const response = await this.chatInteractor.fetchChats(whom,id)
+        return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async addMessage(req:Request,res:Response,next:NextFunction){
+    try {
+        const {sender,chatId,message} = req.body
+        console.log(chatId);
+        
+        const response = await this.chatInteractor.addNewMessage(sender,chatId,message)
+        return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+  
 
 }
 

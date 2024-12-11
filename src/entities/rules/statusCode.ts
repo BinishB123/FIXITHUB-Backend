@@ -8,6 +8,7 @@
     CONFLICT = 409,
     Unprocessable_Entity =  422,
     INTERNAL_SERVER_ERROR = 500,
+     NO_CONTENT = 204
     
 }
 

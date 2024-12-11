@@ -91,3 +91,74 @@ export interface IGetShopProfileWithSelectedServicesResponse {
   service: IService;
 }
  
+
+
+
+export interface SelectedService {
+  typeId?: ObjectId|string;
+  serviceName: string;
+  price: number;
+  _id?: ObjectId|string;
+}
+
+interface VehicleDetails {
+  brand: ObjectId;
+  model: string;
+  fueltype: string;
+  kilometer: number;
+}
+
+interface User {
+  name: string;
+  mobile: number;
+  
+}
+
+interface BookedDate {
+  date: Date;
+}
+
+interface ServiceName {
+  serviceType: string;
+}
+
+export interface ResponseAccordingToDate {
+  _id: ObjectId;
+  selectedService: SelectedService[];
+  vechileDetails: VehicleDetails;
+  advanceAmount: number;
+  advance: boolean,
+  status:string,
+  amountpaid: number,
+  paymentStatus:string,
+  user: User;
+  bookeddate: BookedDate;
+  servicename: ServiceName;
+}
+
+export interface ResponsegetBookingGreaterThanTodaysDate{
+  _id: ObjectId;
+  selectedService: SelectedService[];
+  vechileDetails: VehicleDetails;
+  date:ObjectId,
+  advanceAmount: number;
+  advance: boolean,
+  status:string,
+  amountpaid: number,
+  vechileType:string,
+  paymentStatus:string,
+  provider: {
+  _id:ObjectId
+   workshopName: string;
+   mobile: number;
+   logoUrl:string
+  };
+  bookeddate: BookedDate;
+  servicename: ServiceName;
+
+  brand:{
+    brand:string
+  }
+  suggestions:string
+}
+

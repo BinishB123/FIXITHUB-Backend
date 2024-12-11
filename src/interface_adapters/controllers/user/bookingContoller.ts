@@ -13,7 +13,7 @@ class BookingController {
         try {
             const session_id = req.query.session_id+""
             const retrievePaymentIntent = await this.stripe.retrieveSession(session_id)
-            console.log("session data",req.session.dataRequiredForBooking);
+            console.log("session data",req.session.dataRequiredForBooking);  
             const data :IRequiredDataDForBooking = req.session.dataRequiredForBooking
             req.session.dataRequiredForBooking = undefined
             const response = await this.UserServiceInteractor.SuccessBooking(data,retrievePaymentIntent.paymentInentID+"")
@@ -21,7 +21,17 @@ class BookingController {
         } catch (error) {
             next(error)
         }
-    }   
+    }
+    
+    async afterFullpaymentDone(req:Request,res:Response,next:NextFunction){
+        try {
+            const {docid} = req.params
+            const response = await this.UserServiceInteractor.afterFullpaymentDone(docid)
+            res.redirect(`http://localhost:5173/profile/serviceHistory?id=${docid}`)
+        } catch (error) {
+            next(error)
+        }
+    }
 }
 
 

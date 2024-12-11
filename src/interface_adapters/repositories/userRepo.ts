@@ -7,6 +7,7 @@ import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
 import {
     IgetservicesResponse,
     IRequirementToFetchShops,
+    ResponsegetBookingGreaterThanTodaysDate,
 } from "../../entities/user/IuserResponse";
 import brandModel from "../../framework/mongoose/brandSchema";
 import providerModel from "../../framework/mongoose/providerSchema";
@@ -16,7 +17,6 @@ import HttpStatus from "../../entities/rules/statusCode";
 import CustomError from "../../framework/services/errorInstance";
 import BookingDateModel from "../../framework/mongoose/BookingDates";
 import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
-import { count } from "console";
 
 class UserRepository implements isUserRepository {
     // this method is for saving the otp in dbs
@@ -365,13 +365,13 @@ class UserRepository implements isUserRepository {
             return { success: true, message: "ok", url: data.url }
 
         } catch (error: any) {
-            throw new CustomError( error.message,error.statusCode)
+            throw new CustomError(error.message, error.statusCode)
         }
     }
 
     async getBookingDates(id: string): Promise<{ success?: boolean; data?: { _id: mongoose.ObjectId; date: Date; count: number; }[] | []; }> {
         try {
-           
+
             const date = new Date()
             date.setDate(date.getDate() + 1)
             date.setHours(0, 0, 0, 0)
@@ -395,37 +395,237 @@ class UserRepository implements isUserRepository {
         }
     }
 
-    async SuccessBooking(data: IRequiredDataDForBooking,payment_intentId:string): Promise<{ success?: boolean; }> {
+    async SuccessBooking(data: IRequiredDataDForBooking, payment_intentId: string): Promise<{ success?: boolean; }> {
         try {
-         
+
             const created = await ServiceBookingModel.create({
                 providerId: data.providerId,
                 userId: data.userId,
                 date: data.date,
-                amountPaid: 0,  
-                vechileType:data.vehicleType,
+                amountPaid: 0,
+                vechileType: data.vehicleType,
                 serviceType: data.serviceType,
                 selectedService: data.selectedService,
                 suggestions: data.suggestions,
-                status: "pending",
-                vechileDetails:data.vehicleDetails,
-                bookingfee: 1000,
+                status: "confirmed",
+                vechileDetails: data.vehicleDetails,
+                advanceAmount: (data.selectedService.reduce((acc, cuu) => acc + cuu.price, 0) * 25) / 100,
                 bookingfeeStatus: true,
-                paymentIntentId:payment_intentId
+                paymentIntentId: payment_intentId
 
             })
             const update = await BookingDateModel.updateOne(
-                { _id: new mongoose.Types.ObjectId(data.date), count: { $gt: 0 } }, 
-                { $inc: { count: -1 } } 
-              );
-            return {success:true}
+                { _id: new mongoose.Types.ObjectId(data.date), count: { $gt: 0 } },
+                { $inc: { count: -1 } }
+            );
+            return { success: true }
 
         } catch (error) {
-            console.log(error);
-            
-             throw new CustomError("Internal Server Error",HttpStatus.INTERNAL_SERVER_ERROR)
+
+            throw new CustomError("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
+
+    async getLatestBooking(userId: string): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[]; }> {
+        try {
+            const date = new Date();
+            date.setHours(0, 0, 0, 0);
+
+            const query: any = [
+                { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+                {
+                    $lookup: {
+                        from: "bookingdates",
+                        localField: "date",
+                        foreignField: "_id",
+                        as: "bookeddate",
+                    },
+                },
+                { $unwind: "$bookeddate" },
+                { $sort: { "bookeddate.date": -1 } },
+                { $match: { "bookeddate.date": { $gt: date } } },
+                {
+                    $lookup: {
+                        from: "providers",
+                        localField: "providerId",
+                        foreignField: "_id",
+                        as: "provider",
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "servicetypes",
+                        localField: "serviceType",
+                        foreignField: "_id",
+                        as: "servicename",
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "brands",
+                        localField: "vechileDetails.brand",
+                        foreignField: "_id",
+                        as: "brand",
+                    },
+                },
+                { $unwind: "$brand" },
+                { $unwind: "$servicename" },
+                { $unwind: "$provider" },
+                {
+                    $project: {
+                        _id: 1,
+                        vechileDetails: 1,
+                        selectedService: 1,
+                        advance: 1,
+                        date: 1,
+                        advanceAmount: 1,
+                        status: 1,
+                        vechileType: 1,
+                        amountpaid: 1,
+                        paymentStatus: 1,
+                        "provider.workshopName": 1,
+                        "provider.logoUrl": 1,
+                        "bookeddate.date": 1,
+                        "servicename.serviceType": 1,
+                        "user.mobile": 1,
+                        "brand.brand": 1,
+                        suggestions: 1,
+                    },
+                },
+            ];
+
+            const data: ResponsegetBookingGreaterThanTodaysDate[] =
+                await ServiceBookingModel.aggregate(query);
+
+            if (data.length === 0) {
+                throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
+            }
+            return { success: true, data: data.length > 0 ? data : [] };
+
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+
+    async getServiceHistory(userID: string): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; }> {
+        try {
+            const date = new Date();
+            date.setHours(0, 0, 0, 0);
+
+            const query: any = [
+                { $match: { userId: new mongoose.Types.ObjectId(userID) } },
+                {
+                    $lookup: {
+                        from: "bookingdates",
+                        localField: "date",
+                        foreignField: "_id",
+                        as: "bookeddate",
+                    },
+                },
+                { $unwind: "$bookeddate" },
+                { $sort: { "bookeddate.date": -1 } },
+                { $match: { "bookeddate.date": { $lte: date } } },
+                {
+                    $lookup: {
+                        from: "providers",
+                        localField: "providerId",
+                        foreignField: "_id",
+                        as: "provider",
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "servicetypes",
+                        localField: "serviceType",
+                        foreignField: "_id",
+                        as: "servicename",
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "brands",
+                        localField: "vechileDetails.brand",
+                        foreignField: "_id",
+                        as: "brand",
+                    },
+                },
+                { $unwind: "$brand" },
+                { $unwind: "$servicename" },
+                { $unwind: "$provider" },
+                {
+                    $project: {
+                        _id: 1,
+                        vechileDetails: 1,
+                        selectedService: 1,
+                        advance: 1,
+                        advanceAmount: 1,
+                        status: 1,
+                        date: 1,
+                        vechileType: 1,
+                        amountpaid: 1,
+                        paymentStatus: 1,
+                        "provider._id": 1,
+                        "provider.workshopName": 1,
+                        "provider.logoUrl": 1,
+                        "bookeddate.date": 1,
+                        "servicename.serviceType": 1,
+                        "user.mobile": 1,
+                        "brand.brand": 1,
+                        suggestions: 1,
+                    },
+                },
+            ];
+
+            const data: ResponsegetBookingGreaterThanTodaysDate[] =
+                await ServiceBookingModel.aggregate(query);
+
+
+
+            if (data.length === 0) {
+                throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
+            }
+            return { success: true, data: data.length > 0 ? data : [] };
+
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+    async afterFullpaymentDone(docId: string): Promise<{ success?: boolean; }> {
+        try {
+            const updateOne = await ServiceBookingModel.updateOne({ _id: docId }, {
+                $set: {
+                    paymentStatus: "paid"
+                }
+            })
+
+            return { success: true }
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+    async cancelBooking(id: string, date: string): Promise<{ success?: boolean; payemntid?: string; }> {
+        try {
+            const updateOne = await ServiceBookingModel.updateOne({ _id: new mongoose.Types.ObjectId(id) }, {
+                $set: {
+                    status: "cancelled"
+                }
+            })
+            const updateDateCount = await BookingDateModel.updateOne({ _id: new mongoose.Types.ObjectId(date) }, {
+                $inc: { count: 1 }
+            })
+            if (updateOne.modifiedCount === 0 && updateDateCount.modifiedCount === 0) {
+                throw new CustomError("updation failed", HttpStatus.NO_CONTENT)
+            }
+            const data = await ServiceBookingModel.findOne({ _id: new mongoose.Types.ObjectId(id) })
+            return { success: true, payemntid: data?.paymentIntentId }
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
 }
 
 export default UserRepository;

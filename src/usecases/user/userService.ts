@@ -4,15 +4,17 @@ import {
   IgetservicesResponse,
   IRequirementToFetchShops,
   ProviderShopSelectedServiceFinalData,
+  ResponsegetBookingGreaterThanTodaysDate,
 } from "../../entities/user/IuserResponse";
 import { ObjectId } from "mongoose";
 import CustomError from "../../framework/services/errorInstance";
 import { IRequiredDataDForBooking } from "../../entities/rules/user";
+import IStripe from "../../entities/services/Istripe";
 
 class UserServiceInteractor implements IuserService {
-  constructor(private readonly userRepo: isUserRepository) {}
+  constructor(private readonly userRepo: isUserRepository,private readonly stripe:IStripe) {}
   async getServices(
-    category: string
+    category: string 
   ): Promise<{
     success: boolean;
     message: string;
@@ -151,6 +153,48 @@ class UserServiceInteractor implements IuserService {
     }
       
   }
+
+   async getLatestBooking(userId: string): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; }> {
+      try {
+           const response  = await this.userRepo.getLatestBooking(userId)
+           return response
+        
+      } catch (error:any) {
+        throw new CustomError(error.message,error.statusCode)
+      }
+  }
+
+  async getServiceHistory(userID: string): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; }> {
+      try {
+           const response = await this.userRepo.getServiceHistory(userID)
+           return response
+      } catch (error:any) {
+        throw new CustomError(error.message,error.statusCode)
+      }
+  }
+  
+  async afterFullpaymentDone(docId: string): Promise<{ success?: boolean; }> {
+      try {
+        const response = await this.userRepo.afterFullpaymentDone(docId)
+        return response
+      } catch (error:any) {
+        throw new CustomError(error.message,error.statusCode)
+      }
+  }
+
+ 
+  async cancelBooking(id: string, amount: number,date:string): Promise<{ success?: boolean; }> {
+    try {
+      const response = await this.userRepo.cancelBooking(id,date)
+       if (response.payemntid) {
+        const res = await  this.stripe.refund(response.payemntid,amount)
+       }
+      return {success:true}
+   } catch (error:any) {
+     throw new CustomError(error.message,error.statusCode)
+   }
+  }
+  
 }
 
 export default UserServiceInteractor;

@@ -1,5 +1,5 @@
 import user, { IRequiredDataDForBooking, Provider, userResponseData, userSignIn } from "entities/rules/user"
-import { IgetservicesResponse ,IRequirementToFetchShops} from "entities/user/IuserResponse"
+import { IgetservicesResponse ,IRequirementToFetchShops, ResponsegetBookingGreaterThanTodaysDate} from "entities/user/IuserResponse"
 import { ObjectId } from "mongoose"
 
 
@@ -18,6 +18,10 @@ interface isUserRepository{
     addOrChangePhoto(data:{id:string,url?:string}):Promise<{success?:boolean,message?:string,url?:string}>
     getBookingDates(id:string):Promise<{success?:boolean,data?:{_id:ObjectId, date:Date,count:number}[]|[]}>
     SuccessBooking(data:IRequiredDataDForBooking,payment_intentId:string):Promise<{success?:boolean}>
+    getLatestBooking(userId:string):Promise<{success?:boolean,data?:ResponsegetBookingGreaterThanTodaysDate[]|[]}>
+    getServiceHistory(userID:string):Promise<{success?:boolean,data?:ResponsegetBookingGreaterThanTodaysDate[]|[]}>
+    afterFullpaymentDone(docId:string):Promise<{success?:boolean}>
+    cancelBooking(id:string,date:string):Promise<{success?:boolean,payemntid?:string}>
     
 
 }

@@ -23,7 +23,9 @@ const refreshAccessToken = async (
       refreshToken,
       process.env.REFRESHTOKENKEY as string
     ) as DecodedToken;
-
+    if (!decoded) {
+      return 401
+    }
     if (type !== "admin") {
       const isAllowed = await checkBlockOrNot(decoded.id, type);
       if (!isAllowed) {
@@ -49,7 +51,6 @@ const verification = (type: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const accessToken = req.cookies?.[`${type}AccessToken`];
-
       if (!accessToken) {
         const refreshToken = req.cookies?.[`${type}RefreshToken`];
         if (refreshToken) {
@@ -76,11 +77,14 @@ const verification = (type: string) => {
         accessToken,
         process.env.ACCESSTOKENKEY as string
       ) as DecodedToken;
-       
+
       // const currentTime = Math.floor(Date.now()/1000)
       // console.log(currentTime<decoded.exp)
-     
-     
+      if (type !== decoded.role) {
+        throw new CustomError("Access Denied", HttpStatus.UNAUTHORIZED)
+      }
+
+
       if (type !== "admin") {
         const isAllowed = await checkBlockOrNot(decoded.id, type);
         if (!isAllowed) {

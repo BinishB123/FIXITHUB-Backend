@@ -85,13 +85,13 @@ class AuthController {
                 httpOnly: true,
                 sameSite: true,
                 path: '/',
-                maxAge: 60 * 60 * 1000
+                maxAge:  7 * 24 * 60 * 60 * 1000
             })
 
             res.cookie('userAccessToken', response.accesToken, {
                 httpOnly: true,
                 sameSite: true,
-                maxAge:   60*60*1000
+                maxAge:  60 * 60 *1000
             })
             return res.status(200).json({ user: response.user, success: response.success, message: "LOGGED IN" })
         }

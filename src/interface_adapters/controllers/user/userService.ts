@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import IuserServiceInteractor from "../../../entities/user/IuserServiceInteractor";
 import HttpStatus from "../../../entities/rules/statusCode";
-import IStripe from "entities/services/Istripe";
+import IStripe from "../../../entities/services/Istripe";
 
 
 
 class UserServiceContoller {
-  constructor(private readonly UserServiceInteractor: IuserServiceInteractor,private readonly stripe :IStripe) { }
+  constructor(private readonly UserServiceInteractor: IuserServiceInteractor, private readonly stripe: IStripe) { }
   async getServices(req: Request, res: Response) {
     try {
       const { category } = req.params;
@@ -104,18 +104,56 @@ class UserServiceContoller {
 
   async checkOut_Session(req: Request, res: Response, next: NextFunction) {
     try {
-      const {dataRequiredBooking} = req.body
-      req.session.dataRequiredForBooking  = dataRequiredBooking
+      const { dataRequiredBooking ,initailAmountToPay} = req.body
+      req.session.dataRequiredForBooking = dataRequiredBooking 
       console.log(req.session.dataRequiredForBooking);
-      
       req.session.save()
-      const response  = await this.stripe.userCheckoutSession()
+      const response = await this.stripe.userCheckoutSession(initailAmountToPay)
       return res.status(HttpStatus.OK).json({ sessionId: response.sessionid, url: response.url });
     } catch (error: any) {
       next(error);
     }
   }
-  
+
+  async getLatestBooking(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userid } = req.params
+      const response = await this.UserServiceInteractor.getLatestBooking(userid)
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async getServiceHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userid } = req.params
+      const response = await this.UserServiceInteractor.getServiceHistory(userid)
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error: any) {
+      next(error)
+    }
+  }
+
+  async fullpayment(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { selectedServices, docId } = req.body
+      const response = await this.stripe.fullpayment(selectedServices, docId)
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async cancelBooking(req:Request,res:Response,next:NextFunction){
+    try {
+       const {id,amountToRefund,date} = req.body
+       const response = await this.UserServiceInteractor.cancelBooking(id,amountToRefund,date)
+       return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
 
 
 }

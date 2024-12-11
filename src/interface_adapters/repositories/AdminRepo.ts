@@ -7,8 +7,6 @@ import providerModel from "../../framework/mongoose/providerSchema";
 import vehicleModel from "../../framework/mongoose/vehicleSchema";
 import brandModel from "../../framework/mongoose/brandSchema";
 import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
-import server from "framework/app";
-import { serialize } from "v8";
 import providingServicesModel from "../../framework/mongoose/providingServicesSchema";
 
 class AdminRepository implements IAdminRepo {

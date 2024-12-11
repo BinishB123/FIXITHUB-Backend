@@ -32,15 +32,25 @@ class ProviderServiceBookingController {
 
     async updateStatus(req:Request,res:Response,next:NextFunction){
         try {
-            const {id,status} = req.params
-            if (!id||!status) {
+            const {id,status,amount} = req.params
+            if (!id||!status||!amount) {
                 return res.status(HttpStatus.FORBIDDEN).json({message:"Something went Wrong"})
             }
-            const response = await this.serviceBookingInteractor.updateStatus(id,status)
+            const response = await this.serviceBookingInteractor.updateStatus(id,status,parseInt(amount))
             return res.status(HttpStatus.OK).json(response)
             
         } catch (error) {
            next(error)
+        }
+    }
+
+    async getBookingGreaterThanTodaysDate(req:Request,res:Response,next:NextFunction){
+        try {
+            const {userid} = req.params
+            const response = await this.serviceBookingInteractor.getBookingGreaterThanTodaysDate(userid)
+            return res.status(HttpStatus.OK).json(response)
+        } catch (error) {
+            next(error)
         }
     }
 }

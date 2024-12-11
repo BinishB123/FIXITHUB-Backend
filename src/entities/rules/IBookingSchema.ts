@@ -26,7 +26,7 @@ export default interface BookingSchema {
     serviceType: ObjectId;
     selectedService: SelectedService[];
     suggestions: string;
-    status: "pending" | "confirmed" | "inprogress" | "outfordelivery" | "completed" | "cancelled" | "onhold" | "failed";
+    status: "pending" | "confirmed" | "inprogress" | "completed" | "cancelled" | "onhold" | "failed";
     paymentStatus: "pending"| "paid";
     vechileDetails:{
         vechileId:string,
@@ -34,13 +34,13 @@ export default interface BookingSchema {
         model:string
         fueltype:string
     }
-    bookingfee:number,
-    bookingfeeStatus:boolean
+    advanceAmount:number,
+    advance:boolean
     paymentIntentId:string
 }
 
 interface SelectedService {
-    typeId: ObjectId;
+    typeId?: ObjectId;
     serviceName: string;
     price: number;
 }

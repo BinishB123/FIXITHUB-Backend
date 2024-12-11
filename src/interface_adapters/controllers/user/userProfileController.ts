@@ -3,10 +3,11 @@ import IUserProfileInteractor from "../../../entities/user/IuserProfileInteracto
 import HttpStatus from "../../../entities/rules/statusCode";
 import CustomError from "../../../framework/services/errorInstance";
 import { IUploadToCloudinary } from "../../../entities/services/Iclodinary";
+import { IChatInteractor } from "../../../entities/common/IChatInteractor";
 
 
 class UserProfileController{
-    constructor(private readonly userInteractor : IUserProfileInteractor , private readonly cloudinary:IUploadToCloudinary ){}
+    constructor(private readonly userInteractor : IUserProfileInteractor , private readonly cloudinary:IUploadToCloudinary ,private readonly chatInteractor:IChatInteractor){}
 
     async updateData(req:Request,res:Response,next:NextFunction){
         try {
@@ -65,6 +66,53 @@ class UserProfileController{
             next(error)
         }
     }
+    
+    async getChatOfOneToOne(req:Request,res:Response,next:NextFunction){
+      try {
+        const {chatId} = req.params
+        const response  = await this.chatInteractor.getChatOfOneToOne(chatId)
+        return res.status(HttpStatus.OK).json(response)
+      } catch (error) {
+        next(error)
+      }
+    }
+  
+    async fetchChat(req:Request,res:Response,next:NextFunction){
+      try {
+          const {whom,id} = req.params
+          const response = await this.chatInteractor.fetchChats(whom,id)
+          return res.status(HttpStatus.OK).json(response)
+      } catch (error) {
+        next(error)
+      }
+    }
+  
+    async addMessage(req:Request,res:Response,next:NextFunction){
+      try {
+          const {sender,chatId,message} = req.body
+          console.log(chatId);
+          
+          const response = await this.chatInteractor.addNewMessage(sender,chatId,message)
+          return res.status(HttpStatus.OK).json(response)
+      } catch (error) {
+        next(error)
+      }
+    }
+
+    async getChatId(req:Request,res:Response,next:NextFunction){
+      try {
+        const {providerId, userId} = req.params
+        console.log("providerId, userId in controller",providerId, userId);
+        
+        const response = await this.chatInteractor.getChatid(providerId,userId)
+        return res.status(200).json(response)
+        
+      } catch (error) {
+        next(error)
+      }
+    }
+
+
 }
 
 export default UserProfileController

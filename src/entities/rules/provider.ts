@@ -196,8 +196,8 @@ export interface ResponseAccordingToDate {
   _id: ObjectId;
   selectedService: SelectedService[];
   vechileDetails: VehicleDetails;
-  bookingfee: number;
-  bookingfeeStatus: boolean,
+  advanceAmount: number;
+  advance: boolean,
   status:string,
   amountpaid: number,
   paymentStatus:string,
@@ -210,12 +210,13 @@ export interface ResponsegetBookingStillTodaysDate{
   _id: ObjectId;
   selectedService: SelectedService[];
   vechileDetails: VehicleDetails;
-  bookingfee: number;
-  bookingfeeStatus: boolean,
+  advanceAmount: number;
+  advance: boolean,
   status:string,
   amountpaid: number,
   paymentStatus:string,
   user: {
+  _id:ObjectId
   name: string;
   mobile: number;
   logoUrl:string

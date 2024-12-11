@@ -21,8 +21,6 @@ import mongoose, { Mongoose } from "mongoose";
 import CustomError from "../../framework/services/errorInstance";
 import HttpStatus from "../../entities/rules/statusCode";
 import BookingDateModel from "../../framework/mongoose/BookingDates";
-import { count, error } from "console";
-import { todo } from "node:test";
 import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
 
 class ProviderRepository implements IProviderRepository {
@@ -310,20 +308,29 @@ class ProviderRepository implements IProviderRepository {
 
  async removeGeneralOrRoadService(data: { workshopId: string; typeid: string;  vehicleType: string; }): Promise<{ success?: boolean; }> {
   try {
-    const updateOne = await providingServicesModel.updateOne({workshopId:data.workshopId},{
-      $pull:{
-        [data.vehicleType]:{typeId:new mongoose.Types.ObjectId(data.typeid)}
+    const updateOne = await providingServicesModel.updateOne(
+      { workshopId: data.workshopId },
+      {
+        $pull: {
+          [data.vehicleType]: { typeId: new mongoose.Types.ObjectId(data.typeid) },
+        },
       }
-    })
-    if (updateOne.modifiedCount===0) {
-      throw new CustomError("Can't Remove something went wrong ",HttpStatus.Unprocessable_Entity)
+    );
+    
+    console.log("Update Result:", updateOne);
+  
+    if (updateOne.modifiedCount === 0) {
+      throw new CustomError(
+        "Cannot remove item: No match found or nothing changed.",
+        HttpStatus.Unprocessable_Entity
+      );
     }
     return {success:true}
-  } catch (error:any) {
-    console.log(error);
-    
-    throw new CustomError(error.message,error.statusCode)
+  } catch (error) {
+    console.error("Error during updateOne operation:", error);
+    throw error; // Re-throw to propagate error handling
   }
+  
  }
 
 
@@ -901,8 +908,8 @@ class ProviderRepository implements IProviderRepository {
               _id: 1,
               vechileDetails: 1,
               selectedService: 1,
-              bookingfee: 1,
-              bookingfeeStatus: 1,
+              advanceAmount: 1,
+              advance: 1,
               status: 1,
               amountpaid: 1,
               paymentStatus: 1,
@@ -984,11 +991,12 @@ class ProviderRepository implements IProviderRepository {
             _id: 1,
             vechileDetails: 1,
             selectedService: 1,
-            bookingfee: 1,
-            bookingfeeStatus: 1,
+            advanceAmount: 1,
+            advance: 1,
             status: 1,
             amountpaid: 1,
             paymentStatus: 1,
+            "user._id":1,
             "user.name": 1,
             "user.logoUrl": 1,
             "bookeddate.date": 1,
@@ -1002,6 +1010,7 @@ class ProviderRepository implements IProviderRepository {
 
       const data: ResponsegetBookingStillTodaysDate[] =
         await ServiceBookingModel.aggregate(query);
+        
 
       if (data.length === 0) {
         throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
@@ -1012,24 +1021,107 @@ class ProviderRepository implements IProviderRepository {
       throw new CustomError(error.message, error.statusCode);
     }
   }
-
-  async updateStatus(
-    id: string,
-    status: string
-  ): Promise<{ success?: boolean }> {
+ 
+  async getBookingGreaterThanTodaysDate(id: string): Promise<{ success?: boolean; data?: ResponsegetBookingStillTodaysDate[] | []; }> {
     try {
-      const update = await ServiceBookingModel.updateOne({ _id: new mongoose.Types.ObjectId(id) },
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+
+      const query: any = [
+        { $match: { providerId: new mongoose.Types.ObjectId(id) } },
+        {
+          $lookup: {
+            from: "bookingdates",
+            localField: "date",
+            foreignField: "_id",
+            as: "bookeddate",
+          },
+        },
+        { $unwind: "$bookeddate" },
+        { $sort: { "bookeddate.date": -1 } },
+        { $match: { "bookeddate.date": { $gt: date } } },
+        {
+          $lookup: {  
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $lookup: {
+            from: "servicetypes",
+            localField: "serviceType",
+            foreignField: "_id",
+            as: "servicename",
+          },
+        },
+        {
+          $lookup: {
+            from: "brands",
+            localField: "vechileDetails.brand",
+            foreignField: "_id",
+            as: "brand",
+          },
+        },
+        { $unwind: "$brand" },
+        { $unwind: "$servicename" },
+        { $unwind: "$user" },
+        {
+          $project: {
+            _id: 1,
+            vechileDetails: 1,
+            selectedService: 1,
+            advanceAmount: 1,
+            advance: 1,
+            status: 1,
+            amountpaid: 1,
+            paymentStatus: 1,
+            "user._id":1,
+            "user.name": 1,
+            "user.logoUrl": 1,
+            "bookeddate.date": 1,
+            "servicename.serviceType": 1,
+            "user.mobile": 1,
+            "brand.brand": 1,
+            suggestions: 1,
+          },
+        },
+      ];
+
+      const data: ResponsegetBookingStillTodaysDate[] =
+        await ServiceBookingModel.aggregate(query);
+       
+       
+      // if (data.length === 0) {
+      //   throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
+      // }
+
+      return { success: true, data: data.length > 0 ? data : [] };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async updateStatus(id: string, status: string, amount: number): Promise<{ success?: boolean; paymentId?: string; }> {
+    try {
+      const update = await ServiceBookingModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(id) },
         {
           $set: {
-            status: status
+            status: status === "outfordelivery" && amount <= 1000 ? "completed" : status,
+            paymentStatus: amount > 1000 ? "pending" : "paid"
           }
-
-        })
-        if (update.modifiedCount===0) {
+        }
+      );
+      
+        if (update.modifiedCount===0){
           throw new CustomError("Updation Failed Something Went Wrong",HttpStatus.FORBIDDEN)
         }
-        return {success:true}
-
+        const detail = await ServiceBookingModel.findOne({_id:new mongoose.Types.ObjectId(id)})
+        
+        return status!=="outfordelivery"? {success:true}: {success:true,paymentId:detail?.paymentIntentId}
+ 
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }

@@ -76,7 +76,8 @@ interface IProviderRepository {
     updateCount(id: string, toDo: string): Promise<{ success?: boolean }>
     getBookingsAccordingToDates(id:string,date:Date):Promise<{success?:boolean,data?:ResponseAccordingToDate[]|[]}>
     getBookingStillTodaysDate(id:string,status?:string|undefined):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[]}>
-    updateStatus(id:string,status:string):Promise<{success?:boolean}>
+    getBookingGreaterThanTodaysDate(id:string):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[]}>
+    updateStatus(id:string,status:string,amount:number):Promise<{success?:boolean,paymentId?:string}>
     
 
 

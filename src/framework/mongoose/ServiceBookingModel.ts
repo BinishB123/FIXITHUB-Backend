@@ -12,15 +12,15 @@ const ServiceBookingSchema = new Schema<BookingSchema>({
     serviceType: { type: Schema.Types.ObjectId, ref: "ServiceType", required: true },
     selectedService: [
         {
-            typeId: { type: Schema.Types.ObjectId, ref: "ServiceType", required: true },
-            serviceName: { type: String },
-            price: { type: Number }
+            typeId: { type: Schema.Types.ObjectId, ref: "ServiceType", },
+            serviceName: { type: String , required: true },
+            price: { type: Number ,required: true}
         }
     ],
     suggestions: { type: String },
     status: {
         type: String,
-        enum: ["pending", "confirmed", "inprogress", "outfordelivery", "completed", "cancelled", "onhold", "failed"],
+        enum: ["pending", "confirmed", "inprogress", "completed", "cancelled", "onhold", "failed"],
         default: "pending"
     },
     paymentStatus: {
@@ -35,8 +35,8 @@ const ServiceBookingSchema = new Schema<BookingSchema>({
         fueltype: { type: String },
         kilometer: { type: Number }
     },
-    bookingfee: { type: Number, required: true },
-    bookingfeeStatus: { type: Boolean, required: true },
+    advanceAmount: { type: Number, required: true },
+    advance: { type: Boolean, default:true },
     paymentIntentId:{type:String,required:true}
 
 })

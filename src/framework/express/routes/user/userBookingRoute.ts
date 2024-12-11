@@ -9,11 +9,12 @@ import StripePayment from '../../../../framework/services/stripe';
 const BookingRoute = express.Router()
 const userRepo = new UserRepository()
 const stripe = new StripePayment()
-const  serviceInter = new UserServiceInteractor(userRepo)
+const  serviceInter = new UserServiceInteractor(userRepo,stripe)
 const  bookingContoller = new BookingController(serviceInter,stripe)
 
 
 BookingRoute.get('/succesBooking',bookingContoller.SuccessBooking.bind(bookingContoller))
+BookingRoute.get('/fullpaymentsuccess/:docid',bookingContoller.afterFullpaymentDone.bind(bookingContoller))
 
 
 export default BookingRoute

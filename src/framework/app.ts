@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import errorHandler from './express/middleware/Errorhandler';
 import session from 'express-session';
 import '../entities/services/session';
+import { SocketIntalization } from './webSocket/socketIo';
 
 const app = express();
 const server = http.createServer(app);
@@ -14,24 +15,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 dontenv.config()  
+SocketIntalization(server)
 
 
 app.use(session({
-    secret: "763473rugefhfgdgdhfygf6g", 
-    resave: false, 
-    saveUninitialized: false, 
-    cookie: {
-      httpOnly: true, 
-      maxAge: 30000 ,   
-    },
-  }));
+  secret:"y1r13t1t3rt77t7g8y3e67",
+  resave:false,
+  saveUninitialized:true
+})) 
 
 app.use((req,res,next) =>{
-   console.log(req.method,req.hostname, req.path,req.body,req.params);
+   console.log(req.method,req.hostname, req.path,req.body,req.params,);
     next();
 });
 
-// Setuped CORS to allow requests from the frontend
 app.use(cors({
     origin: 'http://localhost:5173',  //  frontend URL
     methods: 'GET,PUT,POST,PATCH,OPTIONS,DELETE',

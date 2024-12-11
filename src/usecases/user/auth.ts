@@ -57,7 +57,7 @@ class UserAuthInteractor implements IuserauthInteractor {
             }
 
         }
-        const acessToken = this.jwtServices.generateToken({ id: response.user?.id, email: userData.email, role: "user" }, { expiresIn: '1h' })
+        const acessToken = this.jwtServices.generateToken({ id: response.user?.id, email: userData.email, role: "user" }, { expiresIn: '1hr' })
         const refreshToken = this.jwtServices.generateRefreshToken({ id: response.user?.id, email: userData.email, role: "user" }, { expiresIn: '1d' })
         const respons = this.jwtServices.verifyjwt(refreshToken)
        
