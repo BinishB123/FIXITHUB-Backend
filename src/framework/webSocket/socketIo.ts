@@ -63,6 +63,27 @@ export const SocketIntalization = (server: HttpServer) => {
             }   
         })
 
+        socket.on("checkOnlineorNot",({userid,providerid,checker})=>{
+            
+            
+             if(checker==="provider"){
+                console.log("usersAndProvidersSocketId[userid]",usersAndProvidersSocketId[userid]);
+                if(usersAndProvidersSocketId[userid]){
+                    io.to(usersAndProvidersSocketId[providerid]).emit("checkedUserIsOnlineOrNot",{success:true})
+                }else{
+                    io.to(usersAndProvidersSocketId[providerid]).emit("checkedUserIsOnlineOrNot",{success:false})
+                }
+             } 
+
+             if (checker==="user") {
+                if(usersAndProvidersSocketId[providerid]){
+                    io.to(usersAndProvidersSocketId[userid]).emit("checkedUserIsOnlineOrNot",{success:true})
+                }else{
+                    io.to(usersAndProvidersSocketId[userid]).emit("checkedUserIsOnlineOrNot",{success:false})
+                }
+             }
+        })
+
         
 
 
