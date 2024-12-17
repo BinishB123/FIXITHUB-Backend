@@ -164,6 +164,7 @@ class ProviderRepository implements IProviderRepository {
         mobile: providerExist.mobile,
         requested: providerExist.requestAccept,
         blocked: providerExist.blocked,
+        logoUrl:providerExist.logoUrl?providerExist.logoUrl:null
       };
       return { success: true, message: "provider exist", provider: provider };
     } catch (error) {

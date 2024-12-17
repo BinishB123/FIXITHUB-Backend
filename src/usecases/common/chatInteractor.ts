@@ -64,6 +64,16 @@ class ChatInteractor implements IChatInteractor {
         }
     }
 
+    async getCalleData(id: string, providerOrUser: string): Promise<{ data: { name?: string; logUrl?: string; workshopName?: string; }; }> {
+        try {
+            const response = await  this.chatRepo.getCalleData(id,providerOrUser)
+            return response
+            
+        } catch (error:any) {
+            throw new CustomError(error.message,error.statusCode)
+        }
+    }
+
 }
 
 export default ChatInteractor

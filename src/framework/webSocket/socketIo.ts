@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import ChatRepo from "../../interface_adapters/repositories/common/ChatRepo";
 import ChatInteractor from "../../usecases/common/chatInteractor";
+import { response } from "express";
 
 const chatRepo = new ChatRepo()
 const chatInteractor = new ChatInteractor(chatRepo)
@@ -82,10 +83,10 @@ export const SocketIntalization = (server: HttpServer) => {
         })
 
 
-        socket.on("getChatidForCreatingRoom",({userid,providerid,getter,whomTocall})=>{
+        socket.on("getChatidForCreatingRoom",({userid,providerid,getter,whomTocall,callerData})=>{
             chatInteractor.getChatid(providerid,userid).then((response)=>{
                socket.join(response.id+"")
-               io.to(usersAndProvidersSocketId[whomTocall]).emit("incomingcall",{success:true,getter:getter,chatid:response.id})
+               io.to(usersAndProvidersSocketId[whomTocall]).emit("incomingcall",{success:true,getter:getter,chatid:response.id,callerData:callerData})
             })
         })
 
@@ -96,8 +97,8 @@ export const SocketIntalization = (server: HttpServer) => {
         })
 
 
-       socket.on('sendOffer',({receiver,offer,senderid})=>{
-        io.to(usersAndProvidersSocketId[receiver]).emit("sendOfferToReceiver",{offer,senderid})
+       socket.on('sendOffer',({receiver,offer,senderid,callerData})=>{
+        io.to(usersAndProvidersSocketId[receiver]).emit("sendOfferToReceiver",{offer,senderid,callerData})
        })
 
        socket.on("sendCandidate",({event,recieverid})=>{
@@ -107,6 +108,16 @@ export const SocketIntalization = (server: HttpServer) => {
 
        socket.on("answer",({to,answer})=>{
         io.to(usersAndProvidersSocketId[to]).emit("recieveAnswer",{answer:answer})
+       })
+
+       socket.on("getcalleData",({id,calle,calleid})=>{
+         chatInteractor.getCalleData(calleid,calle).then((response)=>{
+            io.to(usersAndProvidersSocketId[id]).emit("recieveCalleData",response)
+         })
+       })
+
+       socket.on('callRejected',({callerid})=>{        
+        io.to(usersAndProvidersSocketId[callerid]).emit("rejected")
        })
 
     })

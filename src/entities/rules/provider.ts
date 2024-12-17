@@ -16,6 +16,7 @@ export interface RegisterResponse {
   mobile: string;
   requested: boolean | null;
   blocked: boolean;
+  logoUrl?:string|null
 }
 
 interface workshopDetails {
@@ -48,6 +49,7 @@ export interface SignResponse {
   mobile: string;
   requested: boolean | null;
   blocked: boolean;
+  logoUrl?:string|null
 }
 
 /// provider schema start
