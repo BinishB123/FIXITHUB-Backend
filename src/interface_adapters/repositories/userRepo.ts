@@ -17,6 +17,7 @@ import HttpStatus from "../../entities/rules/statusCode";
 import CustomError from "../../framework/services/errorInstance";
 import BookingDateModel from "../../framework/mongoose/BookingDates";
 import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
+import { log } from "node:console";
 
 class UserRepository implements isUserRepository {
     // this method is for saving the otp in dbs
@@ -508,7 +509,7 @@ class UserRepository implements isUserRepository {
     }
 
 
-    async getServiceHistory(userID: string): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; }> {
+    async getServiceHistory(userID: string, startindex: number, endindex: number): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; count:number }> {
         try {
             const date = new Date();
             date.setHours(0, 0, 0, 0);
@@ -575,22 +576,23 @@ class UserRepository implements isUserRepository {
                         suggestions: 1,
                     },
                 },
+              {$skip:startindex},
+              {$limit:5}
             ];
 
             const data: ResponsegetBookingGreaterThanTodaysDate[] =
                 await ServiceBookingModel.aggregate(query);
 
-
-
+            const count = await ServiceBookingModel.find({userId:new mongoose.Types.ObjectId(userID)})
             if (data.length === 0) {
                 throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
             }
-            return { success: true, data: data.length > 0 ? data : [] };
+            return { success: true, data: data.length > 0 ? data : [] ,count:count.length};
 
         } catch (error: any) {
             throw new CustomError(error.message, error.statusCode)
         }
-    }
+   }
 
     async afterFullpaymentDone(docId: string): Promise<{ success?: boolean; }> {
         try {

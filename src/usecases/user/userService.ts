@@ -164,14 +164,14 @@ class UserServiceInteractor implements IuserService {
       }
   }
 
-  async getServiceHistory(userID: string): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; }> {
-      try {
-           const response = await this.userRepo.getServiceHistory(userID)
-           return response
-      } catch (error:any) {
-        throw new CustomError(error.message,error.statusCode)
-      }
-  }
+ async getServiceHistory(userID: string, startindex: number, endindex: number): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; count:number}> {
+  try {
+    const response = await this.userRepo.getServiceHistory(userID,startindex,endindex)
+    return response
+} catch (error:any) {
+ throw new CustomError(error.message,error.statusCode)
+}
+ }
   
   async afterFullpaymentDone(docId: string): Promise<{ success?: boolean; }> {
       try {

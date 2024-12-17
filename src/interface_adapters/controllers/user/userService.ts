@@ -117,7 +117,7 @@ class UserServiceContoller {
 
   async getLatestBooking(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userid } = req.params
+      const { userid,startindex,endindex } = req.params
       const response = await this.UserServiceInteractor.getLatestBooking(userid)
       return res.status(HttpStatus.OK).json(response)
     } catch (error) {
@@ -127,8 +127,8 @@ class UserServiceContoller {
 
   async getServiceHistory(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userid } = req.params
-      const response = await this.UserServiceInteractor.getServiceHistory(userid)
+      const { userid,startindex,endindex  } = req.params
+      const response = await this.UserServiceInteractor.getServiceHistory(userid,parseInt(startindex),parseInt(endindex))
       return res.status(HttpStatus.OK).json(response)
     } catch (error: any) {
       next(error)

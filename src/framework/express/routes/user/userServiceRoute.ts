@@ -17,8 +17,8 @@ userServiceRoute.get('/getshops',userServiceContoller.getAllshops.bind(userServi
 userServiceRoute.get('/getshopdetail',userServiceContoller.getshopProfileWithSelectedServices.bind(userServiceContoller))
 userServiceRoute.get('/getbookingdates/:id',userServiceContoller.getBookingDates.bind(userServiceContoller))
 userServiceRoute.post('/checkout-session',CheckerDatesIsThereOrNot,userServiceContoller.checkOut_Session.bind(userServiceContoller))
-userServiceRoute.get('/latestBooking/:userid',userServiceContoller.getLatestBooking.bind(userServiceContoller))
-userServiceRoute.get('/servicehistory/:userid',userServiceContoller.getServiceHistory.bind(userServiceContoller))
+userServiceRoute.get('/latestBooking/:userid/',userServiceContoller.getLatestBooking.bind(userServiceContoller))
+userServiceRoute.get('/servicehistory/:userid/:startindex/:endindex',userServiceContoller.getServiceHistory.bind(userServiceContoller))
 userServiceRoute.post('/makefullpayment',userServiceContoller.fullpayment.bind(userServiceContoller))
 userServiceRoute.patch('/cancelpayment',userServiceContoller.cancelBooking.bind(userServiceContoller))
 

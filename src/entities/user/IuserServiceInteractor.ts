@@ -11,7 +11,7 @@ interface IuserServiceInteractor{
     getBookingDates(id:string):Promise<{success?:boolean,data?:{_id:ObjectId, date:Date,count:number}[]|[]}>
     SuccessBooking(data:IRequiredDataDForBooking,sessionId:string):Promise<{success?:boolean}>
     getLatestBooking(userId:string):Promise<{success?:boolean,data?:ResponsegetBookingGreaterThanTodaysDate[]|[]}>
-    getServiceHistory(userID:string):Promise<{success?:boolean,data?:ResponsegetBookingGreaterThanTodaysDate[]|[]   }>
+    getServiceHistory(userID:string,startindex:number,endindex:number):Promise<{success?:boolean,data?:ResponsegetBookingGreaterThanTodaysDate[]|[],count:number   }>
     afterFullpaymentDone(docId:string):Promise<{success?:boolean}>
     cancelBooking(id:string,amount:number,date:string):Promise<{success?:boolean}>
 
