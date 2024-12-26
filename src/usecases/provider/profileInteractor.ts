@@ -70,6 +70,18 @@ class ProviderProfileInteractor implements IProfileInteractor{
             throw new CustomError(error.message,error.statusCode)
         }
     }
+
+    async notificationCountUpdater(id: string): Promise<{ count: number; }> {
+        try {
+            const response = await this.providerRepo.notificationCountUpdater(id)
+            return response
+
+        } catch (error: any) {
+
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
 }
 
 

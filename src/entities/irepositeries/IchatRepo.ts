@@ -1,3 +1,4 @@
+import user from "entities/rules/user"
 import {  IChatingUser } from "../../entities/rules/IchatSchema"
 
 
@@ -7,7 +8,7 @@ import {  IChatingUser } from "../../entities/rules/IchatSchema"
 
 export interface IChatRepo {
     getChatid(providerId:string,userId:string):Promise<{success?:boolean,id?:string}>
-    getChatOfOneToOne(chatId:string):Promise<{success?:boolean,data?:IChatingUser}>
+    getChatOfOneToOne(chatId:string,whoWantsData:"user"|"provider"|string):Promise<{success?:boolean,data?:IChatingUser}>
     fetchChats(whom:string,id:string):Promise<{success?:boolean,chats:IChatingUser[]}>
     updateChats(topassChat:string,whotosendthesechatid:string):Promise<{success?:boolean,chats?:IChatingUser[]}>
     addNewMessage(sender:string,chatId:string,message:string):Promise<{success?:boolean,messageCreated:any}>

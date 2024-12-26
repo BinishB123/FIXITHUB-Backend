@@ -18,14 +18,15 @@ class ChatInteractor implements IChatInteractor {
         }
     }
 
-    async getChatOfOneToOne(chatId: string): Promise<{ success?: boolean; data?: IChatingUser; }> {
-        try {
-            const response = await this.chatRepo.getChatOfOneToOne(chatId)
-            return response
-        } catch (error: any) {
-            throw new CustomError(error.message, error.statusCode)
-        }
+ async getChatOfOneToOne(chatId: string, whoWantsData: "user" | "provider" | string): Promise<{ success?: boolean; data?: IChatingUser; }> {
+    try {
+        const response = await this.chatRepo.getChatOfOneToOne(chatId,whoWantsData)
+        return response
+    } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode)
     }
+       
+   }
 
     async fetchChats(whom: string, id: string): Promise<{ success?: boolean; chats: IChatingUser[]; }> {
         try {

@@ -36,10 +36,19 @@ class ChatRepo implements IChatRepo {
     }
   }
 
-  async getChatOfOneToOne(
-    chatId: string
-  ): Promise<{ success?: boolean; data?: IChatingUser }> {
+  async getChatOfOneToOne(chatId: string, whoWantsData: "user" | "provider" | string): Promise<{ success?: boolean; data?: IChatingUser; }> {
     try {
+      const update = await messageModel.updateMany(
+        {
+          $and: [
+            { chatId: new mongoose.Types.ObjectId(chatId) }, 
+            { sender: whoWantsData === "user" ? "provider" : "user" }
+          ]
+        },
+        { $set: { seen: true } } 
+      );
+      
+
       const [chatBetweenUsers] = await chatModel.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(chatId) } },
         {
@@ -88,6 +97,7 @@ class ChatRepo implements IChatRepo {
       throw new CustomError(error.message, error.statusCode);
     }
   }
+
   async updateChats(
     topassChat: string,
     whotosendthesechatid: string

@@ -11,7 +11,7 @@ const interactor = new ServiceBookingInteractor(repo,stripe)
 const providerServiceBookingContoller = new ProviderServiceBookingController(interactor)
 
 providerServiceBookingRoute.get('/getservicebooking/:id/:date', providerServiceBookingContoller.getProviderDataAccordingToDate.bind(providerServiceBookingContoller))
-providerServiceBookingRoute.get('/getBookingStillTodaysDate/:id',providerServiceBookingContoller.getBookingStillTodaysDate.bind(providerServiceBookingContoller))
+providerServiceBookingRoute.get('/getBookingStillTodaysDate/:id/:startIndex',providerServiceBookingContoller.getBookingStillTodaysDate.bind(providerServiceBookingContoller))
 providerServiceBookingRoute.patch('/updatestatus/:id/:status/:amount',providerServiceBookingContoller.updateStatus.bind(providerServiceBookingContoller))
 providerServiceBookingRoute.get('/viewbookings/:userid',providerServiceBookingContoller.getBookingGreaterThanTodaysDate.bind(providerServiceBookingContoller))
 

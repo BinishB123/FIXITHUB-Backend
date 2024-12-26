@@ -18,11 +18,11 @@ class ServiceBookingInteractor implements IproviderServiceBookingInteractor {
         }
     } 
 
-    async getBookingStillTodaysDate(id: string, status?: string | undefined): Promise<{ success?: boolean; data?: ResponsegetBookingStillTodaysDate[] | []; }> {
+    async getBookingStillTodaysDate(id: string,startIndex:number,status?: string | undefined): Promise<{ success?: boolean; data?: ResponsegetBookingStillTodaysDate[] | []; count:number }> {
         try {
 
 
-            const response = await this.providerRepo.getBookingStillTodaysDate(id, status)
+            const response = await this.providerRepo.getBookingStillTodaysDate(id,startIndex,status)
             return response
 
         } catch (error: any) {

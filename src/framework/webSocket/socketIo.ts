@@ -3,10 +3,17 @@ import { Server } from "socket.io";
 import { Server as HttpServer } from "http";
 import ChatRepo from "../../interface_adapters/repositories/common/ChatRepo";
 import ChatInteractor from "../../usecases/common/chatInteractor";
-import { response } from "express";
+import UserProfileInteractor from "../../usecases/user/userProfileInteractor";
+import UserRepository from "../../interface_adapters/repositories/userRepo";
+import ProviderRepository from "../../interface_adapters/repositories/providerRepo";
+import ProviderProfileInteractor from "../../usecases/provider/profileInteractor";
 
 const chatRepo = new ChatRepo()
 const chatInteractor = new ChatInteractor(chatRepo)
+const userRepo = new UserRepository()
+const userProfileInteractor = new UserProfileInteractor(userRepo)
+const providerRepo = new ProviderRepository()
+const providerProfileInteractor = new ProviderProfileInteractor(providerRepo)
 type user_and_Providers_socketid = {
     [key: string]: string
 }
@@ -34,8 +41,27 @@ export const SocketIntalization = (server: HttpServer) => {
         socket.on("send-message", (messageDetails) => {
             chatInteractor.addNewMessage(messageDetails.sender, messageDetails.chatId, messageDetails.message).then((response) => {
                 io.to(messageDetails.chatId).emit("receivemessage", { response: response.messageCreated })
+                 if (messageDetails.sender==="provider") {
+                    userProfileInteractor.notificationCountUpdater(messageDetails.recieverId).then((response)=>{
+                        if (usersAndProvidersSocketId[messageDetails.recieverId]) {
+                            io.to(usersAndProvidersSocketId[messageDetails.recieverId]).emit("notifictaionUpdated",(response))
+                        }
+                    })
+                    userProfileInteractor.notificationsGetter(messageDetails.recieverId).then((response)=>{
+                        if (usersAndProvidersSocketId[messageDetails.recieverId]) {
+                            io.to(usersAndProvidersSocketId[messageDetails.recieverId]).emit("gettNotification",response)
+                        }
+                    })
+                }else if (messageDetails.sender==="user") {
+                    providerProfileInteractor.notificationCountUpdater(messageDetails.recieverId).then((response)=>{
+                        if (usersAndProvidersSocketId[messageDetails.recieverId]) {
+                            console.log(response);
+                            io.to(usersAndProvidersSocketId[messageDetails.recieverId]).emit("notifictaionUpdated",(response))
+                        }
+                    })
+                    
+                }
             })
-
         })
 
         socket.on("isTyping", (data) => {
@@ -45,6 +71,19 @@ export const SocketIntalization = (server: HttpServer) => {
         socket.on("oppositeGuysIsInOnlineOrNot", (data) => {
             if (usersAndProvidersSocketId[data.userId]) {
                 io.to(usersAndProvidersSocketId[data.emitTo]).emit("isOnline", { online: true })
+                
+                if (data.whom==="user") {
+                    console.log("data.userId",data.emitTo);
+                    
+                    userProfileInteractor.notificationCountUpdater(data.emitTo).then((response)=>{
+                      
+                        if (usersAndProvidersSocketId[data.emitTo]) {
+                            io.to(usersAndProvidersSocketId[data.emitTo]).emit("notifictaionUpdated",(response))
+    
+                        } 
+                    })
+                    
+                }
             } else {
                 io.to(usersAndProvidersSocketId[data.emitTo]).emit("isOnline", { online: false })
             }
@@ -119,6 +158,13 @@ export const SocketIntalization = (server: HttpServer) => {
        socket.on('callRejected',({callerid})=>{        
         io.to(usersAndProvidersSocketId[callerid]).emit("rejected")
        })
+
+       socket.on("updateMessageseen",async({ messageId})=>{
+       await chatInteractor.liveMessageSeen(messageId)
+       })
+       
+
+      
 
     })
 }

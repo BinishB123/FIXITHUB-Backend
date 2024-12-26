@@ -18,9 +18,11 @@ const userProfileController = new UserProfileController(interactor,cloudinary,ch
 userprofileRouter.patch('/updateData/:id',userProfileController.updateData.bind(userProfileController))
 userprofileRouter.patch('/updateImage',upload.single("files"),userProfileController.addOrChangePhoto.bind(userProfileController)) 
 userprofileRouter.get('/getChatId/:providerId/:userId',userProfileController.getChatId.bind(userProfileController)) 
-userprofileRouter.post('/getchatofOneToOne/:chatId',userProfileController.getChatOfOneToOne.bind(userProfileController))
+userprofileRouter.post('/getchatofOneToOne/:chatId/:whoWantsData',userProfileController.getChatOfOneToOne.bind(userProfileController))
 userprofileRouter.get('/getchat/:whom/:id',userProfileController.fetchChat.bind(userProfileController))
 userprofileRouter.post('/newmessage',userProfileController.addMessage.bind(userProfileController))
+userprofileRouter.get('/notificationUpdater/:id',userProfileController.notificationCountUpdater.bind(userProfileController))
+userprofileRouter.get('/notificationGetter/:id',userProfileController.notificationGetter.bind(userProfileController))
 
 
   

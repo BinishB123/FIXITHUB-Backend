@@ -7,6 +7,8 @@ export default interface IadminSettingInteractor{
     addGeneralserviceOrRoadAssistance(data:{ category: "general" | "road",servicetype: string,image:Buffer|undefined}):Promise<{success:boolean,message?:string,created?:Object}>
     addSubType(data:{id:string,type:string}):Promise<{success:boolean,message?:string}>
     deleteSubType(data:{id:string,type:string}):Promise<{success:boolean,message?:string}>
+    editServiceName(data:{id:string,newName:string}):Promise<{success:boolean}>
+
 
 
 }

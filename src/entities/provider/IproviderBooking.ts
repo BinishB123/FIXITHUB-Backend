@@ -2,7 +2,7 @@ import { ResponseAccordingToDate, ResponsegetBookingStillTodaysDate } from "../.
 
 export default interface IproviderServiceBookingInteractor{
     getBookingsAccordingToDates(id:string,date:Date):Promise<{success?:boolean,data?:ResponseAccordingToDate[]|[]}>
-    getBookingStillTodaysDate(id:string,status?:string|undefined):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[]}>
+    getBookingStillTodaysDate(id:string,startIndex:number,status?:string|undefined):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[],count:number}>
     getBookingGreaterThanTodaysDate(id: string): Promise<{ success?: boolean; data?: ResponsegetBookingStillTodaysDate[] | []; }> 
     updateStatus(id:string,status:string,amount:number):Promise<{success?:boolean}>
 }

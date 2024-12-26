@@ -162,3 +162,57 @@ export interface ResponsegetBookingGreaterThanTodaysDate{
   suggestions:string
 }
 
+
+
+export interface NotifyGetterResponse{
+  
+    _id: ObjectId,
+    providerId: ObjectId,
+    userId: ObjectId,
+    createdAt:Date,
+    updatedAt:Date,
+    latestMessage: ObjectId,
+    message: {
+      _id: ObjectId,
+      sender: 'provider',
+      chatId: ObjectId,
+      message: string,
+      providerdelete: boolean,
+      userdelete: boolean,
+      seen: boolean,
+      createdAt: Date,
+      updatedAt: Date,
+      
+    }
+  
+}
+
+export interface UnreadMessageCount {
+  _id:ObjectId
+  count:number
+}
+
+
+export interface INotifyGetterResponse{
+  
+  _id: ObjectId,
+  providerId: ObjectId,
+  userId: ObjectId,
+  createdAt:Date,
+  updatedAt:Date,
+  latestMessage: ObjectId,
+  count:number,
+  message: {
+    _id: ObjectId,
+    sender: 'provider',
+    chatId: ObjectId,
+    message: string,
+    providerdelete: boolean,
+    userdelete: boolean,
+    seen: boolean,
+    createdAt: Date,
+    updatedAt: Date,
+    
+  }
+
+}

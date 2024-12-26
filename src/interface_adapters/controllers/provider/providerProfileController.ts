@@ -4,6 +4,7 @@ import HttpStatus from "../../../entities/rules/statusCode";
 import { IUploadToCloudinary } from "../../../entities/services/Iclodinary";
 import CustomError from "../../../framework/services/errorInstance";
 import { IChatInteractor } from "../../../entities/common/IChatInteractor";
+import { nextTick } from "process";
 
 class ProviderProfileController {
   constructor(
@@ -204,8 +205,8 @@ class ProviderProfileController {
 
   async getOneToneChat(req:Request,res:Response,next:NextFunction){
     try {
-        const {chatid} = req.params
-        const response = await this.chatInteractor.getChatOfOneToOne(chatid)
+        const {chatid,whoWantsData} = req.params
+        const response = await this.chatInteractor.getChatOfOneToOne(chatid,whoWantsData)
         return res.status(HttpStatus.OK).json(response)
       
     } catch (error) {
@@ -232,6 +233,16 @@ class ProviderProfileController {
         return res.status(HttpStatus.OK).json(response)
     } catch (error) {
       next(error)
+    }
+  }
+
+  async notificationCountUpdater(req:Request,res:Response,next:NextFunction){
+    try {
+       const {id} = req.params
+       const response = await this.providerProfileInteractor.notificationCountUpdater(id)
+       return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+       next(error)
     }
   }
   

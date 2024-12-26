@@ -20,10 +20,10 @@ class ProviderServiceBookingController {
 
     async getBookingStillTodaysDate(req:Request,res:Response,next:NextFunction){
         try {
-            const {id} = req.params
+            const {id,startIndex} = req.params
             let { status } = req.query;
             status = typeof status === 'string' ? status : undefined;
-            const response = await this.serviceBookingInteractor.getBookingStillTodaysDate(id, status);
+            const response = await this.serviceBookingInteractor.getBookingStillTodaysDate(id,parseInt(startIndex),status);
             return res.status(HttpStatus.OK).json(response)
         } catch (error) {
             next(error)

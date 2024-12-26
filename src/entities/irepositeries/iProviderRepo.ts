@@ -75,9 +75,11 @@ interface IProviderRepository {
     providerAddedDates(id: string): Promise<{ success?: boolean, data: { _id: ObjectId, date: Date }[] | [] }>
     updateCount(id: string, toDo: string): Promise<{ success?: boolean }>
     getBookingsAccordingToDates(id:string,date:Date):Promise<{success?:boolean,data?:ResponseAccordingToDate[]|[]}>
-    getBookingStillTodaysDate(id:string,status?:string|undefined):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[]}>
+    getBookingStillTodaysDate(id:string,startIndex:number,status?:string|undefined):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[],count:number}>
     getBookingGreaterThanTodaysDate(id:string):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[]}>
     updateStatus(id:string,status:string,amount:number):Promise<{success?:boolean,paymentId?:string}>
+    notificationCountUpdater(id:string):Promise<{count:number}>
+
     
 
 

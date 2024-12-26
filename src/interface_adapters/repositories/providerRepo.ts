@@ -22,6 +22,8 @@ import CustomError from "../../framework/services/errorInstance";
 import HttpStatus from "../../entities/rules/statusCode";
 import BookingDateModel from "../../framework/mongoose/BookingDates";
 import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
+import chatModel from "../../framework/mongoose/ChatSchema";
+import messageModel from "../../framework/mongoose/messageSchema";
 
 class ProviderRepository implements IProviderRepository {
   async sendOtp(otp: string, email: string): Promise<{ created: boolean }> {
@@ -937,15 +939,18 @@ class ProviderRepository implements IProviderRepository {
 
   async getBookingStillTodaysDate(
     id: string,
+    startIndex:number,
     status?: string
   ): Promise<{
     success?: boolean;
     data?: ResponsegetBookingStillTodaysDate[] | [];
+    count:number
   }> {
     try {
+     
+      
       const date = new Date();
       date.setHours(0, 0, 0, 0);
-
       const query: any = [
         { $match: { providerId: new mongoose.Types.ObjectId(id) } },
         ...(status ? [{ $match: { status: status } }] : []),
@@ -1007,17 +1012,19 @@ class ProviderRepository implements IProviderRepository {
             suggestions: 1,
           },
         },
+        {$skip:startIndex},
+        {$limit:10}
       ];
 
       const data: ResponsegetBookingStillTodaysDate[] =
         await ServiceBookingModel.aggregate(query);
-        
+        const count = await ServiceBookingModel.find({providerId: new mongoose.Types.ObjectId(id)})
 
       if (data.length === 0) {
         throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
       }
 
-      return { success: true, data: data.length > 0 ? data : [] };
+      return { success: true, data: data.length > 0 ? data : [],count:count.length };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }
@@ -1127,6 +1134,32 @@ class ProviderRepository implements IProviderRepository {
       throw new CustomError(error.message, error.statusCode);
     }
   }
+   
+  async notificationCountUpdater(id: string): Promise<{ count: number }> {
+    try {
+        // const bookingReadyToDelivery = await ServiceBookingModel.aggregate([
+        //     {$match: { userId: new mongoose.Types.ObjectId(id) } },
+        //     {$match: { status: "completed" }},
+        //     {$match:{ paymentStatus: "pending" }}
+        //   ]);
+
+        const chat = await chatModel.findOne({
+            providerId: new mongoose.Types.ObjectId(id),
+        });
+        const message = await messageModel.aggregate([
+            { $match: { chatId: new mongoose.Types.ObjectId(chat?._id + "") } },
+            { $match: { sender: "user" } },
+            { $match: { seen: false } },
+        ]);
+
+        return { count: message.length };
+    } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode);
+    }
+}
+
+
+
 }
 
 export default ProviderRepository;

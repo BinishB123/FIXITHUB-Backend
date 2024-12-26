@@ -1,3 +1,4 @@
+import CustomError from "../../framework/services/errorInstance";
 import IadminSettingInteractor from "../../entities/admin/Iadminsettings";
 import IAdminRepo from "../../entities/irepositeries/IAdminRepo";
 import { IUploadToCloudinary } from "../../entities/services/Iclodinary";
@@ -117,6 +118,15 @@ class AdminSettingInteractor implements IadminSettingInteractor {
         return response
       } catch (error) {
         return {success:false,message:"500"}
+      }
+  }
+
+  async editServiceName(data: { id: string; newName: string; }): Promise<{ success: boolean; }> {
+      try {
+          const response = await this.adminRepo.editServiceName(data)
+          return response
+      } catch (error:any) {
+        throw new CustomError(error.message,error.statusCode)
       }
   }
 }

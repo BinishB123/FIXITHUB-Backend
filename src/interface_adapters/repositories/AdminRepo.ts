@@ -8,17 +8,20 @@ import vehicleModel from "../../framework/mongoose/vehicleSchema";
 import brandModel from "../../framework/mongoose/brandSchema";
 import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
 import providingServicesModel from "../../framework/mongoose/providingServicesSchema";
+import mongoose from "mongoose";
+import CustomError from "../../framework/services/errorInstance";
+import HttpStatus from "../../entities/rules/statusCode";
 
 class AdminRepository implements IAdminRepo {
   async adminSignIn(
     email: string,
     password: string
-  ): Promise<{ success: boolean; message?: string ,admin?:{id:string,email:string}}> {
+  ): Promise<{ success: boolean; message?: string, admin?: { id: string, email: string } }> {
     try {
       const admin = await adminModel.findOne({ email: email });
 
       if (admin && admin.password === password) {
-        return { success: true ,admin:{id:admin._id+"",email:admin.email}};
+        return { success: true, admin: { id: admin._id + "", email: admin.email } };
       } else {
         return { success: false, message: "invalid password or emailId" };
       }
@@ -158,7 +161,7 @@ class AdminRepository implements IAdminRepo {
       if (state && updated) {
         const created = await providingServicesModel.create({
           workshopId: id,
-          
+
         });
       }
       if (updated) {
@@ -248,10 +251,10 @@ class AdminRepository implements IAdminRepo {
       const brands = await brandModel.aggregate([
         { $project: { _id: 0, brand: 1 } },
       ]);
-      const generalServices = await ServiceTypeModel.aggregate([{$match:{category:"general"}},{ $project: { _id: 1, serviceType: 1, imageUrl: 1, category: 1 ,subTypes:1} }])
-      const roadAssistance = await ServiceTypeModel.aggregate([{$match:{category:"road"}},{ $project: { _id: 1, serviceType: 1, imageUrl: 1, category: 1 } }])
+      const generalServices = await ServiceTypeModel.aggregate([{ $match: { category: "general" } }, { $project: { _id: 1, serviceType: 1, imageUrl: 1, category: 1, subTypes: 1 } }])
+      const roadAssistance = await ServiceTypeModel.aggregate([{ $match: { category: "road" } }, { $project: { _id: 1, serviceType: 1, imageUrl: 1, category: 1 } }])
 
-      return { success: true, brands: brands.length > 0 ? brands : [], generalServices: generalServices.length > 0 ? generalServices : [],roadAssistance:roadAssistance.length>0?roadAssistance:[] };
+      return { success: true, brands: brands.length > 0 ? brands : [], generalServices: generalServices.length > 0 ? generalServices : [], roadAssistance: roadAssistance.length > 0 ? roadAssistance : [] };
     } catch (error) {
       return { success: false };
     }
@@ -277,17 +280,17 @@ class AdminRepository implements IAdminRepo {
           imageUrl: data.imageUrl,
           subTypes: []
         })
-        
+
         const filteredData = {
           category: created.category,
           serviceType: created.serviceType,
           imageUrl: created.imageUrl,
-          subTypes:created.subTypes,
+          subTypes: created.subTypes,
           _id: created._id
         }
 
         if (created) {
-          return { success: true, message: "Created",created:filteredData };
+          return { success: true, message: "Created", created: filteredData };
         } else {
           return { success: false, message: "Failed to create general service type." };
         }
@@ -305,7 +308,7 @@ class AdminRepository implements IAdminRepo {
           _id: created._id
         }
         if (created) {
-          return { success: true, message: "Created",created:filteredData };
+          return { success: true, message: "Created", created: filteredData };
         } else {
           return { success: false, message: "Failed to create road service type." };
         }
@@ -318,62 +321,77 @@ class AdminRepository implements IAdminRepo {
       return { success: false, message: "" }
     }
   }
-   
+
   async addOrUpdateSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; updatedData?: any }> {
     try {
-     
+
       const existingDocument = await ServiceTypeModel.findOne({
         _id: data.id,
-        'subTypes.type': data.type.trim(),  
+        'subTypes.type': data.type.trim(),
       });
-  
+
       let updated;
-      
+
       if (existingDocument) {
-      
+
         updated = await ServiceTypeModel.findOneAndUpdate(
-          { _id: data.id, 'subTypes.type': data.type.trim() }, 
-          { $set: { 'subTypes.$.type': data.type.trim() } },    
-          { new: true } 
+          { _id: data.id, 'subTypes.type': data.type.trim() },
+          { $set: { 'subTypes.$.type': data.type.trim() } },
+          { new: true }
         );
       } else {
-       
+
         updated = await ServiceTypeModel.findOneAndUpdate(
           { _id: data.id },
-          { $push: { subTypes: { type: data.type.trim() } } },  
-          { new: true } 
+          { $push: { subTypes: { type: data.type.trim() } } },
+          { new: true }
         );
       }
-      
+
       if (!updated) {
         return { success: false, message: "Cannot update or add subType" };
       }
-      const newSubtypeId = updated.subTypes[updated.subTypes.length - 1]  
-      return { success: true, updatedData: newSubtypeId };  
-  
+      const newSubtypeId = updated.subTypes[updated.subTypes.length - 1]
+      return { success: true, updatedData: newSubtypeId };
+
     } catch (error) {
       console.log(error);
       return { success: false, message: "500" };
     }
   }
-  
+
   async deleteSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; }> {
-      try {
-        const deleted = await ServiceTypeModel.updateOne(
-          { _id: data.id },
-          { $pull: { subTypes: { _id: data.type } } }  
-        );
-        
-        if (deleted.modifiedCount===0) {
-          return {success:false,message:"409"}
-        }
-        return {success:true,message:"deleted"}
-      } catch (error) {
-        return {success:false,message:"500"}
+    try {
+      const deleted = await ServiceTypeModel.updateOne(
+        { _id: data.id },
+        { $pull: { subTypes: { _id: data.type } } }
+      );
+
+      if (deleted.modifiedCount === 0) {
+        return { success: false, message: "409" }
       }
+      return { success: true, message: "deleted" }
+    } catch (error) {
+      return { success: false, message: "500" }
+    }
   }
 
- 
+  async editServiceName(data: { id: string; newName: string; }): Promise<{ success: boolean; }> {
+    try {
+      const updated = await ServiceTypeModel.updateOne({ _id: new mongoose.Types.ObjectId(data.id) }, {
+        $set: { serviceType: data.newName }
+      })
+      if (updated.modifiedCount === 0) {
+        throw new CustomError("updation failed try again", HttpStatus.NO_CONTENT)
+      }
+      return { success: true }
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode)
+    }
+  }
+
+
+
 
 
 }

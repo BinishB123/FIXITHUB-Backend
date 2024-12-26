@@ -16,6 +16,7 @@ adminSettingsRoute.get('/settingsDatas', adminSettingsController.getAllSettingsD
 adminSettingsRoute.post('/addservices', upload.single("files"), adminSettingsController.addGeneralServiceOrRoadAssistanceServices.bind(adminSettingsController))
 adminSettingsRoute.patch('/addSubtype',adminSettingsController.addSubType.bind(adminSettingsController))
 adminSettingsRoute.delete('/deletesubtype',adminSettingsController.deleteSubType.bind(adminSettingsController))
+adminSettingsRoute.patch('/editservicename/:id',adminSettingsController.editServiceName.bind(adminSettingsController))
 
 
 

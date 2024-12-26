@@ -1,5 +1,5 @@
 import user, { IRequiredDataDForBooking, Provider, userResponseData, userSignIn } from "entities/rules/user"
-import { IgetservicesResponse ,IRequirementToFetchShops, ResponsegetBookingGreaterThanTodaysDate} from "entities/user/IuserResponse"
+import { IgetservicesResponse ,IRequirementToFetchShops, NotifyGetterResponse, ResponsegetBookingGreaterThanTodaysDate, UnreadMessageCount} from "entities/user/IuserResponse"
 import { ObjectId } from "mongoose"
 
 
@@ -22,6 +22,8 @@ interface isUserRepository{
     getServiceHistory(userID:string,startindex:number,endindex:number):Promise<{success?:boolean,data?:ResponsegetBookingGreaterThanTodaysDate[]|[],count:number}>
     afterFullpaymentDone(docId:string):Promise<{success?:boolean}>
     cancelBooking(id:string,date:string):Promise<{success?:boolean,payemntid?:string}>
+    notificationCountUpdater(id:string):Promise<{count:number}>
+    notificationsGetter(id:string):Promise<{notfiyData:NotifyGetterResponse[]|[] ,countOfUnreadMessages:UnreadMessageCount[]|[]}>
     
 
 }

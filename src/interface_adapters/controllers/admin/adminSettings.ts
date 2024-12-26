@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import IadminSettingInteractor from "../../../entities/admin/Iadminsettings";
 import HttpStatus from "../../../entities/rules/statusCode";
 
@@ -142,6 +142,21 @@ class AdminSettingController {
         .json({ success: false, message: "can't delete server error" });
     }
   }
+
+  async editServiceName(req:Request,res:Response,next:NextFunction){
+    try {
+        const {id} = req.params
+        const {newName} = req.body
+        if (!newName) {
+          return res.status(HttpStatus.NOT_FOUND).json({message:"something Went Wrong try Again"})
+        }
+        const response = await this.adminSettingsInter.editServiceName({id,newName})
+        return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
 }
 
 export default AdminSettingController;

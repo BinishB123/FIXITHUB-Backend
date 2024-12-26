@@ -12,6 +12,7 @@ interface IProfileInteractor {
     getAllBrand(id:string):Promise<{success:boolean,message?:string,brandData?:{_id:string,brand:string}[]|null}>
     changepassword(data:{id:string,currentpassowrd:string,newpassowrd:string}):Promise<{success?:boolean,message?:string}>
     updateLogo(url:string,id:string):Promise<{success?:boolean,message?:string,url?:string}>
+    notificationCountUpdater(id:string):Promise<{count:number}>
 
 }
 
