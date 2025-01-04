@@ -4,6 +4,7 @@ import { IUploadToCloudinary } from '../../entities/services/Iclodinary';
 import { error } from 'console';
 import CustomError from './errorInstance';
 import HttpStatus from '../../entities/rules/statusCode';
+import { resolve } from 'path';
 
 dotenv.config();
 
@@ -41,8 +42,6 @@ class Cloudinary implements IUploadToCloudinary {
     async deleteFromCloudinary(url: string, FolderNameThatContainImage: string ): Promise<{ success?: boolean; message?: string; }> {
         try {
             const publicId = url?.split("/").reverse()[0].split(".")[0];
-            console.log(FolderNameThatContainImage + "/" + publicId);
-            
             const result = await cloudinary.uploader.destroy(FolderNameThatContainImage + "/" + publicId);
             console.log(result);
             
@@ -58,9 +57,51 @@ class Cloudinary implements IUploadToCloudinary {
           }
           
     }
+
+
+
+    async uploadArrayOfImages(
+        fileBuffer: Buffer[],
+        folder: string
+    ): Promise<{ success: boolean; results: { url?: string; message?: string }[] }> {
+        const uploadPromises = fileBuffer.map((file, index) => {
+            const uniqueId = `FixithubImages_${Date.now()}_${index}`;
+            return new Promise<{ url?: string; message?: string }>((resolve) => {
+                cloudinary.uploader.upload(
+                    `data:image/jpeg;base64,${file.toString('base64')}`,
+                    {
+                        folder: folder,
+                        public_id: uniqueId,
+                        resource_type: 'image',
+                    },
+                    (error, result) => {
+                        if (error) {
+                            console.error('Error uploading to Cloudinary:', error);
+                            resolve({ message: 'Upload failed' });
+                        } else {
+                            resolve({ url: result?.secure_url });
+                        }
+                    }
+                );
+            });
+        });
+    
+        const results = await Promise.allSettled(uploadPromises);
+    
+        const response = results.map((result) =>
+            result.status === 'fulfilled' ? { url: result.value.url } : { message: 'Upload failed' }
+        );
+    
+        const success = response.every((r) => r.url);
+    
+        return { success, results: response };
+    }
+    
     
     
     }
+
+
 
     
 

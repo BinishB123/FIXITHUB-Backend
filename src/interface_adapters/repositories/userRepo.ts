@@ -15,6 +15,8 @@ import {
     IRequirementToFetchShops,
     NotifyGetterResponse,
     ResponsegetBookingGreaterThanTodaysDate,
+    responseGetReviewDetails,
+    reviewAddedResponse,
     UnreadMessageCount,
 } from "../../entities/user/IuserResponse";
 import brandModel from "../../framework/mongoose/brandSchema";
@@ -27,6 +29,7 @@ import BookingDateModel from "../../framework/mongoose/BookingDates";
 import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
 import chatModel from "../../framework/mongoose/ChatSchema";
 import messageModel from "../../framework/mongoose/messageSchema";
+import reviewModel from "../../framework/mongoose/reviewSchema";
 import { log } from "node:console";
 
 class UserRepository implements isUserRepository {
@@ -660,8 +663,10 @@ class UserRepository implements isUserRepository {
                         "provider.logoUrl": 1,
                         "bookeddate.date": 1,
                         "servicename.serviceType": 1,
+                        "servicename._id": 1,
                         "user.mobile": 1,
                         "brand.brand": 1,
+                        review: 1,
                         suggestions: 1,
                     },
                 },
@@ -781,8 +786,8 @@ class UserRepository implements isUserRepository {
                 },
                 { $unwind: "$message" },
                 { $match: { "message.sender": "provider" } },
-                { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } },
-                { $unwind: "$user" },
+                { $lookup: { from: "providers", localField: "providerId", foreignField: "_id", as: "provider" } },
+                { $unwind: "$provider" },
                 {
                     $project: {
                         providerId: 1,
@@ -791,8 +796,8 @@ class UserRepository implements isUserRepository {
                         updatedAt: 1,
                         latestMessage: 1,
                         message: 1,
-                        "user.name":1,
-                        "user.logoUrl":1
+                        "provider.workshopName": 1,
+                        "provider.logoUrl": 1
 
                     }
                 }
@@ -824,7 +829,7 @@ class UserRepository implements isUserRepository {
                 await chatModel.aggregate(querynotifyData);
             const countOfUnreadMessages: UnreadMessageCount[] | [] =
                 await messageModel.aggregate(querycountOfUnreadMessages);
-           
+
 
             return {
                 notfiyData: notifyData,
@@ -834,6 +839,146 @@ class UserRepository implements isUserRepository {
             throw new CustomError(error.message, error.statusCode);
         }
     }
+
+    async addReview(data: { review: string; userId: string; providerId: string; serviceId: string; bookingId: string }, result: { url?: string; }[]): Promise<{ success?: boolean; review?: reviewAddedResponse; }> {
+        try {
+
+            const created = await reviewModel.create({
+                userId: data.userId,
+                ProviderId: data.providerId,
+                ServiceId: data.serviceId,
+                bookingId: data.bookingId,
+                opinion: data.review,
+                images: result
+            })
+            if (!created) {
+                throw new CustomError("something went wrong Can't post Your review")
+            }
+            await ServiceBookingModel.updateOne({ _id: new mongoose.Types.ObjectId(data.bookingId) }, {
+                $set: {
+                    review: created._id
+                }
+            })
+            const reviewResponse: reviewAddedResponse = {
+                _id: created._id + "",
+                userId: created.userId,
+                ProviderId: created.ProviderId,
+                ServiceId: created.ServiceId,
+                bookingId: created.bookingId,
+                opinion: created.opinion,
+                reply: created.reply || null,
+                like: created.like,
+                images: created.images.map((image) => ({
+                    url: image.url
+                })),
+            };
+
+
+            return { success: true, review: reviewResponse };
+
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+
+    async getReviewDetails(id: string): Promise<{ ReviewData?: responseGetReviewDetails }> {
+        try {
+            const [review] = await reviewModel.aggregate([{
+                $lookup: {
+                    from: "providers",
+                    localField: "ProviderId",
+                    foreignField: "_id",
+                    as: "provider"
+                }
+            },
+            { $unwind: "$provider" },
+            {
+                $project: {
+                    _id: 1,
+                    userId: 1,
+                    ServiceId: 1,
+                    bookingId: 1,
+                    opinion: 1,
+                    reply: 1,
+                    like: 1,
+                    images: 1,
+                    "provider._id": 1,
+                    "provider.workshopName": 1,
+                    "provider.logoUrl": 1
+
+                }
+            }
+            ])
+            
+            if (!review) {
+                throw new CustomError("Something went wrong Not Found", HttpStatus.NOT_FOUND)
+            }
+            return { ReviewData: review }
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+    async deleteOneImage(id: string, url: string): Promise<{ success?: boolean; }> {
+        try {
+            const update = await reviewModel.updateOne({ _id: new mongoose.Types.ObjectId(id) }, {
+                $pull: {
+                    images: { url: url }
+                }
+            })
+            if (update.modifiedCount === 0) {
+                throw new CustomError("can't delete image ", HttpStatus.Unprocessable_Entity)
+            }
+            return { success: true }
+
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+
+
+
+    }
+
+    async editReview(id: string, newReview: string): Promise<{ success?: boolean; }> {
+        try {
+
+            const update = await reviewModel.updateOne({ _id: new mongoose.Types.ObjectId(id) }, {
+                $set: {
+                    opinion: newReview
+                }
+            })
+
+            if (update.modifiedCount === 0) {
+                throw new CustomError("Review editing Failed try again", HttpStatus.Unprocessable_Entity)
+            }
+            return { success: true }
+
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+    async addOneImage(id: string, newImageUrl: string): Promise<{ success: boolean; url: string; }> {
+       try {
+        const update = await reviewModel.updateOne({ _id: new mongoose.Types.ObjectId(id) }, {
+            $push: {
+                images: { url: newImageUrl }
+            }
+        })
+        if (update.modifiedCount === 0) {
+            throw new CustomError("can't delete image ", HttpStatus.Unprocessable_Entity)
+        }
+        return { success: true ,url:newImageUrl}
+         
+       } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode)
+       }
+    }
+
+
+
+
 }
 
 export default UserRepository;

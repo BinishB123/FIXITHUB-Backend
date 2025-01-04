@@ -30,7 +30,7 @@ app.use((req,res,next) =>{
 });
 
 app.use(cors({
-    origin: 'http://localhost:5173',  //  frontend URL
+    origin: process.env.ORGIN,  
     methods: 'GET,PUT,POST,PATCH,OPTIONS,DELETE',
     allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control'],
     credentials: true,

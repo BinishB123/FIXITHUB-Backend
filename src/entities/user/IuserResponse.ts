@@ -120,6 +120,7 @@ interface BookedDate {
 
 interface ServiceName {
   serviceType: string;
+  _id:ObjectId
 }
 
 export interface ResponseAccordingToDate {
@@ -160,6 +161,7 @@ export interface ResponsegetBookingGreaterThanTodaysDate{
     brand:string
   }
   suggestions:string
+  review?:ObjectId|null
 }
 
 
@@ -214,5 +216,37 @@ export interface INotifyGetterResponse{
     updatedAt: Date,
     
   }
+
+}
+
+
+export interface reviewAddedResponse {
+  _id: string;  
+  userId: ObjectId;
+  ProviderId: ObjectId;
+  ServiceId: ObjectId;
+  bookingId: ObjectId;
+  opinion: string;
+  reply: string | null;
+  like: boolean;
+  images: { url: string }[];
+}
+
+export interface responseGetReviewDetails{
+  _id: string;  
+  userId: ObjectId;
+  ServiceId: ObjectId;
+  bookingId: ObjectId;
+  opinion: string;
+  reply: string | null;
+  like: boolean;
+  images: { url: string }[];
+  provider:{
+    _id:ObjectId
+    logoUrl:string
+    workshopName:string
+  }
+  
+
 
 }

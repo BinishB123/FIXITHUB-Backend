@@ -1,5 +1,5 @@
 import user, { IRequiredDataDForBooking, Provider, userResponseData, userSignIn } from "entities/rules/user"
-import { IgetservicesResponse ,IRequirementToFetchShops, NotifyGetterResponse, ResponsegetBookingGreaterThanTodaysDate, UnreadMessageCount} from "entities/user/IuserResponse"
+import { IgetservicesResponse ,IRequirementToFetchShops, NotifyGetterResponse, ResponsegetBookingGreaterThanTodaysDate, responseGetReviewDetails, reviewAddedResponse, UnreadMessageCount} from "entities/user/IuserResponse"
 import { ObjectId } from "mongoose"
 
 
@@ -24,8 +24,11 @@ interface isUserRepository{
     cancelBooking(id:string,date:string):Promise<{success?:boolean,payemntid?:string}>
     notificationCountUpdater(id:string):Promise<{count:number}>
     notificationsGetter(id:string):Promise<{notfiyData:NotifyGetterResponse[]|[] ,countOfUnreadMessages:UnreadMessageCount[]|[]}>
-    
-
+    addReview(data: { review: string; userId: string; providerId: string; serviceId: string;  bookingId:string }, result: { url?: string }[]): Promise<{ success?: boolean; review?: reviewAddedResponse }> 
+    getReviewDetails(id:string):Promise<{ReviewData?:responseGetReviewDetails}>
+    deleteOneImage(id:string,url:string):Promise<{success?:boolean}>
+    editReview(id:string,newReview:string):Promise<{success?:boolean}>
+    addOneImage(id:string,newImageUrl:string):Promise<{success:boolean,url:string}>
 }
 
 

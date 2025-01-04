@@ -234,3 +234,81 @@ export interface ResponsegetBookingStillTodaysDate{
 
 
 
+
+export interface NotifyGetterResponse{
+  
+  _id: ObjectId,
+  providerId: ObjectId,
+  userId: ObjectId,
+  createdAt:Date,
+  updatedAt:Date,
+  latestMessage: ObjectId,
+  message: {
+    _id: ObjectId,
+    sender: 'user',
+    chatId: ObjectId,
+    message: string,
+    providerdelete: boolean,
+    userdelete: boolean,
+    seen: boolean,
+    createdAt: Date,
+    updatedAt: Date,
+    
+  }
+
+}
+
+export interface UnreadMessageCount {
+_id:ObjectId
+count:number
+}
+
+
+export interface INotifyGetterResponse{
+
+_id: ObjectId,
+providerId: ObjectId,
+userId: ObjectId,
+createdAt:Date,
+updatedAt:Date,
+latestMessage: ObjectId,
+count:number,
+message: {
+  _id: ObjectId,
+  sender: 'user',
+  chatId: ObjectId,
+  message: string,
+  providerdelete: boolean,
+  userdelete: boolean,
+  seen: boolean,
+  createdAt: Date,
+  updatedAt: Date,
+  
+}
+
+}
+
+
+export interface IMessage {
+  _id: ObjectId;
+  sender: 'user'; 
+  chatId: ObjectId;
+  message: string;
+  providerdelete: boolean;
+  userdelete: boolean;
+  seen: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+export interface INotifyGetterResponse {
+  _id: ObjectId;
+  providerId: ObjectId;
+  userId: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  latestMessage: ObjectId;
+  count: number;
+  message: IMessage; // Reference the extracted type
+}

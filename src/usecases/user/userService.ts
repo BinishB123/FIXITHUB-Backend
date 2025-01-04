@@ -5,17 +5,21 @@ import {
   IRequirementToFetchShops,
   ProviderShopSelectedServiceFinalData,
   ResponsegetBookingGreaterThanTodaysDate,
+  responseGetReviewDetails,
+  reviewAddedResponse,
 } from "../../entities/user/IuserResponse";
 import { ObjectId } from "mongoose";
 import CustomError from "../../framework/services/errorInstance";
 import { IRequiredDataDForBooking } from "../../entities/rules/user";
 import IStripe from "../../entities/services/Istripe";
+import { log } from "node:console";
 
 class UserServiceInteractor implements IuserService {
-  constructor(private readonly userRepo: isUserRepository,private readonly stripe:IStripe) {}
-  async getServices(
-    category: string 
-  ): Promise<{
+  constructor(
+    private readonly userRepo: isUserRepository,
+    private readonly stripe: IStripe
+  ) { }
+  async getServices(category: string): Promise<{
     success: boolean;
     message: string;
     services?: IgetservicesResponse[];
@@ -135,66 +139,156 @@ class UserServiceInteractor implements IuserService {
     }
   }
 
-  async getBookingDates(id: string): Promise<{ success?: boolean; data?: { _id: ObjectId; date: Date; count: number; }[] | []; }> {
-      try {
-        const response = await this.userRepo.getBookingDates(id)
-        return response
-      } catch (error:any) {
-        throw new CustomError(error.message,error.statusCode)
-      }
-  }
-
-  async SuccessBooking(data: IRequiredDataDForBooking,sessionId:string): Promise<{ success?: boolean; }> {
+  async getBookingDates(
+    id: string
+  ): Promise<{
+    success?: boolean;
+    data?: { _id: ObjectId; date: Date; count: number }[] | [];
+  }> {
     try {
-      const response = await this.userRepo.SuccessBooking(data,sessionId)
-      return response
-    } catch (error:any) {
-      throw new CustomError(error.message,error.statusCode)
+      const response = await this.userRepo.getBookingDates(id);
+      return response;
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
     }
-      
   }
 
-   async getLatestBooking(userId: string): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; }> {
-      try {
-           const response  = await this.userRepo.getLatestBooking(userId)
-           return response
-        
-      } catch (error:any) {
-        throw new CustomError(error.message,error.statusCode)
-      }
-  }
-
- async getServiceHistory(userID: string, startindex: number, endindex: number): Promise<{ success?: boolean; data?: ResponsegetBookingGreaterThanTodaysDate[] | []; count:number}> {
-  try {
-    const response = await this.userRepo.getServiceHistory(userID,startindex,endindex)
-    return response
-} catch (error:any) {
- throw new CustomError(error.message,error.statusCode)
-}
- }
-  
-  async afterFullpaymentDone(docId: string): Promise<{ success?: boolean; }> {
-      try {
-        const response = await this.userRepo.afterFullpaymentDone(docId)
-        return response
-      } catch (error:any) {
-        throw new CustomError(error.message,error.statusCode)
-      }
-  }
-
- 
-  async cancelBooking(id: string, amount: number,date:string): Promise<{ success?: boolean; }> {
+  async SuccessBooking(
+    data: IRequiredDataDForBooking,
+    sessionId: string
+  ): Promise<{ success?: boolean }> {
     try {
-      const response = await this.userRepo.cancelBooking(id,date)
-       if (response.payemntid) {
-        const res = await  this.stripe.refund(response.payemntid,amount)
-       }
-      return {success:true}
-   } catch (error:any) {
-     throw new CustomError(error.message,error.statusCode)
-   }
+      const response = await this.userRepo.SuccessBooking(data, sessionId);
+      return response;
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
   }
-  
+
+  async getLatestBooking(
+    userId: string
+  ): Promise<{
+    success?: boolean;
+    data?: ResponsegetBookingGreaterThanTodaysDate[] | [];
+  }> {
+    try {
+      const response = await this.userRepo.getLatestBooking(userId);
+      return response;
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getServiceHistory(
+    userID: string,
+    startindex: number,
+    endindex: number
+  ): Promise<{
+    success?: boolean;
+    data?: ResponsegetBookingGreaterThanTodaysDate[] | [];
+    count: number;
+  }> {
+    try {
+      const response = await this.userRepo.getServiceHistory(
+        userID,
+        startindex,
+        endindex
+      );
+      return response;
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async afterFullpaymentDone(docId: string): Promise<{ success?: boolean }> {
+    try {
+      const response = await this.userRepo.afterFullpaymentDone(docId);
+      return response;
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async cancelBooking(
+    id: string,
+    amount: number,
+    date: string
+  ): Promise<{ success?: boolean }> {
+    try {
+      const response = await this.userRepo.cancelBooking(id, date);
+      if (response.payemntid) {
+        const res = await this.stripe.refund(response.payemntid, amount);
+      }
+      return { success: true };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async addReview(
+    data: {
+      review: string;
+      userId: string;
+      providerId: string;
+      serviceId: string;
+      bookingId: string;
+    },
+    result: { url?: string; message?: string }[]
+  ): Promise<{ success?: boolean; review?: reviewAddedResponse }> {
+    try {
+      const response = await this.userRepo.addReview(data, result);
+      return response;
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+
+  async getReviewDetails(id: string): Promise<{ ReviewData?: responseGetReviewDetails; }> {
+    try {
+      const response = await this.userRepo.getReviewDetails(id)
+      return response
+
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode)
+    }
+
+  }
+
+  async deleteOneImage(id: string, url: string): Promise<{ success?: boolean; }> {
+    try {
+      const response = await this.userRepo.deleteOneImage(id, url)
+      return response
+
+
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode)
+    }
+
+  }
+
+  async editReview(id: string, newReview: string): Promise<{ success?: boolean; }> {
+    try {
+      const response = await this.userRepo.editReview(id, newReview)
+      return response
+
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode)
+    }
+
+  }
+
+  async addOneImage(id: string, newImageUrl: string): Promise<{ success: boolean; url: string; }> {
+    try {
+      const response = await this.userRepo.addOneImage(id, newImageUrl)
+      return response
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode)
+    }
+
+  }
+
+
 }
 
 export default UserServiceInteractor;

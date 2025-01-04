@@ -31,5 +31,6 @@ providerProfileRoute.patch('/changelogo', upload.single("files"), providerProfil
 providerProfileRoute.get('/getchatid/:providerId/:userId', providerProfileController.getChatId.bind(providerProfileController))
 providerProfileRoute.get('/getonetonechat/:chatid', providerProfileController.getOneToneChat.bind(providerProfileController))
 providerProfileRoute.get('/notificationCounterUpdater/:id', providerProfileController.notificationCountUpdater.bind(providerProfileController))
+providerProfileRoute.get('/notificationGetter/:id',providerProfileController.notificationGetter.bind(providerProfileController))
 
 export default providerProfileRoute

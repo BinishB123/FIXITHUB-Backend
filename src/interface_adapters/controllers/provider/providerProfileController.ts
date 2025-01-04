@@ -246,6 +246,18 @@ class ProviderProfileController {
     }
   }
   
+  async notificationGetter(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+     
+      
+      const response = await this.providerProfileInteractor.notificationsGetter(id)
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
 
 }
 

@@ -1,4 +1,4 @@
-import { IproviderReponseData } from "../../entities/rules/provider";
+import { INotifyGetterResponse, IproviderReponseData } from "../../entities/rules/provider";
 import IProviderRepository from "../../entities/irepositeries/iProviderRepo";
 import IProfileInteractor from "../../entities/provider/IprofileInteractor";
 import CustomError from "../../framework/services/errorInstance";
@@ -78,6 +78,28 @@ class ProviderProfileInteractor implements IProfileInteractor{
 
         } catch (error: any) {
 
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+    async notificationsGetter(id: string): Promise<{ notfiyData: INotifyGetterResponse[] | []; }> {
+        try {
+            const response = await this.providerRepo.notificationsGetter(id)
+            console.log("his.providerRepo.notificationsGetter(id)",response);
+            
+          
+            if (response.countOfUnreadMessages.length > 0 && response.notfiyData.length > 0) {
+
+                const data: INotifyGetterResponse[] = response.notfiyData.map((data) => {
+                    const matchedItem = response.countOfUnreadMessages.find((item) => item._id+"" === data._id+"");
+                    return { ...data, count: matchedItem ? matchedItem.count : 1 };
+                });
+               
+                return { notfiyData: data }
+
+            }
+            return { notfiyData: [] }
+        } catch (error: any) {
             throw new CustomError(error.message, error.statusCode)
         }
     }

@@ -37,8 +37,8 @@ const ServiceBookingSchema = new Schema<BookingSchema>({
     },
     advanceAmount: { type: Number, required: true },
     advance: { type: Boolean, default:true },
-    paymentIntentId:{type:String,required:true}
-
+    paymentIntentId:{type:String,required:true},
+    review:{type:Schema.Types.ObjectId,ref:"Reviews",default:null}
 })
 
 const ServiceBookingModel = model("serviceBookings", ServiceBookingSchema)

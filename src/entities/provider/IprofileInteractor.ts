@@ -1,4 +1,4 @@
-import { IproviderReponseData } from "../../entities/rules/provider"
+import { INotifyGetterResponse, IproviderReponseData } from "../../entities/rules/provider"
 
 
 
@@ -13,6 +13,8 @@ interface IProfileInteractor {
     changepassword(data:{id:string,currentpassowrd:string,newpassowrd:string}):Promise<{success?:boolean,message?:string}>
     updateLogo(url:string,id:string):Promise<{success?:boolean,message?:string,url?:string}>
     notificationCountUpdater(id:string):Promise<{count:number}>
+     notificationsGetter(id:string):Promise<{notfiyData:INotifyGetterResponse[]|[]}>
+    
 
 }
 

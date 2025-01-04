@@ -5,7 +5,9 @@ import {
     SignResponse,
     IproviderReponseData,
     ResponseAccordingToDate,
-    ResponsegetBookingStillTodaysDate
+    ResponsegetBookingStillTodaysDate,
+    NotifyGetterResponse,
+    UnreadMessageCount
 } from "../../entities/rules/provider";
 import { ProvidingServices } from "../../entities/provider/IService";
 import { servicetype } from "../../entities/rules/admin";
@@ -79,7 +81,8 @@ interface IProviderRepository {
     getBookingGreaterThanTodaysDate(id:string):Promise<{success?:boolean,data?:ResponsegetBookingStillTodaysDate[]|[]}>
     updateStatus(id:string,status:string,amount:number):Promise<{success?:boolean,paymentId?:string}>
     notificationCountUpdater(id:string):Promise<{count:number}>
-
+   notificationsGetter(id:string):Promise<{notfiyData:NotifyGetterResponse[]|[] ,countOfUnreadMessages:UnreadMessageCount[]|[]}>
+    
     
 
 

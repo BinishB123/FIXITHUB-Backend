@@ -37,6 +37,7 @@ export default interface BookingSchema {
     advanceAmount:number,
     advance:boolean
     paymentIntentId:string
+    review:ObjectId|null
 }
 
 interface SelectedService {

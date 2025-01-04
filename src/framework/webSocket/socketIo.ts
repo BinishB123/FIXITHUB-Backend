@@ -20,6 +20,8 @@ type user_and_Providers_socketid = {
 const usersAndProvidersSocketId: user_and_Providers_socketid = {}
 
 export const SocketIntalization = (server: HttpServer) => {
+   
+    
     const io = new Server(server, {
         cors: {
             origin: 'http://localhost:5173'
@@ -55,8 +57,13 @@ export const SocketIntalization = (server: HttpServer) => {
                 }else if (messageDetails.sender==="user") {
                     providerProfileInteractor.notificationCountUpdater(messageDetails.recieverId).then((response)=>{
                         if (usersAndProvidersSocketId[messageDetails.recieverId]) {
-                            console.log(response);
+                          
                             io.to(usersAndProvidersSocketId[messageDetails.recieverId]).emit("notifictaionUpdated",(response))
+                        }
+                    })
+                    providerProfileInteractor.notificationsGetter(messageDetails.recieverId).then((response)=>{
+                        if (usersAndProvidersSocketId[messageDetails.recieverId]) {
+                            io.to(usersAndProvidersSocketId[messageDetails.recieverId]).emit("gettNotification",response)
                         }
                     })
                     

@@ -4,12 +4,14 @@ import IProviderRepository from "entities/irepositeries/iProviderRepo";
 import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
 import {
   IproviderReponseData,
+  NotifyGetterResponse,
   ProviderRegisterData,
   RegisterResponse,
   ResponseAccordingToDate,
   ResponsegetBookingStillTodaysDate,
   SigIn,
   SignResponse,
+  UnreadMessageCount,
 } from "entities/rules/provider";
 import { servicetype, vehicleType } from "entities/rules/admin";
 import bcrypt from "bcrypt";
@@ -1156,6 +1158,83 @@ class ProviderRepository implements IProviderRepository {
     } catch (error: any) {
         throw new CustomError(error.message, error.statusCode);
     }
+}
+
+
+
+async notificationsGetter(
+  id: string
+): Promise<{
+  notfiyData: NotifyGetterResponse[] | [];
+  countOfUnreadMessages: UnreadMessageCount[] | [];
+}> {
+  try {
+      const querynotifyData = [
+          { $match: {providerId: new mongoose.Types.ObjectId(id) } },
+          {
+              $lookup: {
+                  from: "messages",
+                  localField: "latestMessage",
+                  foreignField: "_id",
+                  as: "message",
+              },
+          },
+          { $unwind: "$message" },
+          { $match: { "message.sender": "user" } },
+          { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } },
+          { $unwind: "$user" },
+          {
+              $project: {
+                  providerId: 1,
+                  userId: 1,
+                  createdAt: 1,
+                  updatedAt: 1,
+                  latestMessage: 1,
+                   message: 1,
+                  "user.name":1,
+                  "user.logoUrl":1
+
+              }
+          }
+      ];
+
+      const querycountOfUnreadMessages = [
+          {
+              $lookup: {
+                  from: "chats",
+                  localField: "chatId",
+                  foreignField: "_id",
+                  as: "chat",
+              },
+          },
+          { $unwind: "$chat" },
+          {
+              $match: {
+                  $and: [
+                      { "chat.providerId": new mongoose.Types.ObjectId(id) },
+                      { sender: "user" },
+                      { seen: false },
+                  ],
+              },
+          },
+          { $group: { _id: "$chatId", count: { $sum: 1 } } },
+      ];
+
+      const notifyData: NotifyGetterResponse[] | [] =
+          await chatModel.aggregate(querynotifyData);
+      const countOfUnreadMessages: UnreadMessageCount[] | [] =
+          await messageModel.aggregate(querycountOfUnreadMessages);
+    
+     
+     
+
+      return {
+          notfiyData: notifyData,
+          countOfUnreadMessages: countOfUnreadMessages,
+      };
+  } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+  }
 }
 
 
