@@ -13,6 +13,7 @@ import CustomError from "../../framework/services/errorInstance";
 import { IRequiredDataDForBooking } from "../../entities/rules/user";
 import IStripe from "../../entities/services/Istripe";
 import { log } from "node:console";
+import { ReviewResponse } from "entities/rules/provider";
 
 class UserServiceInteractor implements IuserService {
   constructor(
@@ -287,6 +288,8 @@ class UserServiceInteractor implements IuserService {
     }
 
   }
+
+  
 
 
 }

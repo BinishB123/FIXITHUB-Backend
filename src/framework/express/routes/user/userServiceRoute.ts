@@ -30,7 +30,7 @@ userServiceRoute.post('/makefullpayment',userServiceContoller.fullpayment.bind(u
 userServiceRoute.patch('/cancelpayment',userServiceContoller.cancelBooking.bind(userServiceContoller))
 userServiceRoute.post('/addReview',upload.array("images"),userServiceContoller.addReview.bind(userServiceContoller)) 
 userServiceRoute.get('/getreviewdetails/:id',userServiceContoller.getReviewDeatils.bind(userServiceContoller))
-userServiceRoute.patch('/deleteanimage/:id/:url',userServiceContoller.deleteOneImage.bind(userServiceContoller))
+userServiceRoute.patch('/deleteanimage',userServiceContoller.deleteOneImage.bind(userServiceContoller))
 userServiceRoute.patch('/editreview',userServiceContoller.editReview.bind(userServiceContoller))
 userServiceRoute.patch('/addanimage',userServiceContoller.addOneImage.bind(userServiceContoller))
 

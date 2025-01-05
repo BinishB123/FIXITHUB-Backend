@@ -1,6 +1,6 @@
 import providerModel from "../../framework/mongoose/providerSchema";
 import otpModel from "../../framework/mongoose/otpSchema";
-import IProviderRepository from "entities/irepositeries/iProviderRepo";
+import IProviderRepository from "../../entities/irepositeries/iProviderRepo";
 import ServiceTypeModel from "../../framework/mongoose/serviceTypes";
 import {
   IproviderReponseData,
@@ -9,23 +9,25 @@ import {
   RegisterResponse,
   ResponseAccordingToDate,
   ResponsegetBookingStillTodaysDate,
+  ReviewResponse,
   SigIn,
   SignResponse,
   UnreadMessageCount,
 } from "entities/rules/provider";
-import { servicetype, vehicleType } from "entities/rules/admin";
+import { servicetype, vehicleType } from "../../entities/rules/admin";
 import bcrypt from "bcrypt";
 import vehicleModel from "../../framework/mongoose/vehicleSchema";
 import { ProvidingServices } from "../../entities/provider/IService";
 import providingServicesModel from "../../framework/mongoose/providingServicesSchema";
 import brandModel from "../../framework/mongoose/brandSchema";
-import mongoose, { Mongoose } from "mongoose";
+import mongoose from "mongoose";
 import CustomError from "../../framework/services/errorInstance";
 import HttpStatus from "../../entities/rules/statusCode";
 import BookingDateModel from "../../framework/mongoose/BookingDates";
 import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
 import chatModel from "../../framework/mongoose/ChatSchema";
 import messageModel from "../../framework/mongoose/messageSchema";
+import reviewModel from "../../framework/mongoose/reviewSchema";
 
 class ProviderRepository implements IProviderRepository {
   async sendOtp(otp: string, email: string): Promise<{ created: boolean }> {
@@ -168,7 +170,7 @@ class ProviderRepository implements IProviderRepository {
         mobile: providerExist.mobile,
         requested: providerExist.requestAccept,
         blocked: providerExist.blocked,
-        logoUrl:providerExist.logoUrl?providerExist.logoUrl:null
+        logoUrl: providerExist.logoUrl ? providerExist.logoUrl : null,
       };
       return { success: true, message: "provider exist", provider: provider };
     } catch (error) {
@@ -229,20 +231,22 @@ class ProviderRepository implements IProviderRepository {
       if (vehicle?.vehicleType === 2) {
         // Two-wheeler
         const provider = await providingServicesModel.findOne({
-          workshopId:new mongoose.Types.ObjectId(data.providerid),
-          "twoWheeler.typeId": new mongoose.Types.ObjectId(data.typeid ),
+          workshopId: new mongoose.Types.ObjectId(data.providerid),
+          "twoWheeler.typeId": new mongoose.Types.ObjectId(data.typeid),
         });
 
         if (provider) {
           const updatedProvider = await providingServicesModel.findOneAndUpdate(
-            { workshopId: new mongoose.Types.ObjectId(data.providerid), "twoWheeler.typeId": new mongoose.Types.ObjectId(data.typeid )},
             {
-              $push: { twoWheeler: serviceData }
-, 
+              workshopId: new mongoose.Types.ObjectId(data.providerid),
+              "twoWheeler.typeId": new mongoose.Types.ObjectId(data.typeid),
+            },
+            {
+              $push: { twoWheeler: serviceData },
             },
             { new: true }
           );
-         
+
           return {
             success: true,
             message: "Two-wheeler service updated successfully",
@@ -252,7 +256,7 @@ class ProviderRepository implements IProviderRepository {
             { workshopId: new mongoose.Types.ObjectId(data.providerid) },
             {
               $push: {
-                twoWheeler: serviceData, 
+                twoWheeler: serviceData,
               },
             },
             { new: true, upsert: true }
@@ -263,31 +267,30 @@ class ProviderRepository implements IProviderRepository {
           };
         }
       } else {
-       
         const provider = await providingServicesModel.findOne({
           workshopId: new mongoose.Types.ObjectId(data.providerid),
-          "fourWheeler.typeId":  new mongoose.Types.ObjectId(data.typeid),
+          "fourWheeler.typeId": new mongoose.Types.ObjectId(data.typeid),
         });
 
         if (provider) {
-          
           const updatedProvider = await providingServicesModel.findOneAndUpdate(
-            { workshopId: new mongoose.Types.ObjectId(data.providerid), "fourWheeler.typeId": new mongoose.Types.ObjectId(data.typeid) },
             {
-              $push: { twoWheeler: serviceData }
-, 
+              workshopId: new mongoose.Types.ObjectId(data.providerid),
+              "fourWheeler.typeId": new mongoose.Types.ObjectId(data.typeid),
+            },
+            {
+              $push: { twoWheeler: serviceData },
             },
             { new: true }
           );
-          
+
           return {
             success: true,
             message: "Four-wheeler service updated successfully",
           };
         } else {
-         
           const createdProvider = await providingServicesModel.findOneAndUpdate(
-            { workshopId:new mongoose.Types.ObjectId(data.providerid)},
+            { workshopId: new mongoose.Types.ObjectId(data.providerid) },
             {
               $push: {
                 fourWheeler: serviceData,
@@ -295,7 +298,7 @@ class ProviderRepository implements IProviderRepository {
             },
             { new: true, upsert: true }
           );
-          
+
           return {
             success: true,
             message: "New four-wheeler service created successfully",
@@ -311,34 +314,37 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
- async removeGeneralOrRoadService(data: { workshopId: string; typeid: string;  vehicleType: string; }): Promise<{ success?: boolean; }> {
-  try {
-    const updateOne = await providingServicesModel.updateOne(
-      { workshopId: data.workshopId },
-      {
-        $pull: {
-          [data.vehicleType]: { typeId: new mongoose.Types.ObjectId(data.typeid) },
-        },
-      }
-    );
-    
-    console.log("Update Result:", updateOne);
-  
-    if (updateOne.modifiedCount === 0) {
-      throw new CustomError(
-        "Cannot remove item: No match found or nothing changed.",
-        HttpStatus.Unprocessable_Entity
+  async removeGeneralOrRoadService(data: {
+    workshopId: string;
+    typeid: string;
+    vehicleType: string;
+  }): Promise<{ success?: boolean }> {
+    try {
+      const updateOne = await providingServicesModel.updateOne(
+        { workshopId: data.workshopId },
+        {
+          $pull: {
+            [data.vehicleType]: {
+              typeId: new mongoose.Types.ObjectId(data.typeid),
+            },
+          },
+        }
       );
+
+      console.log("Update Result:", updateOne);
+
+      if (updateOne.modifiedCount === 0) {
+        throw new CustomError(
+          "Cannot remove item: No match found or nothing changed.",
+          HttpStatus.Unprocessable_Entity
+        );
+      }
+      return { success: true };
+    } catch (error) {
+      console.error("Error during updateOne operation:", error);
+      throw error; // Re-throw to propagate error handling
     }
-    return {success:true}
-  } catch (error) {
-    console.error("Error during updateOne operation:", error);
-    throw error; // Re-throw to propagate error handling
   }
-  
- }
-
-
 
   async addSubTypes(
     providerid: string,
@@ -941,16 +947,14 @@ class ProviderRepository implements IProviderRepository {
 
   async getBookingStillTodaysDate(
     id: string,
-    startIndex:number,
+    startIndex: number,
     status?: string
   ): Promise<{
     success?: boolean;
     data?: ResponsegetBookingStillTodaysDate[] | [];
-    count:number
+    count: number;
   }> {
     try {
-     
-      
       const date = new Date();
       date.setHours(0, 0, 0, 0);
       const query: any = [
@@ -1004,7 +1008,7 @@ class ProviderRepository implements IProviderRepository {
             status: 1,
             amountpaid: 1,
             paymentStatus: 1,
-            "user._id":1,
+            "user._id": 1,
             "user.name": 1,
             "user.logoUrl": 1,
             "bookeddate.date": 1,
@@ -1014,25 +1018,36 @@ class ProviderRepository implements IProviderRepository {
             suggestions: 1,
           },
         },
-        {$skip:startIndex},
-        {$limit:10}
+        { $skip: startIndex },
+        { $limit: 10 },
       ];
 
       const data: ResponsegetBookingStillTodaysDate[] =
         await ServiceBookingModel.aggregate(query);
-        const count = await ServiceBookingModel.find({providerId: new mongoose.Types.ObjectId(id)})
+      const count = await ServiceBookingModel.find({
+        providerId: new mongoose.Types.ObjectId(id),
+      });
 
       if (data.length === 0) {
         throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
       }
 
-      return { success: true, data: data.length > 0 ? data : [],count:count.length };
+      return {
+        success: true,
+        data: data.length > 0 ? data : [],
+        count: count.length,
+      };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }
   }
- 
-  async getBookingGreaterThanTodaysDate(id: string): Promise<{ success?: boolean; data?: ResponsegetBookingStillTodaysDate[] | []; }> {
+
+  async getBookingGreaterThanTodaysDate(
+    id: string
+  ): Promise<{
+    success?: boolean;
+    data?: ResponsegetBookingStillTodaysDate[] | [];
+  }> {
     try {
       const date = new Date();
       date.setHours(0, 0, 0, 0);
@@ -1051,7 +1066,7 @@ class ProviderRepository implements IProviderRepository {
         { $sort: { "bookeddate.date": -1 } },
         { $match: { "bookeddate.date": { $gt: date } } },
         {
-          $lookup: {  
+          $lookup: {
             from: "users",
             localField: "userId",
             foreignField: "_id",
@@ -1087,7 +1102,7 @@ class ProviderRepository implements IProviderRepository {
             status: 1,
             amountpaid: 1,
             paymentStatus: 1,
-            "user._id":1,
+            "user._id": 1,
             "user.name": 1,
             "user.logoUrl": 1,
             "bookeddate.date": 1,
@@ -1101,8 +1116,7 @@ class ProviderRepository implements IProviderRepository {
 
       const data: ResponsegetBookingStillTodaysDate[] =
         await ServiceBookingModel.aggregate(query);
-       
-       
+
       // if (data.length === 0) {
       //   throw new CustomError("No Bookings Registered", HttpStatus.NOT_FOUND);
       // }
@@ -1113,132 +1127,208 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
-  async updateStatus(id: string, status: string, amount: number): Promise<{ success?: boolean; paymentId?: string; }> {
+  async updateStatus(
+    id: string,
+    status: string,
+    amount: number
+  ): Promise<{ success?: boolean; paymentId?: string }> {
     try {
       const update = await ServiceBookingModel.updateOne(
         { _id: new mongoose.Types.ObjectId(id) },
         {
           $set: {
-            status: status === "outfordelivery" && amount <= 1000 ? "completed" : status,
-            paymentStatus: amount > 1000 ? "pending" : "paid"
-          }
+            status:
+              status === "outfordelivery" && amount <= 1000
+                ? "completed"
+                : status,
+            paymentStatus: amount > 1000 ? "pending" : "paid",
+          },
         }
       );
-      
-        if (update.modifiedCount===0){
-          throw new CustomError("Updation Failed Something Went Wrong",HttpStatus.FORBIDDEN)
-        }
-        const detail = await ServiceBookingModel.findOne({_id:new mongoose.Types.ObjectId(id)})
-        
-        return status!=="outfordelivery"? {success:true}: {success:true,paymentId:detail?.paymentIntentId}
- 
+
+      if (update.modifiedCount === 0) {
+        throw new CustomError(
+          "Updation Failed Something Went Wrong",
+          HttpStatus.FORBIDDEN
+        );
+      }
+      const detail = await ServiceBookingModel.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+      });
+
+      return status !== "outfordelivery"
+        ? { success: true }
+        : { success: true, paymentId: detail?.paymentIntentId };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }
   }
-   
+
   async notificationCountUpdater(id: string): Promise<{ count: number }> {
     try {
-        // const bookingReadyToDelivery = await ServiceBookingModel.aggregate([
-        //     {$match: { userId: new mongoose.Types.ObjectId(id) } },
-        //     {$match: { status: "completed" }},
-        //     {$match:{ paymentStatus: "pending" }}
-        //   ]);
+      // const bookingReadyToDelivery = await ServiceBookingModel.aggregate([
+      //     {$match: { userId: new mongoose.Types.ObjectId(id) } },
+      //     {$match: { status: "completed" }},
+      //     {$match:{ paymentStatus: "pending" }}
+      //   ]);
 
-        const chat = await chatModel.findOne({
-            providerId: new mongoose.Types.ObjectId(id),
-        });
-        const message = await messageModel.aggregate([
-            { $match: { chatId: new mongoose.Types.ObjectId(chat?._id + "") } },
-            { $match: { sender: "user" } },
-            { $match: { seen: false } },
-        ]);
+      const chat = await chatModel.findOne({
+        providerId: new mongoose.Types.ObjectId(id),
+      });
+      const message = await messageModel.aggregate([
+        { $match: { chatId: new mongoose.Types.ObjectId(chat?._id + "") } },
+        { $match: { sender: "user" } },
+        { $match: { seen: false } },
+      ]);
 
-        return { count: message.length };
+      return { count: message.length };
     } catch (error: any) {
-        throw new CustomError(error.message, error.statusCode);
+      throw new CustomError(error.message, error.statusCode);
     }
-}
+  }
 
-
-
-async notificationsGetter(
-  id: string
-): Promise<{
-  notfiyData: NotifyGetterResponse[] | [];
-  countOfUnreadMessages: UnreadMessageCount[] | [];
-}> {
-  try {
+  async notificationsGetter(id: string): Promise<{
+    notfiyData: NotifyGetterResponse[] | [];
+    countOfUnreadMessages: UnreadMessageCount[] | [];
+  }> {
+    try {
       const querynotifyData = [
-          { $match: {providerId: new mongoose.Types.ObjectId(id) } },
-          {
-              $lookup: {
-                  from: "messages",
-                  localField: "latestMessage",
-                  foreignField: "_id",
-                  as: "message",
-              },
+        { $match: { providerId: new mongoose.Types.ObjectId(id) } },
+        {
+          $lookup: {
+            from: "messages",
+            localField: "latestMessage",
+            foreignField: "_id",
+            as: "message",
           },
-          { $unwind: "$message" },
-          { $match: { "message.sender": "user" } },
-          { $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" } },
-          { $unwind: "$user" },
-          {
-              $project: {
-                  providerId: 1,
-                  userId: 1,
-                  createdAt: 1,
-                  updatedAt: 1,
-                  latestMessage: 1,
-                   message: 1,
-                  "user.name":1,
-                  "user.logoUrl":1
-
-              }
-          }
+        },
+        { $unwind: "$message" },
+        { $match: { "message.sender": "user" } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        { $unwind: "$user" },
+        {
+          $project: {
+            providerId: 1,
+            userId: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            latestMessage: 1,
+            message: 1,
+            "user.name": 1,
+            "user.logoUrl": 1,
+          },
+        },
       ];
 
       const querycountOfUnreadMessages = [
-          {
-              $lookup: {
-                  from: "chats",
-                  localField: "chatId",
-                  foreignField: "_id",
-                  as: "chat",
-              },
+        {
+          $lookup: {
+            from: "chats",
+            localField: "chatId",
+            foreignField: "_id",
+            as: "chat",
           },
-          { $unwind: "$chat" },
-          {
-              $match: {
-                  $and: [
-                      { "chat.providerId": new mongoose.Types.ObjectId(id) },
-                      { sender: "user" },
-                      { seen: false },
-                  ],
-              },
+        },
+        { $unwind: "$chat" },
+        {
+          $match: {
+            $and: [
+              { "chat.providerId": new mongoose.Types.ObjectId(id) },
+              { sender: "user" },
+              { seen: false },
+            ],
           },
-          { $group: { _id: "$chatId", count: { $sum: 1 } } },
+        },
+        { $group: { _id: "$chatId", count: { $sum: 1 } } },
       ];
 
       const notifyData: NotifyGetterResponse[] | [] =
-          await chatModel.aggregate(querynotifyData);
+        await chatModel.aggregate(querynotifyData);
       const countOfUnreadMessages: UnreadMessageCount[] | [] =
-          await messageModel.aggregate(querycountOfUnreadMessages);
-    
-     
-     
+        await messageModel.aggregate(querycountOfUnreadMessages);
 
       return {
-          notfiyData: notifyData,
-          countOfUnreadMessages: countOfUnreadMessages,
+        notfiyData: notifyData,
+        countOfUnreadMessages: countOfUnreadMessages,
       };
-  } catch (error: any) {
+    } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
+    }
   }
-}
 
+  async getFeedBacks(providerId: string): Promise<{ feedBacks?: ReviewResponse[] | []; }> {
+    try {
+        const review :ReviewResponse[] = await reviewModel.aggregate([
+          {$match:{ProviderId:new mongoose.Types.ObjectId(providerId)}},
+          { $lookup: {
+              from: "users",
+              localField: "userId",
+              foreignField: "_id",
+              as: "user"
+          }
+      },
+      { $unwind: "$user" },
+      {
+          $project: {
+              _id: 1,
+              userId: 1,
+              ServiceId: 1,
+              bookingId: 1,
+              opinion: 1,
+              reply: 1,
+              like: 1,
+              images: 1,
+              "user._id": 1,
+              "user.name": 1,
+              "user.logoUrl": 1
 
+          }
+      }])
+     return {feedBacks:review?review:[]}
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+       
+   }
 
+   async likeFeedBack(id: string, state: boolean): Promise<{ success?: boolean; }> {
+        try {
+         const update = await reviewModel.updateOne({_id:new mongoose.Types.ObjectId(id)},{
+          $set:{
+            like:state
+          }
+         })
+        if (update.modifiedCount===0) {
+          throw new CustomError("Updation Failed",HttpStatus.Unprocessable_Entity)
+        }
+        return {success:true}
+       } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode);
+      }
+   }
+
+   async reply(id: string, reply: string): Promise<{ success?: boolean; }> {
+    try {
+      const update = await reviewModel.updateOne({_id:new mongoose.Types.ObjectId(id)},{
+       $set:{
+         reply:reply
+       }
+      })
+     if (update.modifiedCount===0) {
+       throw new CustomError("Updation Failed",HttpStatus.Unprocessable_Entity)
+     }
+     return {success:true}
+    } catch (error: any) {
+     throw new CustomError(error.message, error.statusCode);
+   }
+   }
 }
 
 export default ProviderRepository;

@@ -14,6 +14,9 @@ providerServiceBookingRoute.get('/getservicebooking/:id/:date', providerServiceB
 providerServiceBookingRoute.get('/getBookingStillTodaysDate/:id/:startIndex',providerServiceBookingContoller.getBookingStillTodaysDate.bind(providerServiceBookingContoller))
 providerServiceBookingRoute.patch('/updatestatus/:id/:status/:amount',providerServiceBookingContoller.updateStatus.bind(providerServiceBookingContoller))
 providerServiceBookingRoute.get('/viewbookings/:userid',providerServiceBookingContoller.getBookingGreaterThanTodaysDate.bind(providerServiceBookingContoller))
+providerServiceBookingRoute.get('/getfeedbacks/:id',providerServiceBookingContoller.getFeedBacks.bind(providerServiceBookingContoller))
+providerServiceBookingRoute.patch('/like',providerServiceBookingContoller.like.bind(providerServiceBookingContoller))
+providerServiceBookingRoute.patch('/reply',providerServiceBookingContoller.reply.bind(providerServiceBookingContoller))
 
 
 

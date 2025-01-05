@@ -200,7 +200,7 @@ class UserServiceContoller {
 
   async deleteOneImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id, url } = req.params
+      const { id, url } = req.body
       this.cloduinary.deleteFromCloudinary(url, "FixitHub").then(async () => {
         const response = await this.UserServiceInteractor.deleteOneImage(id, url)
         return res.status(HttpStatus.OK).json(response)

@@ -17,7 +17,7 @@ interface IproviderServiceInteractor {
     getallBrands(id:string):Promise<{succes:boolean,message:string,brands?:{_id:string,brand:string,isAdded:boolean}[]}>
     addBrands(data: { id: string; brandid: string; }): Promise<{ success: boolean; message: string; }> 
     deleteBrands(data: { id: string; brandid: string; }): Promise<{ success: boolean; message: string; }> 
-
+   
 
 
     

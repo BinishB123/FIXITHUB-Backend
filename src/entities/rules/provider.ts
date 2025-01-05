@@ -16,7 +16,7 @@ export interface RegisterResponse {
   mobile: string;
   requested: boolean | null;
   blocked: boolean;
-  logoUrl?:string|null
+  logoUrl?: string | null;
 }
 
 interface workshopDetails {
@@ -49,7 +49,7 @@ export interface SignResponse {
   mobile: string;
   requested: boolean | null;
   blocked: boolean;
-  logoUrl?:string|null
+  logoUrl?: string | null;
 }
 
 /// provider schema start
@@ -158,13 +158,9 @@ export interface IproviderReponseData {
   requestAccept: boolean | null;
   supportedBrands: { brand: ObjectId }[];
   about?: string;
-  logoUrl?:string
-  mobile:number
+  logoUrl?: string;
+  mobile: number;
 }
-
-
-
-
 
 interface SelectedService {
   typeId: ObjectId;
@@ -183,7 +179,6 @@ interface VehicleDetails {
 interface User {
   name: string;
   mobile: number;
-  
 }
 
 interface BookedDate {
@@ -199,99 +194,88 @@ export interface ResponseAccordingToDate {
   selectedService: SelectedService[];
   vechileDetails: VehicleDetails;
   advanceAmount: number;
-  advance: boolean,
-  status:string,
-  amountpaid: number,
-  paymentStatus:string,
+  advance: boolean;
+  status: string;
+  amountpaid: number;
+  paymentStatus: string;
   user: User;
   bookeddate: BookedDate;
   servicename: ServiceName;
 }
 
-export interface ResponsegetBookingStillTodaysDate{
+export interface ResponsegetBookingStillTodaysDate {
   _id: ObjectId;
   selectedService: SelectedService[];
   vechileDetails: VehicleDetails;
   advanceAmount: number;
-  advance: boolean,
-  status:string,
-  amountpaid: number,
-  paymentStatus:string,
+  advance: boolean;
+  status: string;
+  amountpaid: number;
+  paymentStatus: string;
   user: {
-  _id:ObjectId
-  name: string;
-  mobile: number;
-  logoUrl:string
+    _id: ObjectId;
+    name: string;
+    mobile: number;
+    logoUrl: string;
   };
   bookeddate: BookedDate;
   servicename: ServiceName;
 
-  brand:{
-    brand:string
-  }
-  suggestions:string
+  brand: {
+    brand: string;
+  };
+  suggestions: string;
 }
 
-
-
-
-export interface NotifyGetterResponse{
-  
-  _id: ObjectId,
-  providerId: ObjectId,
-  userId: ObjectId,
-  createdAt:Date,
-  updatedAt:Date,
-  latestMessage: ObjectId,
+export interface NotifyGetterResponse {
+  _id: ObjectId;
+  providerId: ObjectId;
+  userId: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  latestMessage: ObjectId;
   message: {
-    _id: ObjectId,
-    sender: 'user',
-    chatId: ObjectId,
-    message: string,
-    providerdelete: boolean,
-    userdelete: boolean,
-    seen: boolean,
-    createdAt: Date,
-    updatedAt: Date,
-    
-  }
-
+    _id: ObjectId;
+    sender: "user";
+    chatId: ObjectId;
+    message: string;
+    providerdelete: boolean;
+    userdelete: boolean;
+    seen: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
 
 export interface UnreadMessageCount {
-_id:ObjectId
-count:number
+  _id: ObjectId;
+  count: number;
 }
 
-
-export interface INotifyGetterResponse{
-
-_id: ObjectId,
-providerId: ObjectId,
-userId: ObjectId,
-createdAt:Date,
-updatedAt:Date,
-latestMessage: ObjectId,
-count:number,
-message: {
-  _id: ObjectId,
-  sender: 'user',
-  chatId: ObjectId,
-  message: string,
-  providerdelete: boolean,
-  userdelete: boolean,
-  seen: boolean,
-  createdAt: Date,
-  updatedAt: Date,
-  
+export interface INotifyGetterResponse {
+  _id: ObjectId;
+  providerId: ObjectId;
+  userId: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+  latestMessage: ObjectId;
+  count: number;
+  message: {
+    _id: ObjectId;
+    sender: "user";
+    chatId: ObjectId;
+    message: string;
+    providerdelete: boolean;
+    userdelete: boolean;
+    seen: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
-
-}
-
 
 export interface IMessage {
   _id: ObjectId;
-  sender: 'user'; 
+  sender: "user";
   chatId: ObjectId;
   message: string;
   providerdelete: boolean;
@@ -300,7 +284,6 @@ export interface IMessage {
   createdAt: Date;
   updatedAt: Date;
 }
-
 
 export interface INotifyGetterResponse {
   _id: ObjectId;
@@ -311,4 +294,22 @@ export interface INotifyGetterResponse {
   latestMessage: ObjectId;
   count: number;
   message: IMessage; // Reference the extracted type
+}
+
+
+
+export interface ReviewResponse {
+  _id: ObjectId;  
+  userId: ObjectId;
+  ServiceId: ObjectId;
+  bookingId: ObjectId;
+  opinion: string;
+  reply: string | null;
+  like: boolean;
+  images: { url: string }[];
+   user:{
+    _id:ObjectId
+    logoUrl:string
+    name:string
+  }
 }
