@@ -1,6 +1,7 @@
-import { Iproviders } from "entities/rules/admin";
+import { Iproviders } from "../../entities/rules/admin";
 import { IAdminProviderInteractor } from "../../entities/admin/IadminProvider";
 import IAdminRepo from "../../entities/irepositeries/IAdminRepo";
+import CustomError from "../../framework/services/errorInstance";
 
 class AdminProviderInteractor implements IAdminProviderInteractor {
     constructor(private readonly adminrepo: IAdminRepo) { }
@@ -52,6 +53,27 @@ class AdminProviderInteractor implements IAdminProviderInteractor {
     }
        
    }
+   
+   async getMonthlyRevenue(id: string): Promise<{ data: { month: string; revenue: number; }[] | []; }> {
+    try {
+        const response = await this.adminrepo.getMonthlyRevenue(id)
+        return response
+        
+    } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode)
+    }
+}
+
+async TopServicesBooked(id: string): Promise<{ data: { serviceType: string; count: number; }[] | []; }> {
+    try {
+        const response = await this.adminrepo.TopServicesBooked(id)
+        return response
+    } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode)
+    }
+}
+
+  
 
 
 }

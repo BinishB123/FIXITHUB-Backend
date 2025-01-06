@@ -85,7 +85,11 @@ interface IuserServiceInteractor {
         id: string,
         newImageUrl: string
     ): Promise<{ success: boolean; url: string }>;
-    
+       getFeedBacks(
+               Id: string,
+               limit:number
+     
+           ): Promise<{ feedBacks?: ReviewResponse[] | [] }>;
 }
 
 export default IuserServiceInteractor;

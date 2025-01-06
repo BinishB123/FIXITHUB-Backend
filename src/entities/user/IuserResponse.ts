@@ -250,3 +250,20 @@ export interface responseGetReviewDetails{
 
 
 }
+
+
+export interface ReviewResponse {
+  _id: ObjectId;  
+  userId: ObjectId;
+  ServiceId: ObjectId;
+  bookingId: ObjectId;
+  opinion: string;
+  reply: string | null;
+  like: boolean;
+  images: { url: string }[];
+   user:{
+    _id:ObjectId
+    logoUrl:string
+    name:string
+  }
+}

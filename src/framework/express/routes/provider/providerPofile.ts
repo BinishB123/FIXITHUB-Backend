@@ -32,5 +32,7 @@ providerProfileRoute.get('/getchatid/:providerId/:userId', providerProfileContro
 providerProfileRoute.get('/getonetonechat/:chatid', providerProfileController.getOneToneChat.bind(providerProfileController))
 providerProfileRoute.get('/notificationCounterUpdater/:id', providerProfileController.notificationCountUpdater.bind(providerProfileController))
 providerProfileRoute.get('/notificationGetter/:id',providerProfileController.notificationGetter.bind(providerProfileController))
+providerProfileRoute.get('/monthly-revenue/:id',providerProfileController.getMonthlyRevenue.bind(providerProfileController))
+providerProfileRoute.get('/top-booked-Service/:id',providerProfileController.getTopBookedService.bind(providerProfileController))
 
 export default providerProfileRoute

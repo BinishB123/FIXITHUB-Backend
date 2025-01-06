@@ -21,6 +21,7 @@ adminSettingsRoute.patch('/editservicename/:id',adminSettingsController.editServ
 
 
 
+
 export default adminSettingsRoute
 
 

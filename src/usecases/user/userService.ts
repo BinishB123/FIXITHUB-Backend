@@ -289,6 +289,17 @@ class UserServiceInteractor implements IuserService {
 
   }
 
+  async getFeedBacks(Id: string, limit: number): Promise<{ feedBacks?: ReviewResponse[] | []; }> {
+    try {
+      const response = await this.userRepo.getFeedBacks(Id,limit)
+      return response
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode)
+    }
+
+      
+  }
+
   
 
 

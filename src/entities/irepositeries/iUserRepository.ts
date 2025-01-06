@@ -1,5 +1,5 @@
 import user, { IRequiredDataDForBooking, Provider, userResponseData, userSignIn } from "entities/rules/user"
-import { IgetservicesResponse ,IRequirementToFetchShops, NotifyGetterResponse, ResponsegetBookingGreaterThanTodaysDate, responseGetReviewDetails, reviewAddedResponse, UnreadMessageCount} from "entities/user/IuserResponse"
+import { IgetservicesResponse ,IRequirementToFetchShops, NotifyGetterResponse, ResponsegetBookingGreaterThanTodaysDate, responseGetReviewDetails, reviewAddedResponse, ReviewResponse, UnreadMessageCount} from "entities/user/IuserResponse"
 import { ObjectId } from "mongoose"
 
 
@@ -29,6 +29,11 @@ interface isUserRepository{
     deleteOneImage(id:string,url:string):Promise<{success?:boolean}>
     editReview(id:string,newReview:string):Promise<{success?:boolean}>
     addOneImage(id:string,newImageUrl:string):Promise<{success:boolean,url:string}>
+      getFeedBacks(
+          Id: string,
+          limit:number
+
+      ): Promise<{ feedBacks?: ReviewResponse[] | [] }>;
 }
 
 

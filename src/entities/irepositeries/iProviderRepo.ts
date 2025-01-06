@@ -151,6 +151,8 @@ interface IProviderRepository {
 
   likeFeedBack(id:string,state:boolean):Promise<{success?:boolean}>
   reply(id:string,reply:string):Promise<{success?:boolean}>
+  getMonthlyRevenue(id:string):Promise<{data:{month:string,revenue:number}[]|[]}>
+  TopServicesBooked(id:string):Promise<{data:{serviceType:string,count:number}[]|[]}>
 }
 
 export default IProviderRepository;

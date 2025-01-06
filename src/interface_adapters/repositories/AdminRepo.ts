@@ -11,6 +11,7 @@ import providingServicesModel from "../../framework/mongoose/providingServicesSc
 import mongoose from "mongoose";
 import CustomError from "../../framework/services/errorInstance";
 import HttpStatus from "../../entities/rules/statusCode";
+import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
 
 class AdminRepository implements IAdminRepo {
   async adminSignIn(
@@ -387,6 +388,89 @@ class AdminRepository implements IAdminRepo {
       return { success: true }
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode)
+    }
+  }
+
+
+  async getMonthlyRevenue(
+    id: string
+  ): Promise<{ data: { month: string; revenue: number }[] | [] }> {
+    try {
+      const currentYear = new Date().getFullYear();
+      const data = await ServiceBookingModel.aggregate([
+        {$lookup:{
+          from: "bookingdates",
+          localField: "date",
+          foreignField: "_id",
+          as: "bookeddate",
+        }},
+        {$unwind:"$bookeddate"},
+
+        { 
+          $match: { 
+            // paymentStatus: "paid", 
+            "bookeddate.date": { 
+              $gte: new Date(`${currentYear}-01-01`), 
+              $lt: new Date(`${currentYear + 1}-01-01`) 
+            } 
+          } 
+        },
+        { $unwind: "$selectedService" },
+        {
+          $group: {
+            _id: { $month: "$date" },
+            revenue: { $sum: 50  },
+          },
+        },
+        {
+          $project: {
+            month: "$_id",
+            revenue: 1,
+            _id: 0,
+          },
+        },
+        { $sort: { month: 1 } },
+      ]);
+      
+      return { data: data };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async TopServicesBooked(
+    id: string
+  ): Promise<{ data: { serviceType: string; count: number }[] | [] }> {
+    try {
+      const data = await ServiceBookingModel.aggregate([
+        {
+          $lookup: {
+            from: "servicetypes",
+            localField: "serviceType",
+            foreignField: "_id",
+            as: "serviceDetails",
+          },
+        },
+        {$unwind:"$serviceDetails"},
+        {
+          $group: {
+            _id: "$serviceDetails.serviceType",
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            serviceType: "$_id",
+            count: 1,
+            _id: 0,
+          },
+        },
+        { $sort: { count: -1 } },
+      ]);
+      
+      return { data: data };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
     }
   }
 

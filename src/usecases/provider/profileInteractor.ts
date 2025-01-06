@@ -103,7 +103,26 @@ class ProviderProfileInteractor implements IProfileInteractor{
             throw new CustomError(error.message, error.statusCode)
         }
     }
+   
 
+    async getMonthlyRevenue(id: string): Promise<{ data: { month: string; revenue: number; }[] | []; }> {
+        try {
+            const response = await this.providerRepo.getMonthlyRevenue(id)
+            return response
+            
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
+
+    async TopServicesBooked(id: string): Promise<{ data: { serviceType: string; count: number; }[] | []; }> {
+        try {
+            const response = await this.providerRepo.TopServicesBooked(id)
+            return response
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode)
+        }
+    }
 }
 
 

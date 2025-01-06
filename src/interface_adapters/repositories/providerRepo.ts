@@ -1042,9 +1042,7 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
-  async getBookingGreaterThanTodaysDate(
-    id: string
-  ): Promise<{
+  async getBookingGreaterThanTodaysDate(id: string): Promise<{
     success?: boolean;
     data?: ResponsegetBookingStillTodaysDate[] | [];
   }> {
@@ -1141,7 +1139,6 @@ class ProviderRepository implements IProviderRepository {
               status === "outfordelivery" && amount <= 1000
                 ? "completed"
                 : status,
-            paymentStatus: amount > 1000 ? "pending" : "paid",
           },
         }
       );
@@ -1263,72 +1260,174 @@ class ProviderRepository implements IProviderRepository {
     }
   }
 
-  async getFeedBacks(providerId: string): Promise<{ feedBacks?: ReviewResponse[] | []; }> {
+  async getFeedBacks(
+    providerId: string
+  ): Promise<{ feedBacks?: ReviewResponse[] | [] }> {
     try {
-        const review :ReviewResponse[] = await reviewModel.aggregate([
-          {$match:{ProviderId:new mongoose.Types.ObjectId(providerId)}},
-          { $lookup: {
-              from: "users",
-              localField: "userId",
-              foreignField: "_id",
-              as: "user"
-          }
-      },
-      { $unwind: "$user" },
-      {
+      const review: ReviewResponse[] = await reviewModel.aggregate([
+        { $match: { ProviderId: new mongoose.Types.ObjectId(providerId) } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        { $unwind: "$user" },
+        {
           $project: {
-              _id: 1,
-              userId: 1,
-              ServiceId: 1,
-              bookingId: 1,
-              opinion: 1,
-              reply: 1,
-              like: 1,
-              images: 1,
-              "user._id": 1,
-              "user.name": 1,
-              "user.logoUrl": 1
-
-          }
-      }])
-     return {feedBacks:review?review:[]}
+            _id: 1,
+            userId: 1,
+            ServiceId: 1,
+            bookingId: 1,
+            opinion: 1,
+            reply: 1,
+            like: 1,
+            images: 1,
+            "user._id": 1,
+            "user.name": 1,
+            "user.logoUrl": 1,
+          },
+        },
+      ]);
+      return { feedBacks: review ? review : [] };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }
-       
-   }
+  }
 
-   async likeFeedBack(id: string, state: boolean): Promise<{ success?: boolean; }> {
-        try {
-         const update = await reviewModel.updateOne({_id:new mongoose.Types.ObjectId(id)},{
-          $set:{
-            like:state
-          }
-         })
-        if (update.modifiedCount===0) {
-          throw new CustomError("Updation Failed",HttpStatus.Unprocessable_Entity)
-        }
-        return {success:true}
-       } catch (error: any) {
-        throw new CustomError(error.message, error.statusCode);
-      }
-   }
-
-   async reply(id: string, reply: string): Promise<{ success?: boolean; }> {
+  async likeFeedBack(
+    id: string,
+    state: boolean
+  ): Promise<{ success?: boolean }> {
     try {
-      const update = await reviewModel.updateOne({_id:new mongoose.Types.ObjectId(id)},{
-       $set:{
-         reply:reply
-       }
-      })
-     if (update.modifiedCount===0) {
-       throw new CustomError("Updation Failed",HttpStatus.Unprocessable_Entity)
-     }
-     return {success:true}
+      const update = await reviewModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(id) },
+        {
+          $set: {
+            like: state,
+          },
+        }
+      );
+      if (update.modifiedCount === 0) {
+        throw new CustomError(
+          "Updation Failed",
+          HttpStatus.Unprocessable_Entity
+        );
+      }
+      return { success: true };
     } catch (error: any) {
-     throw new CustomError(error.message, error.statusCode);
-   }
-   }
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async reply(id: string, reply: string): Promise<{ success?: boolean }> {
+    try {
+      const update = await reviewModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(id) },
+        {
+          $set: {
+            reply: reply,
+          },
+        }
+      );
+      if (update.modifiedCount === 0) {
+        throw new CustomError(
+          "Updation Failed",
+          HttpStatus.Unprocessable_Entity
+        );
+      }
+      return { success: true };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getMonthlyRevenue(
+    id: string
+  ): Promise<{ data: { month: string; revenue: number }[] | [] }> {
+    try {
+      const currentYear = new Date().getFullYear();
+      const data = await ServiceBookingModel.aggregate([
+        {$lookup:{
+          from: "bookingdates",
+          localField: "date",
+          foreignField: "_id",
+          as: "bookeddate",
+        }},
+        {$unwind:"$bookeddate"},
+
+        { 
+          $match: { 
+            providerId: new mongoose.Types.ObjectId(id), 
+            paymentStatus: "paid", 
+            "bookeddate.date": { 
+              $gte: new Date(`${currentYear}-01-01`), 
+              $lt: new Date(`${currentYear + 1}-01-01`) 
+            } 
+          } 
+        },
+        { $unwind: "$selectedService" },
+        {
+          $group: {
+            _id: { $month: "$date" },
+            revenue: { $sum: "$selectedService.price"  },
+          },
+        },
+        {
+          $project: {
+            month: "$_id",
+            revenue: 1,
+            _id: 0,
+          },
+        },
+        { $sort: { month: 1 } },
+      ]);
+      
+      return { data: data };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async TopServicesBooked(
+    id: string
+  ): Promise<{ data: { serviceType: string; count: number }[] | [] }> {
+    try {
+      const data = await ServiceBookingModel.aggregate([
+        { $match: { providerId: new mongoose.Types.ObjectId(id) } },
+        {
+          $lookup: {
+            from: "servicetypes",
+            localField: "serviceType",
+            foreignField: "_id",
+            as: "serviceDetails",
+          },
+        },
+        {$unwind:"$serviceDetails"},
+        {
+          $group: {
+            _id: "$serviceDetails.serviceType",
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            serviceType: "$_id",
+            count: 1,
+            _id: 0,
+          },
+        },
+        { $sort: { count: -1 } },
+      ]);
+      console.log("data",data);
+      
+      return { data: data };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
 }
 
 export default ProviderRepository;

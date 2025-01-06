@@ -258,6 +258,28 @@ class ProviderProfileController {
     }
   }
 
+  async getMonthlyRevenue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+     
+      
+      const response = await this.providerProfileInteractor.getMonthlyRevenue(id)
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async getTopBookedService(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+      const response = await this.providerProfileInteractor.TopServicesBooked(id)
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
 
 }
 

@@ -1,6 +1,6 @@
 import { Imailer } from "../../../entities/services/mailer";
 import { IAdminProviderInteractor } from "../../../entities/admin/IadminProvider";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import HttpStatus from "../../../entities/rules/statusCode";
 
 
@@ -65,6 +65,29 @@ class AdminProvideController {
        }
        return res.status(400).json({succes:false})
     }
+
+
+    async getMonthlyRevenue(req: Request, res: Response, next: NextFunction) {
+        try {
+          const { id } = req.params
+         
+          
+          const response = await this.adminProviderInteractor.getMonthlyRevenue(id)
+          return res.status(HttpStatus.OK).json(response)
+        } catch (error) {
+          next(error)
+        }
+      }
+    
+      async getTopBookedService(req: Request, res: Response, next: NextFunction) {
+        try {
+          const { id } = req.params
+          const response = await this.adminProviderInteractor.TopServicesBooked(id)
+          return res.status(HttpStatus.OK).json(response)
+        } catch (error) {
+          next(error)
+        }
+      }
 
 }
 

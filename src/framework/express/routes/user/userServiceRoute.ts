@@ -33,6 +33,7 @@ userServiceRoute.get('/getreviewdetails/:id',userServiceContoller.getReviewDeati
 userServiceRoute.patch('/deleteanimage',userServiceContoller.deleteOneImage.bind(userServiceContoller))
 userServiceRoute.patch('/editreview',userServiceContoller.editReview.bind(userServiceContoller))
 userServiceRoute.patch('/addanimage',userServiceContoller.addOneImage.bind(userServiceContoller))
+userServiceRoute.get('/getfeedbacks/:id/:limit',userServiceContoller.getFeedBacks.bind(userServiceContoller))
 
 
  

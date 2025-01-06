@@ -247,6 +247,17 @@ class UserServiceContoller {
   }
 
 
+  async getFeedBacks(req:Request,res:Response,next:NextFunction){
+    try {
+      const { id ,limit} = req.params
+   
+      const response = await this.UserServiceInteractor.getFeedBacks(id,parseInt(limit))
+      return res.status(HttpStatus.OK).json(response)
+    } catch (error) {
+      next(error)
+    }
+  }
+
 
 
 

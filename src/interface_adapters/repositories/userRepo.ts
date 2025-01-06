@@ -17,6 +17,7 @@ import {
     ResponsegetBookingGreaterThanTodaysDate,
     responseGetReviewDetails,
     reviewAddedResponse,
+    ReviewResponse,
     UnreadMessageCount,
 } from "../../entities/user/IuserResponse";
 import brandModel from "../../framework/mongoose/brandSchema";
@@ -30,7 +31,6 @@ import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
 import chatModel from "../../framework/mongoose/ChatSchema";
 import messageModel from "../../framework/mongoose/messageSchema";
 import reviewModel from "../../framework/mongoose/reviewSchema";
-import { log } from "node:console";
 
 class UserRepository implements isUserRepository {
     // this method is for saving the otp in dbs
@@ -884,7 +884,9 @@ class UserRepository implements isUserRepository {
 
     async getReviewDetails(id: string): Promise<{ ReviewData?: responseGetReviewDetails }> {
         try {
-            const [review] = await reviewModel.aggregate([{
+            const [review] = await reviewModel.aggregate([
+             {$match:{_id:new mongoose.Types.ObjectId(id)}},
+                {
                 $lookup: {
                     from: "providers",
                     localField: "ProviderId",
@@ -976,7 +978,45 @@ class UserRepository implements isUserRepository {
        }
     }
 
-
+ async getFeedBacks(Id: string,limit:number): Promise<{ feedBacks?: ReviewResponse[] | []; }> {
+    try {
+        const review: ReviewResponse[] = await reviewModel.aggregate([
+          { $match: { ServiceId: new mongoose.Types.ObjectId(Id) } },
+          {
+            $lookup: {
+              from: "users",
+              localField: "userId",
+              foreignField: "_id",
+              as: "user",
+            },
+          },
+          { $unwind: "$user" },
+          {$skip:limit-3},
+          {$limit:3},
+          {
+            $project: {
+              _id: 1,
+              userId: 1,
+              ServiceId: 1,
+              bookingId: 1,
+              opinion: 1,
+              reply: 1,
+              like: 1,
+              images: 1,
+              "user._id": 1,
+              "user.name": 1,
+              "user.logoUrl": 1,
+            },
+          },
+        ]);
+        console.log(review);
+        
+        return { feedBacks: review ? review : [] };
+      } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode);
+      }
+        
+    }
 
 
 }

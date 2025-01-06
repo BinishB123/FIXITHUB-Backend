@@ -13,6 +13,8 @@ adminProviderRoute.get('/getpendingproviders', controller.getPendingProviders.bi
 adminProviderRoute.get('/getproviders', controller.getProviders.bind(controller))
 adminProviderRoute.patch('/acceptorreject', controller.adminAcceptOrReject.bind(controller))
 adminProviderRoute.patch('/blockorunblock',controller.providerBlockOrUnblock.bind(controller))
+adminProviderRoute.get('/monthly-revenue',controller.getMonthlyRevenue.bind(controller))
+adminProviderRoute.get('/top-booked-Service',controller.getTopBookedService.bind(controller))
 
 
 export default adminProviderRoute
