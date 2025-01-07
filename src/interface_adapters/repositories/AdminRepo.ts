@@ -1,4 +1,8 @@
-import { IdatasOfGeneralService, Iproviders, userdata } from "../../entities/rules/admin";
+import {
+  IdatasOfGeneralService,
+  Iproviders,
+  userdata,
+} from "../../entities/rules/admin";
 import IAdminRepo from "../../entities/irepositeries/IAdminRepo";
 import adminModel from "../../framework/mongoose/adminSchema";
 import useModel from "../../framework/mongoose/userSchema";
@@ -17,12 +21,19 @@ class AdminRepository implements IAdminRepo {
   async adminSignIn(
     email: string,
     password: string
-  ): Promise<{ success: boolean; message?: string, admin?: { id: string, email: string } }> {
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    admin?: { id: string; email: string };
+  }> {
     try {
       const admin = await adminModel.findOne({ email: email });
 
       if (admin && admin.password === password) {
-        return { success: true, admin: { id: admin._id + "", email: admin.email } };
+        return {
+          success: true,
+          admin: { id: admin._id + "", email: admin.email },
+        };
       } else {
         return { success: false, message: "invalid password or emailId" };
       }
@@ -162,7 +173,6 @@ class AdminRepository implements IAdminRepo {
       if (state && updated) {
         const created = await providingServicesModel.create({
           workshopId: id,
-
         });
       }
       if (updated) {
@@ -236,7 +246,6 @@ class AdminRepository implements IAdminRepo {
     brand: string
   ): Promise<{ success: boolean; message?: string }> {
     try {
-
       const created = await brandModel.create({ brand: brand.trim() });
       if (created) {
         return { success: true };
@@ -247,101 +256,134 @@ class AdminRepository implements IAdminRepo {
     }
   }
 
-  async settingsDatas(): Promise<{ success: boolean; brands?: string[]; generalServices?: any[]; roadAssistance?: any[]; }> {
+  async settingsDatas(): Promise<{
+    success: boolean;
+    brands?: string[];
+    generalServices?: any[];
+    roadAssistance?: any[];
+  }> {
     try {
       const brands = await brandModel.aggregate([
         { $project: { _id: 0, brand: 1 } },
       ]);
-      const generalServices = await ServiceTypeModel.aggregate([{ $match: { category: "general" } }, { $project: { _id: 1, serviceType: 1, imageUrl: 1, category: 1, subTypes: 1 } }])
-      const roadAssistance = await ServiceTypeModel.aggregate([{ $match: { category: "road" } }, { $project: { _id: 1, serviceType: 1, imageUrl: 1, category: 1 } }])
+      const generalServices = await ServiceTypeModel.aggregate([
+        { $match: { category: "general" } },
+        {
+          $project: {
+            _id: 1,
+            serviceType: 1,
+            imageUrl: 1,
+            category: 1,
+            subTypes: 1,
+          },
+        },
+      ]);
+      const roadAssistance = await ServiceTypeModel.aggregate([
+        { $match: { category: "road" } },
+        { $project: { _id: 1, serviceType: 1, imageUrl: 1, category: 1 } },
+      ]);
 
-      return { success: true, brands: brands.length > 0 ? brands : [], generalServices: generalServices.length > 0 ? generalServices : [], roadAssistance: roadAssistance.length > 0 ? roadAssistance : [] };
+      return {
+        success: true,
+        brands: brands.length > 0 ? brands : [],
+        generalServices: generalServices.length > 0 ? generalServices : [],
+        roadAssistance: roadAssistance.length > 0 ? roadAssistance : [],
+      };
     } catch (error) {
       return { success: false };
     }
   }
-  async checkserviceAllreadyExistOrNot(serviceName: string): Promise<{ success: boolean; message?: string; }> {
+  async checkserviceAllreadyExistOrNot(
+    serviceName: string
+  ): Promise<{ success: boolean; message?: string }> {
     try {
-      const exist = await ServiceTypeModel.findOne({ serviceType: serviceName.trim() })
+      const exist = await ServiceTypeModel.findOne({
+        serviceType: serviceName.trim(),
+      });
       if (exist) {
-        return { success: true, message: "Service already Exist" }
+        return { success: true, message: "Service already Exist" };
       }
-      return { success: false }
+      return { success: false };
     } catch (error) {
-      return { success: true, message: "something went wrong" }
+      return { success: true, message: "something went wrong" };
     }
   }
 
-  async addGeneralserviceOrRoadAssistance(data: IdatasOfGeneralService): Promise<{ success: boolean; message?: string; created?: Object }> {
+  async addGeneralserviceOrRoadAssistance(
+    data: IdatasOfGeneralService
+  ): Promise<{ success: boolean; message?: string; created?: Object }> {
     try {
       if (data.category === "general") {
         const created = await ServiceTypeModel.create({
           category: data.category,
           serviceType: data.servicetype,
           imageUrl: data.imageUrl,
-          subTypes: []
-        })
+          subTypes: [],
+        });
 
         const filteredData = {
           category: created.category,
           serviceType: created.serviceType,
           imageUrl: created.imageUrl,
           subTypes: created.subTypes,
-          _id: created._id
-        }
+          _id: created._id,
+        };
 
         if (created) {
           return { success: true, message: "Created", created: filteredData };
         } else {
-          return { success: false, message: "Failed to create general service type." };
+          return {
+            success: false,
+            message: "Failed to create general service type.",
+          };
         }
-
       } else if (data.category === "road") {
         const created = await ServiceTypeModel.create({
           category: data.category,
           serviceType: data.servicetype,
-          imageUrl: data.imageUrl
-        })
+          imageUrl: data.imageUrl,
+        });
         const filteredData = {
           category: created.category,
           serviceType: created.serviceType,
           imageUrl: created.imageUrl,
-          _id: created._id
-        }
+          _id: created._id,
+        };
         if (created) {
           return { success: true, message: "Created", created: filteredData };
         } else {
-          return { success: false, message: "Failed to create road service type." };
+          return {
+            success: false,
+            message: "Failed to create road service type.",
+          };
         }
-
       }
 
-      return { success: false, message: "" }
-
+      return { success: false, message: "" };
     } catch (error) {
-      return { success: false, message: "" }
+      return { success: false, message: "" };
     }
   }
 
-  async addOrUpdateSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; updatedData?: any }> {
+  async addOrUpdateSubType(data: {
+    id: string;
+    type: string;
+  }): Promise<{ success: boolean; message?: string; updatedData?: any }> {
     try {
-
       const existingDocument = await ServiceTypeModel.findOne({
         _id: data.id,
-        'subTypes.type': data.type.trim(),
+        "subTypes.type": data.type.trim(),
       });
 
       let updated;
 
       if (existingDocument) {
-
         updated = await ServiceTypeModel.findOneAndUpdate(
-          { _id: data.id, 'subTypes.type': data.type.trim() },
-          { $set: { 'subTypes.$.type': data.type.trim() } },
+          { _id: data.id, "subTypes.type": data.type.trim() },
+          { $set: { "subTypes.$.type": data.type.trim() } },
           { new: true }
         );
       } else {
-
         updated = await ServiceTypeModel.findOneAndUpdate(
           { _id: data.id },
           { $push: { subTypes: { type: data.type.trim() } } },
@@ -352,16 +394,18 @@ class AdminRepository implements IAdminRepo {
       if (!updated) {
         return { success: false, message: "Cannot update or add subType" };
       }
-      const newSubtypeId = updated.subTypes[updated.subTypes.length - 1]
+      const newSubtypeId = updated.subTypes[updated.subTypes.length - 1];
       return { success: true, updatedData: newSubtypeId };
-
     } catch (error) {
       console.log(error);
       return { success: false, message: "500" };
     }
   }
 
-  async deleteSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; }> {
+  async deleteSubType(data: {
+    id: string;
+    type: string;
+  }): Promise<{ success: boolean; message?: string }> {
     try {
       const deleted = await ServiceTypeModel.updateOne(
         { _id: data.id },
@@ -369,28 +413,36 @@ class AdminRepository implements IAdminRepo {
       );
 
       if (deleted.modifiedCount === 0) {
-        return { success: false, message: "409" }
+        return { success: false, message: "409" };
       }
-      return { success: true, message: "deleted" }
+      return { success: true, message: "deleted" };
     } catch (error) {
-      return { success: false, message: "500" }
+      return { success: false, message: "500" };
     }
   }
 
-  async editServiceName(data: { id: string; newName: string; }): Promise<{ success: boolean; }> {
+  async editServiceName(data: {
+    id: string;
+    newName: string;
+  }): Promise<{ success: boolean }> {
     try {
-      const updated = await ServiceTypeModel.updateOne({ _id: new mongoose.Types.ObjectId(data.id) }, {
-        $set: { serviceType: data.newName }
-      })
+      const updated = await ServiceTypeModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(data.id) },
+        {
+          $set: { serviceType: data.newName },
+        }
+      );
       if (updated.modifiedCount === 0) {
-        throw new CustomError("updation failed try again", HttpStatus.NO_CONTENT)
+        throw new CustomError(
+          "updation failed try again",
+          HttpStatus.NO_CONTENT
+        );
       }
-      return { success: true }
+      return { success: true };
     } catch (error: any) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
   }
-
 
   async getMonthlyRevenue(
     id: string
@@ -398,28 +450,30 @@ class AdminRepository implements IAdminRepo {
     try {
       const currentYear = new Date().getFullYear();
       const data = await ServiceBookingModel.aggregate([
-        {$lookup:{
-          from: "bookingdates",
-          localField: "date",
-          foreignField: "_id",
-          as: "bookeddate",
-        }},
-        {$unwind:"$bookeddate"},
+        {
+          $lookup: {
+            from: "bookingdates",
+            localField: "date",
+            foreignField: "_id",
+            as: "bookeddate",
+          },
+        },
+        { $unwind: "$bookeddate" },
 
-        { 
-          $match: { 
-            // paymentStatus: "paid", 
-            "bookeddate.date": { 
-              $gte: new Date(`${currentYear}-01-01`), 
-              $lt: new Date(`${currentYear + 1}-01-01`) 
-            } 
-          } 
+        {
+          $match: {
+            // paymentStatus: "paid",
+            "bookeddate.date": {
+              $gte: new Date(`${currentYear}-01-01`),
+              $lt: new Date(`${currentYear + 1}-01-01`),
+            },
+          },
         },
         { $unwind: "$selectedService" },
         {
           $group: {
             _id: { $month: "$date" },
-            revenue: { $sum: 50  },
+            revenue: { $sum: 50 },
           },
         },
         {
@@ -431,7 +485,7 @@ class AdminRepository implements IAdminRepo {
         },
         { $sort: { month: 1 } },
       ]);
-      
+
       return { data: data };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
@@ -451,7 +505,7 @@ class AdminRepository implements IAdminRepo {
             as: "serviceDetails",
           },
         },
-        {$unwind:"$serviceDetails"},
+        { $unwind: "$serviceDetails" },
         {
           $group: {
             _id: "$serviceDetails.serviceType",
@@ -467,17 +521,12 @@ class AdminRepository implements IAdminRepo {
         },
         { $sort: { count: -1 } },
       ]);
-      
+
       return { data: data };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }
   }
-
-
-
-
-
 }
 
 export default AdminRepository;

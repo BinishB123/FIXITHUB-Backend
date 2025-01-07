@@ -140,9 +140,7 @@ class UserServiceInteractor implements IuserService {
     }
   }
 
-  async getBookingDates(
-    id: string
-  ): Promise<{
+  async getBookingDates(id: string): Promise<{
     success?: boolean;
     data?: { _id: ObjectId; date: Date; count: number }[] | [];
   }> {
@@ -166,9 +164,7 @@ class UserServiceInteractor implements IuserService {
     }
   }
 
-  async getLatestBooking(
-    userId: string
-  ): Promise<{
+  async getLatestBooking(userId: string): Promise<{
     success?: boolean;
     data?: ResponsegetBookingGreaterThanTodaysDate[] | [];
   }> {
@@ -244,65 +240,64 @@ class UserServiceInteractor implements IuserService {
     }
   }
 
-
-  async getReviewDetails(id: string): Promise<{ ReviewData?: responseGetReviewDetails; }> {
+  async getReviewDetails(
+    id: string
+  ): Promise<{ ReviewData?: responseGetReviewDetails }> {
     try {
-      const response = await this.userRepo.getReviewDetails(id)
-      return response
-
+      const response = await this.userRepo.getReviewDetails(id);
+      return response;
     } catch (error: any) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
-
   }
 
-  async deleteOneImage(id: string, url: string): Promise<{ success?: boolean; }> {
+  async deleteOneImage(
+    id: string,
+    url: string
+  ): Promise<{ success?: boolean }> {
     try {
-      const response = await this.userRepo.deleteOneImage(id, url)
-      return response
-
-
+      const response = await this.userRepo.deleteOneImage(id, url);
+      return response;
     } catch (error: any) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
-
   }
 
-  async editReview(id: string, newReview: string): Promise<{ success?: boolean; }> {
+  async editReview(
+    id: string,
+    newReview: string
+  ): Promise<{ success?: boolean }> {
     try {
-      const response = await this.userRepo.editReview(id, newReview)
-      return response
-
+      const response = await this.userRepo.editReview(id, newReview);
+      return response;
     } catch (error: any) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
-
   }
 
-  async addOneImage(id: string, newImageUrl: string): Promise<{ success: boolean; url: string; }> {
+  async addOneImage(
+    id: string,
+    newImageUrl: string
+  ): Promise<{ success: boolean; url: string }> {
     try {
-      const response = await this.userRepo.addOneImage(id, newImageUrl)
-      return response
+      const response = await this.userRepo.addOneImage(id, newImageUrl);
+      return response;
     } catch (error: any) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
-
   }
 
-  async getFeedBacks(Id: string, limit: number): Promise<{ feedBacks?: ReviewResponse[] | []; }> {
+  async getFeedBacks(
+    Id: string,
+    limit: number
+  ): Promise<{ feedBacks?: ReviewResponse[] | [] }> {
     try {
-      const response = await this.userRepo.getFeedBacks(Id,limit)
-      return response
+      const response = await this.userRepo.getFeedBacks(Id, limit);
+      return response;
     } catch (error: any) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
-
-      
   }
-
-  
-
-
 }
 
 export default UserServiceInteractor;

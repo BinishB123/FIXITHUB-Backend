@@ -47,14 +47,24 @@ class AdminSettingInteractor implements IadminSettingInteractor {
     }
   }
 
-  async admingetAllSettingsDatas(): Promise<{ success: boolean; brands?: string[]; generalServices?: any[]; roadAssistance?: any[]; }> {
+  async admingetAllSettingsDatas(): Promise<{
+    success: boolean;
+    brands?: string[];
+    generalServices?: any[];
+    roadAssistance?: any[];
+  }> {
     try {
       const response = await this.adminRepo.settingsDatas();
 
       if (!response.success) {
         return { success: false };
       }
-      return { success: true, brands: response.brands, generalServices: response.generalServices,roadAssistance:response.roadAssistance };
+      return {
+        success: true,
+        brands: response.brands,
+        generalServices: response.generalServices,
+        roadAssistance: response.roadAssistance,
+      };
     } catch (error) {
       return { success: false };
     }
@@ -64,7 +74,7 @@ class AdminSettingInteractor implements IadminSettingInteractor {
     category: "general" | "road";
     servicetype: string;
     image: Buffer | undefined;
-  }): Promise<{ success: boolean; message?: string, created?: Object }> {
+  }): Promise<{ success: boolean; message?: string; created?: Object }> {
     try {
       const exist = await this.adminRepo.checkserviceAllreadyExistOrNot(
         data.servicetype
@@ -93,7 +103,11 @@ class AdminSettingInteractor implements IadminSettingInteractor {
           return { success: response.success, message: response.message };
         }
 
-        return { success: response.success, message: response.message, created: response.created };
+        return {
+          success: response.success,
+          message: response.message,
+          created: response.created,
+        };
       }
 
       return { success: false, message: "something went wrong" };
@@ -101,33 +115,42 @@ class AdminSettingInteractor implements IadminSettingInteractor {
       return { success: false };
     }
   }
-  async addSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; }> {
+  async addSubType(data: {
+    id: string;
+    type: string;
+  }): Promise<{ success: boolean; message?: string }> {
     try {
-      const response = await this.adminRepo.addOrUpdateSubType(data)
+      const response = await this.adminRepo.addOrUpdateSubType(data);
       if (!response.success) {
-        return response
+        return response;
       }
-      return response
+      return response;
     } catch (error) {
-      return { success: false, message: "500" }
+      return { success: false, message: "500" };
     }
   }
-  async deleteSubType(data: { id: string; type: string; }): Promise<{ success: boolean; message?: string; }> {
-      try {
-        const response = await this.adminRepo.deleteSubType(data)
-        return response
-      } catch (error) {
-        return {success:false,message:"500"}
-      }
+  async deleteSubType(data: {
+    id: string;
+    type: string;
+  }): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await this.adminRepo.deleteSubType(data);
+      return response;
+    } catch (error) {
+      return { success: false, message: "500" };
+    }
   }
 
-  async editServiceName(data: { id: string; newName: string; }): Promise<{ success: boolean; }> {
-      try {
-          const response = await this.adminRepo.editServiceName(data)
-          return response
-      } catch (error:any) {
-        throw new CustomError(error.message,error.statusCode)
-      }
+  async editServiceName(data: {
+    id: string;
+    newName: string;
+  }): Promise<{ success: boolean }> {
+    try {
+      const response = await this.adminRepo.editServiceName(data);
+      return response;
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
   }
 }
 

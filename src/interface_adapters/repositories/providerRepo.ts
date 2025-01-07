@@ -405,43 +405,43 @@ class ProviderRepository implements IProviderRepository {
       const updated =
         parseInt(subtype.vehicleType) === 4
           ? await providingServicesModel.updateOne(
-            {
-              workshopId: providerid,
-              "fourWheeler.typeId": serviceid,
-              "fourWheeler.subtype.type": subtype.type, // Matching subtype based on type
-            },
-            {
-              $set: {
-                "fourWheeler.$[w].subtype.$[s].startingPrice":
-                  subtype.startingprice,
+              {
+                workshopId: providerid,
+                "fourWheeler.typeId": serviceid,
+                "fourWheeler.subtype.type": subtype.type, // Matching subtype based on type
               },
-            },
-            {
-              arrayFilters: [
-                { "w.typeId": serviceid },
-                { "s.type": subtype.type },
-              ],
-            }
-          )
+              {
+                $set: {
+                  "fourWheeler.$[w].subtype.$[s].startingPrice":
+                    subtype.startingprice,
+                },
+              },
+              {
+                arrayFilters: [
+                  { "w.typeId": serviceid },
+                  { "s.type": subtype.type },
+                ],
+              }
+            )
           : await providingServicesModel.updateOne(
-            {
-              workshopId: providerid,
-              "twoWheeler.typeId": serviceid,
-              "twoWheeler.subtype.type": subtype.type,
-            },
-            {
-              $set: {
-                "twoWheeler.$[w].subtype.$[s].startingPrice":
-                  subtype.startingprice,
+              {
+                workshopId: providerid,
+                "twoWheeler.typeId": serviceid,
+                "twoWheeler.subtype.type": subtype.type,
               },
-            },
-            {
-              arrayFilters: [
-                { "w.typeId": serviceid },
-                { "s.type": subtype.type },
-              ],
-            }
-          );
+              {
+                $set: {
+                  "twoWheeler.$[w].subtype.$[s].startingPrice":
+                    subtype.startingprice,
+                },
+              },
+              {
+                arrayFilters: [
+                  { "w.typeId": serviceid },
+                  { "s.type": subtype.type },
+                ],
+              }
+            );
 
       if (updated.modifiedCount > 0) {
         return { success: true, message: "Subtype updated successfully" };
@@ -470,21 +470,21 @@ class ProviderRepository implements IProviderRepository {
       const deleted =
         parseInt(vehicleType) === 2
           ? await providingServicesModel.updateOne(
-            { workshopId: providerid, "twoWheeler.typeId": serviceid },
-            {
-              $pull: {
-                "twoWheeler.$.subtype": { type: subtype.type },
-              },
-            }
-          )
+              { workshopId: providerid, "twoWheeler.typeId": serviceid },
+              {
+                $pull: {
+                  "twoWheeler.$.subtype": { type: subtype.type },
+                },
+              }
+            )
           : await providingServicesModel.updateOne(
-            { workshopId: providerid, "fourWheeler.typeId": serviceid },
-            {
-              $pull: {
-                "fourWheeler.$.subtype": { type: subtype.type },
-              },
-            }
-          );
+              { workshopId: providerid, "fourWheeler.typeId": serviceid },
+              {
+                $pull: {
+                  "fourWheeler.$.subtype": { type: subtype.type },
+                },
+              }
+            );
 
       if (deleted.modifiedCount > 0) {
         return { success: true, message: "Subtype deleted successfully." };
@@ -847,21 +847,21 @@ class ProviderRepository implements IProviderRepository {
       const update =
         toDo === "add"
           ? await BookingDateModel.updateOne(
-            { _id: new mongoose.Types.ObjectId(id) },
-            {
-              $inc: {
-                count: 1,
-              },
-            }
-          )
+              { _id: new mongoose.Types.ObjectId(id) },
+              {
+                $inc: {
+                  count: 1,
+                },
+              }
+            )
           : await BookingDateModel.updateOne(
-            { _id: new mongoose.Types.ObjectId(id), count: { $gt: 0 } },
-            {
-              $inc: {
-                count: -1,
-              },
-            }
-          );
+              { _id: new mongoose.Types.ObjectId(id), count: { $gt: 0 } },
+              {
+                $inc: {
+                  count: -1,
+                },
+              }
+            );
 
       if (update.modifiedCount === 1) {
         return { success: true };
@@ -1350,29 +1350,31 @@ class ProviderRepository implements IProviderRepository {
     try {
       const currentYear = new Date().getFullYear();
       const data = await ServiceBookingModel.aggregate([
-        {$lookup:{
-          from: "bookingdates",
-          localField: "date",
-          foreignField: "_id",
-          as: "bookeddate",
-        }},
-        {$unwind:"$bookeddate"},
+        {
+          $lookup: {
+            from: "bookingdates",
+            localField: "date",
+            foreignField: "_id",
+            as: "bookeddate",
+          },
+        },
+        { $unwind: "$bookeddate" },
 
-        { 
-          $match: { 
-            providerId: new mongoose.Types.ObjectId(id), 
-            paymentStatus: "paid", 
-            "bookeddate.date": { 
-              $gte: new Date(`${currentYear}-01-01`), 
-              $lt: new Date(`${currentYear + 1}-01-01`) 
-            } 
-          } 
+        {
+          $match: {
+            providerId: new mongoose.Types.ObjectId(id),
+            paymentStatus: "paid",
+            "bookeddate.date": {
+              $gte: new Date(`${currentYear}-01-01`),
+              $lt: new Date(`${currentYear + 1}-01-01`),
+            },
+          },
         },
         { $unwind: "$selectedService" },
         {
           $group: {
             _id: { $month: "$date" },
-            revenue: { $sum: "$selectedService.price"  },
+            revenue: { $sum: "$selectedService.price" },
           },
         },
         {
@@ -1384,7 +1386,7 @@ class ProviderRepository implements IProviderRepository {
         },
         { $sort: { month: 1 } },
       ]);
-      
+
       return { data: data };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
@@ -1405,7 +1407,7 @@ class ProviderRepository implements IProviderRepository {
             as: "serviceDetails",
           },
         },
-        {$unwind:"$serviceDetails"},
+        { $unwind: "$serviceDetails" },
         {
           $group: {
             _id: "$serviceDetails.serviceType",
@@ -1421,8 +1423,8 @@ class ProviderRepository implements IProviderRepository {
         },
         { $sort: { count: -1 } },
       ]);
-      console.log("data",data);
-      
+      console.log("data", data);
+
       return { data: data };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);

@@ -2,90 +2,120 @@ import HttpStatus from "../../../entities/rules/statusCode";
 import IproviderServiceBookingInteractor from "../../../entities/provider/IproviderBooking";
 import { NextFunction, Request, Response } from "express";
 
-
 class ProviderServiceBookingController {
-    constructor(private readonly serviceBookingInteractor: IproviderServiceBookingInteractor) { }
+    constructor(
+        private readonly serviceBookingInteractor: IproviderServiceBookingInteractor
+    ) { }
 
-    async getProviderDataAccordingToDate(req: Request, res: Response, next: NextFunction) {
+    async getProviderDataAccordingToDate(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) {
         try {
-            const { id, date } = req.params
+            const { id, date } = req.params;
             console.log("id", id, date);
 
-            const response = await this.serviceBookingInteractor.getBookingsAccordingToDates(id, new Date(date))
-            return res.status(HttpStatus.OK).json(response)
+            const response =
+                await this.serviceBookingInteractor.getBookingsAccordingToDates(
+                    id,
+                    new Date(date)
+                );
+            return res.status(HttpStatus.OK).json(response);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 
-    async getBookingStillTodaysDate(req: Request, res: Response, next: NextFunction) {
+    async getBookingStillTodaysDate(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) {
         try {
-            const { id, startIndex } = req.params
+            const { id, startIndex } = req.params;
             let { status } = req.query;
-            status = typeof status === 'string' ? status : undefined;
-            const response = await this.serviceBookingInteractor.getBookingStillTodaysDate(id, parseInt(startIndex), status);
-            return res.status(HttpStatus.OK).json(response)
+            status = typeof status === "string" ? status : undefined;
+            const response =
+                await this.serviceBookingInteractor.getBookingStillTodaysDate(
+                    id,
+                    parseInt(startIndex),
+                    status
+                );
+            return res.status(HttpStatus.OK).json(response);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 
     async updateStatus(req: Request, res: Response, next: NextFunction) {
         try {
-            const { id, status, amount } = req.params
+            const { id, status, amount } = req.params;
             if (!id || !status || !amount) {
-                return res.status(HttpStatus.FORBIDDEN).json({ message: "Something went Wrong" })
+                return res
+                    .status(HttpStatus.FORBIDDEN)
+                    .json({ message: "Something went Wrong" });
             }
-            const response = await this.serviceBookingInteractor.updateStatus(id, status, parseInt(amount))
-            return res.status(HttpStatus.OK).json(response)
-
+            const response = await this.serviceBookingInteractor.updateStatus(
+                id,
+                status,
+                parseInt(amount)
+            );
+            return res.status(HttpStatus.OK).json(response);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 
-    async getBookingGreaterThanTodaysDate(req: Request, res: Response, next: NextFunction) {
+    async getBookingGreaterThanTodaysDate(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) {
         try {
-            const { userid } = req.params
-            const response = await this.serviceBookingInteractor.getBookingGreaterThanTodaysDate(userid)
-            return res.status(HttpStatus.OK).json(response)
+            const { userid } = req.params;
+            const response =
+                await this.serviceBookingInteractor.getBookingGreaterThanTodaysDate(
+                    userid
+                );
+            return res.status(HttpStatus.OK).json(response);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 
     async getFeedBacks(req: Request, res: Response, next: NextFunction) {
         try {
-            const { id } = req.params
-            const response = await this.serviceBookingInteractor.getFeedBacks(id)
-            return res.status(HttpStatus.OK).json(response)
-
+            const { id } = req.params;
+            const response = await this.serviceBookingInteractor.getFeedBacks(id);
+            return res.status(HttpStatus.OK).json(response);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 
     async like(req: Request, res: Response, next: NextFunction) {
-        try { 
-            const { id ,status} = req.body
-            const response = await this.serviceBookingInteractor.likeFeedBack(id,status)
-            return res.status(HttpStatus.OK).json(response)
-
+        try {
+            const { id, status } = req.body;
+            const response = await this.serviceBookingInteractor.likeFeedBack(
+                id,
+                status
+            );
+            return res.status(HttpStatus.OK).json(response);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 
     async reply(req: Request, res: Response, next: NextFunction) {
         try {
-            const { id ,reply} = req.body
-            const response = await this.serviceBookingInteractor.reply(id,reply)
-            return res.status(HttpStatus.OK).json(response)
-
+            const { id, reply } = req.body;
+            const response = await this.serviceBookingInteractor.reply(id, reply);
+            return res.status(HttpStatus.OK).json(response);
         } catch (error) {
-            next(error)
+            next(error);
         }
     }
 }
 
-export default ProviderServiceBookingController
+export default ProviderServiceBookingController;

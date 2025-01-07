@@ -5,10 +5,12 @@ import IStripe from "../../../entities/services/Istripe";
 import { IUploadToCloudinary } from "../../../entities/services/Iclodinary";
 import CustomError from "../../../framework/services/errorInstance";
 
-
-
 class UserServiceContoller {
-  constructor(private readonly UserServiceInteractor: IuserServiceInteractor, private readonly stripe: IStripe, private readonly cloduinary: IUploadToCloudinary) { }
+  constructor(
+    private readonly UserServiceInteractor: IuserServiceInteractor,
+    private readonly stripe: IStripe,
+    private readonly cloduinary: IUploadToCloudinary
+  ) { }
   async getServices(req: Request, res: Response) {
     try {
       const { category } = req.params;
@@ -61,7 +63,7 @@ class UserServiceContoller {
         serviceId: req.query.serviceId + "",
         coordinates: [long, lat] as [number, number],
         category: req.query.category + "",
-        brand: req.query.brand + ""
+        brand: req.query.brand + "",
       };
       const response = await this.UserServiceInteractor.getAllShops(data);
       if (!response.success) {
@@ -79,39 +81,44 @@ class UserServiceContoller {
 
   async getshopProfileWithSelectedServices(req: Request, res: Response) {
     try {
-
       const data = {
         serviceId: req.query.serviceId + "",
         vehicleType: req.query.vehicleType + "",
-        providerId: req.query.providerId + ""
-      }
-      const response = await this.UserServiceInteractor.getshopProfileWithSelectedServices(data)
-      return res.status(HttpStatus.OK).json(response)
-
+        providerId: req.query.providerId + "",
+      };
+      const response =
+        await this.UserServiceInteractor.getshopProfileWithSelectedServices(
+          data
+        );
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: "failed" })
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "failed" });
     }
   }
 
   async getBookingDates(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params
-      const response = await this.UserServiceInteractor.getBookingDates(id)
-      res.status(HttpStatus.OK).json(response)
+      const { id } = req.params;
+      const response = await this.UserServiceInteractor.getBookingDates(id);
+      res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-
   async checkOut_Session(req: Request, res: Response, next: NextFunction) {
     try {
-      const { dataRequiredBooking, initailAmountToPay } = req.body
-      req.session.dataRequiredForBooking = dataRequiredBooking
+      const { dataRequiredBooking, initailAmountToPay } = req.body;
+      req.session.dataRequiredForBooking = dataRequiredBooking;
       console.log(req.session.dataRequiredForBooking);
-      req.session.save()
-      const response = await this.stripe.userCheckoutSession(initailAmountToPay)
-      return res.status(HttpStatus.OK).json({ sessionId: response.sessionid, url: response.url });
+      req.session.save();
+      const response =
+        await this.stripe.userCheckoutSession(initailAmountToPay);
+      return res
+        .status(HttpStatus.OK)
+        .json({ sessionId: response.sessionid, url: response.url });
     } catch (error: any) {
       next(error);
     }
@@ -119,112 +126,127 @@ class UserServiceContoller {
 
   async getLatestBooking(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userid, startindex, endindex } = req.params
-      const response = await this.UserServiceInteractor.getLatestBooking(userid)
-      return res.status(HttpStatus.OK).json(response)
+      const { userid, startindex, endindex } = req.params;
+      const response =
+        await this.UserServiceInteractor.getLatestBooking(userid);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
   async getServiceHistory(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userid, startindex, endindex } = req.params
-      const response = await this.UserServiceInteractor.getServiceHistory(userid, parseInt(startindex), parseInt(endindex))
-      return res.status(HttpStatus.OK).json(response)
+      const { userid, startindex, endindex } = req.params;
+      const response = await this.UserServiceInteractor.getServiceHistory(
+        userid,
+        parseInt(startindex),
+        parseInt(endindex)
+      );
+      return res.status(HttpStatus.OK).json(response);
     } catch (error: any) {
-      next(error)
+      next(error);
     }
   }
 
   async fullpayment(req: Request, res: Response, next: NextFunction) {
     try {
-      const { selectedServices, docId } = req.body
-      const response = await this.stripe.fullpayment(selectedServices, docId)
-      return res.status(HttpStatus.OK).json(response)
+      const { selectedServices, docId } = req.body;
+      const response = await this.stripe.fullpayment(selectedServices, docId);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
   async cancelBooking(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id, amountToRefund, date } = req.body
-      const response = await this.UserServiceInteractor.cancelBooking(id, amountToRefund, date)
-      return res.status(HttpStatus.OK).json(response)
+      const { id, amountToRefund, date } = req.body;
+      const response = await this.UserServiceInteractor.cancelBooking(
+        id,
+        amountToRefund,
+        date
+      );
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-
   async addReview(req: Request, res: Response, next: NextFunction) {
     try {
-
-      const { userId, providerId, serviceId, review, bookingId } = req.body
-      const images: Buffer[] = []
+      const { userId, providerId, serviceId, review, bookingId } = req.body;
+      const images: Buffer[] = [];
       if (Array.isArray(req.files)) {
         req.files.forEach((file: any) => {
           images.push(file.buffer);
         });
       }
 
-      this.cloduinary.uploadArrayOfImages(images, "FixitHub", "FixithubImages").then(async (response) => {
+      this.cloduinary
+        .uploadArrayOfImages(images, "FixitHub", "FixithubImages")
+        .then(async (response) => {
+          const resp = await this.UserServiceInteractor.addReview(
+            { userId, providerId, serviceId, review, bookingId },
+            response.results
+          );
+          console.log("res", resp);
 
-        const resp = await this.UserServiceInteractor.addReview({ userId, providerId, serviceId, review, bookingId }, response.results)
-        console.log("res", resp);
-
-        return res.status(HttpStatus.OK).json(resp)
-      }).catch((error) => {
-        throw new CustomError("Image Adding Failed While AddingReview", HttpStatus.INTERNAL_SERVER_ERROR)
-      })
-
+          return res.status(HttpStatus.OK).json(resp);
+        })
+        .catch((error) => {
+          throw new CustomError(
+            "Image Adding Failed While AddingReview",
+            HttpStatus.INTERNAL_SERVER_ERROR
+          );
+        });
     } catch (error) {
-      next(error)
+      next(error);
     }
-
   }
-
 
   async getReviewDeatils(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params
-   
-      const response = await this.UserServiceInteractor.getReviewDetails(id)
-      return res.status(HttpStatus.OK).json(response)
-    } catch (error) {
-      next(error)
-    }
+      const { id } = req.params;
 
+      const response = await this.UserServiceInteractor.getReviewDetails(id);
+      return res.status(HttpStatus.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
   }
 
   async deleteOneImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id, url } = req.body
+      const { id, url } = req.body;
       this.cloduinary.deleteFromCloudinary(url, "FixitHub").then(async () => {
-        const response = await this.UserServiceInteractor.deleteOneImage(id, url)
-        return res.status(HttpStatus.OK).json(response)
-      })
+        const response = await this.UserServiceInteractor.deleteOneImage(
+          id,
+          url
+        );
+        return res.status(HttpStatus.OK).json(response);
+      });
     } catch (error) {
-      next(error)
+      next(error);
     }
-
   }
 
   async editReview(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id, newReview } = req.body
-      const response = await this.UserServiceInteractor.editReview(id, newReview)
-      return res.status(HttpStatus.OK).json(response)
+      const { id, newReview } = req.body;
+      const response = await this.UserServiceInteractor.editReview(
+        id,
+        newReview
+      );
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
-
   }
 
   async addOneImage(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.body
+      const { id } = req.body;
       const image = req.file?.buffer;
       if (image instanceof Buffer) {
         const cloudinaryresponse = await this.cloduinary.uploadToCloudinary(
@@ -233,35 +255,33 @@ class UserServiceContoller {
           "FixithubImages"
         );
         if (cloudinaryresponse.success) {
-          const response = await this.UserServiceInteractor.addOneImage(id, cloudinaryresponse.url ? cloudinaryresponse.url : "",)
+          const response = await this.UserServiceInteractor.addOneImage(
+            id,
+            cloudinaryresponse.url ? cloudinaryresponse.url : ""
+          );
           if (response.success) {
             return res.status(HttpStatus.OK).json({ url: response.url });
           }
         }
       }
-
     } catch (error) {
-      next(error)
+      next(error);
     }
-
   }
 
-
-  async getFeedBacks(req:Request,res:Response,next:NextFunction){
+  async getFeedBacks(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id ,limit} = req.params
-   
-      const response = await this.UserServiceInteractor.getFeedBacks(id,parseInt(limit))
-      return res.status(HttpStatus.OK).json(response)
+      const { id, limit } = req.params;
+
+      const response = await this.UserServiceInteractor.getFeedBacks(
+        id,
+        parseInt(limit)
+      );
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
-
-
-
-
-
 }
 
 export default UserServiceContoller;

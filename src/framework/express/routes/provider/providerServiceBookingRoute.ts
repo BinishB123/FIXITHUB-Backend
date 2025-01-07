@@ -4,21 +4,51 @@ import ProviderRepository from "../../../../interface_adapters/repositories/prov
 import ServiceBookingInteractor from "../../../../usecases/provider/serviceBookingInteractor";
 import express from "express";
 
-const providerServiceBookingRoute = express.Router()
-const repo = new ProviderRepository()
-const stripe = new StripePayment()
-const interactor = new ServiceBookingInteractor(repo,stripe)
-const providerServiceBookingContoller = new ProviderServiceBookingController(interactor)
+const providerServiceBookingRoute = express.Router();
+const repo = new ProviderRepository();
+const stripe = new StripePayment();
+const interactor = new ServiceBookingInteractor(repo, stripe);
+const providerServiceBookingContoller = new ProviderServiceBookingController(
+    interactor
+);
 
-providerServiceBookingRoute.get('/getservicebooking/:id/:date', providerServiceBookingContoller.getProviderDataAccordingToDate.bind(providerServiceBookingContoller))
-providerServiceBookingRoute.get('/getBookingStillTodaysDate/:id/:startIndex',providerServiceBookingContoller.getBookingStillTodaysDate.bind(providerServiceBookingContoller))
-providerServiceBookingRoute.patch('/updatestatus/:id/:status/:amount',providerServiceBookingContoller.updateStatus.bind(providerServiceBookingContoller))
-providerServiceBookingRoute.get('/viewbookings/:userid',providerServiceBookingContoller.getBookingGreaterThanTodaysDate.bind(providerServiceBookingContoller))
-providerServiceBookingRoute.get('/getfeedbacks/:id',providerServiceBookingContoller.getFeedBacks.bind(providerServiceBookingContoller))
-providerServiceBookingRoute.patch('/like',providerServiceBookingContoller.like.bind(providerServiceBookingContoller))
-providerServiceBookingRoute.patch('/reply',providerServiceBookingContoller.reply.bind(providerServiceBookingContoller))
+providerServiceBookingRoute.get(
+    "/getservicebooking/:id/:date",
+    providerServiceBookingContoller.getProviderDataAccordingToDate.bind(
+        providerServiceBookingContoller
+    )
+);
+providerServiceBookingRoute.get(
+    "/getBookingStillTodaysDate/:id/:startIndex",
+    providerServiceBookingContoller.getBookingStillTodaysDate.bind(
+        providerServiceBookingContoller
+    )
+);
+providerServiceBookingRoute.patch(
+    "/updatestatus/:id/:status/:amount",
+    providerServiceBookingContoller.updateStatus.bind(
+        providerServiceBookingContoller
+    )
+);
+providerServiceBookingRoute.get(
+    "/viewbookings/:userid",
+    providerServiceBookingContoller.getBookingGreaterThanTodaysDate.bind(
+        providerServiceBookingContoller
+    )
+);
+providerServiceBookingRoute.get(
+    "/getfeedbacks/:id",
+    providerServiceBookingContoller.getFeedBacks.bind(
+        providerServiceBookingContoller
+    )
+);
+providerServiceBookingRoute.patch(
+    "/like",
+    providerServiceBookingContoller.like.bind(providerServiceBookingContoller)
+);
+providerServiceBookingRoute.patch(
+    "/reply",
+    providerServiceBookingContoller.reply.bind(providerServiceBookingContoller)
+);
 
-
-
-
-export default providerServiceBookingRoute
+export default providerServiceBookingRoute;

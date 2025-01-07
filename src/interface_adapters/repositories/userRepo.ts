@@ -767,9 +767,7 @@ class UserRepository implements isUserRepository {
         }
     }
 
-    async notificationsGetter(
-        id: string
-    ): Promise<{
+    async notificationsGetter(id: string): Promise<{
         notfiyData: NotifyGetterResponse[] | [];
         countOfUnreadMessages: UnreadMessageCount[] | [];
     }> {
@@ -786,7 +784,14 @@ class UserRepository implements isUserRepository {
                 },
                 { $unwind: "$message" },
                 { $match: { "message.sender": "provider" } },
-                { $lookup: { from: "providers", localField: "providerId", foreignField: "_id", as: "provider" } },
+                {
+                    $lookup: {
+                        from: "providers",
+                        localField: "providerId",
+                        foreignField: "_id",
+                        as: "provider",
+                    },
+                },
                 { $unwind: "$provider" },
                 {
                     $project: {
@@ -797,10 +802,9 @@ class UserRepository implements isUserRepository {
                         latestMessage: 1,
                         message: 1,
                         "provider.workshopName": 1,
-                        "provider.logoUrl": 1
-
-                    }
-                }
+                        "provider.logoUrl": 1,
+                    },
+                },
             ];
 
             const querycountOfUnreadMessages = [
@@ -830,7 +834,6 @@ class UserRepository implements isUserRepository {
             const countOfUnreadMessages: UnreadMessageCount[] | [] =
                 await messageModel.aggregate(querycountOfUnreadMessages);
 
-
             return {
                 notfiyData: notifyData,
                 countOfUnreadMessages: countOfUnreadMessages,
@@ -840,25 +843,36 @@ class UserRepository implements isUserRepository {
         }
     }
 
-    async addReview(data: { review: string; userId: string; providerId: string; serviceId: string; bookingId: string }, result: { url?: string; }[]): Promise<{ success?: boolean; review?: reviewAddedResponse; }> {
+    async addReview(
+        data: {
+            review: string;
+            userId: string;
+            providerId: string;
+            serviceId: string;
+            bookingId: string;
+        },
+        result: { url?: string }[]
+    ): Promise<{ success?: boolean; review?: reviewAddedResponse }> {
         try {
-
             const created = await reviewModel.create({
                 userId: data.userId,
                 ProviderId: data.providerId,
                 ServiceId: data.serviceId,
                 bookingId: data.bookingId,
                 opinion: data.review,
-                images: result
-            })
+                images: result,
+            });
             if (!created) {
-                throw new CustomError("something went wrong Can't post Your review")
+                throw new CustomError("something went wrong Can't post Your review");
             }
-            await ServiceBookingModel.updateOne({ _id: new mongoose.Types.ObjectId(data.bookingId) }, {
-                $set: {
-                    review: created._id
+            await ServiceBookingModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(data.bookingId) },
+                {
+                    $set: {
+                        review: created._id,
+                    },
                 }
-            })
+            );
             const reviewResponse: reviewAddedResponse = {
                 _id: created._id + "",
                 userId: created.userId,
@@ -869,156 +883,177 @@ class UserRepository implements isUserRepository {
                 reply: created.reply || null,
                 like: created.like,
                 images: created.images.map((image) => ({
-                    url: image.url
+                    url: image.url,
                 })),
             };
 
-
             return { success: true, review: reviewResponse };
-
         } catch (error: any) {
-            throw new CustomError(error.message, error.statusCode)
+            throw new CustomError(error.message, error.statusCode);
         }
     }
 
-
-    async getReviewDetails(id: string): Promise<{ ReviewData?: responseGetReviewDetails }> {
+    async getReviewDetails(
+        id: string
+    ): Promise<{ ReviewData?: responseGetReviewDetails }> {
         try {
             const [review] = await reviewModel.aggregate([
-             {$match:{_id:new mongoose.Types.ObjectId(id)}},
+                { $match: { _id: new mongoose.Types.ObjectId(id) } },
                 {
-                $lookup: {
-                    from: "providers",
-                    localField: "ProviderId",
-                    foreignField: "_id",
-                    as: "provider"
-                }
-            },
-            { $unwind: "$provider" },
-            {
-                $project: {
-                    _id: 1,
-                    userId: 1,
-                    ServiceId: 1,
-                    bookingId: 1,
-                    opinion: 1,
-                    reply: 1,
-                    like: 1,
-                    images: 1,
-                    "provider._id": 1,
-                    "provider.workshopName": 1,
-                    "provider.logoUrl": 1
+                    $lookup: {
+                        from: "providers",
+                        localField: "ProviderId",
+                        foreignField: "_id",
+                        as: "provider",
+                    },
+                },
+                { $unwind: "$provider" },
+                {
+                    $project: {
+                        _id: 1,
+                        userId: 1,
+                        ServiceId: 1,
+                        bookingId: 1,
+                        opinion: 1,
+                        reply: 1,
+                        like: 1,
+                        images: 1,
+                        "provider._id": 1,
+                        "provider.workshopName": 1,
+                        "provider.logoUrl": 1,
+                    },
+                },
+            ]);
 
-                }
-            }
-            ])
-            
             if (!review) {
-                throw new CustomError("Something went wrong Not Found", HttpStatus.NOT_FOUND)
+                throw new CustomError(
+                    "Something went wrong Not Found",
+                    HttpStatus.NOT_FOUND
+                );
             }
-            return { ReviewData: review }
+            return { ReviewData: review };
         } catch (error: any) {
-            throw new CustomError(error.message, error.statusCode)
+            throw new CustomError(error.message, error.statusCode);
         }
     }
 
-    async deleteOneImage(id: string, url: string): Promise<{ success?: boolean; }> {
+    async deleteOneImage(
+        id: string,
+        url: string
+    ): Promise<{ success?: boolean }> {
         try {
-            const update = await reviewModel.updateOne({ _id: new mongoose.Types.ObjectId(id) }, {
-                $pull: {
-                    images: { url: url }
+            const update = await reviewModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(id) },
+                {
+                    $pull: {
+                        images: { url: url },
+                    },
                 }
-            })
+            );
             if (update.modifiedCount === 0) {
-                throw new CustomError("can't delete image ", HttpStatus.Unprocessable_Entity)
+                throw new CustomError(
+                    "can't delete image ",
+                    HttpStatus.Unprocessable_Entity
+                );
             }
-            return { success: true }
-
+            return { success: true };
         } catch (error: any) {
-            throw new CustomError(error.message, error.statusCode)
+            throw new CustomError(error.message, error.statusCode);
         }
-
-
-
     }
 
-    async editReview(id: string, newReview: string): Promise<{ success?: boolean; }> {
+    async editReview(
+        id: string,
+        newReview: string
+    ): Promise<{ success?: boolean }> {
         try {
-
-            const update = await reviewModel.updateOne({ _id: new mongoose.Types.ObjectId(id) }, {
-                $set: {
-                    opinion: newReview
+            const update = await reviewModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(id) },
+                {
+                    $set: {
+                        opinion: newReview,
+                    },
                 }
-            })
+            );
 
             if (update.modifiedCount === 0) {
-                throw new CustomError("Review editing Failed try again", HttpStatus.Unprocessable_Entity)
+                throw new CustomError(
+                    "Review editing Failed try again",
+                    HttpStatus.Unprocessable_Entity
+                );
             }
-            return { success: true }
-
+            return { success: true };
         } catch (error: any) {
-            throw new CustomError(error.message, error.statusCode)
+            throw new CustomError(error.message, error.statusCode);
         }
     }
 
-    async addOneImage(id: string, newImageUrl: string): Promise<{ success: boolean; url: string; }> {
-       try {
-        const update = await reviewModel.updateOne({ _id: new mongoose.Types.ObjectId(id) }, {
-            $push: {
-                images: { url: newImageUrl }
+    async addOneImage(
+        id: string,
+        newImageUrl: string
+    ): Promise<{ success: boolean; url: string }> {
+        try {
+            const update = await reviewModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(id) },
+                {
+                    $push: {
+                        images: { url: newImageUrl },
+                    },
+                }
+            );
+            if (update.modifiedCount === 0) {
+                throw new CustomError(
+                    "can't delete image ",
+                    HttpStatus.Unprocessable_Entity
+                );
             }
-        })
-        if (update.modifiedCount === 0) {
-            throw new CustomError("can't delete image ", HttpStatus.Unprocessable_Entity)
+            return { success: true, url: newImageUrl };
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode);
         }
-        return { success: true ,url:newImageUrl}
-         
-       } catch (error: any) {
-        throw new CustomError(error.message, error.statusCode)
-       }
     }
 
- async getFeedBacks(Id: string,limit:number): Promise<{ feedBacks?: ReviewResponse[] | []; }> {
-    try {
-        const review: ReviewResponse[] = await reviewModel.aggregate([
-          { $match: { ServiceId: new mongoose.Types.ObjectId(Id) } },
-          {
-            $lookup: {
-              from: "users",
-              localField: "userId",
-              foreignField: "_id",
-              as: "user",
-            },
-          },
-          { $unwind: "$user" },
-          {$skip:limit-3},
-          {$limit:3},
-          {
-            $project: {
-              _id: 1,
-              userId: 1,
-              ServiceId: 1,
-              bookingId: 1,
-              opinion: 1,
-              reply: 1,
-              like: 1,
-              images: 1,
-              "user._id": 1,
-              "user.name": 1,
-              "user.logoUrl": 1,
-            },
-          },
-        ]);
-        console.log(review);
-        
-        return { feedBacks: review ? review : [] };
-      } catch (error: any) {
-        throw new CustomError(error.message, error.statusCode);
-      }
-        
+    async getFeedBacks(
+        Id: string,
+        limit: number
+    ): Promise<{ feedBacks?: ReviewResponse[] | [] }> {
+        try {
+            const review: ReviewResponse[] = await reviewModel.aggregate([
+                { $match: { ServiceId: new mongoose.Types.ObjectId(Id) } },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "userId",
+                        foreignField: "_id",
+                        as: "user",
+                    },
+                },
+                { $unwind: "$user" },
+                { $skip: limit - 3 },
+                { $limit: 3 },
+                {
+                    $project: {
+                        _id: 1,
+                        userId: 1,
+                        ServiceId: 1,
+                        bookingId: 1,
+                        opinion: 1,
+                        reply: 1,
+                        like: 1,
+                        images: 1,
+                        "user._id": 1,
+                        "user.name": 1,
+                        "user.logoUrl": 1,
+                    },
+                },
+            ]);
+            console.log(review);
+
+            return { feedBacks: review ? review : [] };
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode);
+        }
     }
-
-
 }
 
 export default UserRepository;

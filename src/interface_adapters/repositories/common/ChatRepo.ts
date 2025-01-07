@@ -9,7 +9,7 @@ import HttpStatus from "../../../entities/rules/statusCode";
 import providerModel from "../../../framework/mongoose/providerSchema";
 
 class ChatRepo implements IChatRepo {
-  constructor() {}
+  constructor() { }
   async getChatid(
     providerId: string,
     userId: string
@@ -36,18 +36,20 @@ class ChatRepo implements IChatRepo {
     }
   }
 
-  async getChatOfOneToOne(chatId: string, whoWantsData: "user" | "provider" | string): Promise<{ success?: boolean; data?: IChatingUser; }> {
+  async getChatOfOneToOne(
+    chatId: string,
+    whoWantsData: "user" | "provider" | string
+  ): Promise<{ success?: boolean; data?: IChatingUser }> {
     try {
       const update = await messageModel.updateMany(
         {
           $and: [
-            { chatId: new mongoose.Types.ObjectId(chatId) }, 
-            { sender: whoWantsData === "user" ? "provider" : "user" }
-          ]
+            { chatId: new mongoose.Types.ObjectId(chatId) },
+            { sender: whoWantsData === "user" ? "provider" : "user" },
+          ],
         },
-        { $set: { seen: true } } 
+        { $set: { seen: true } }
       );
-      
 
       const [chatBetweenUsers] = await chatModel.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(chatId) } },
@@ -138,15 +140,15 @@ class ChatRepo implements IChatRepo {
             _id: 1,
             ...(topassChat === "user"
               ? {
-                  "provider._id": 1,
-                  "provider.workshopName": 1,
-                  "provider.logoUrl": 1,
-                }
+                "provider._id": 1,
+                "provider.workshopName": 1,
+                "provider.logoUrl": 1,
+              }
               : {
-                  "user.name": 1,
-                  "user.logoUrl": 1,
-                  "user._id": 1,
-                }),
+                "user.name": 1,
+                "user.logoUrl": 1,
+                "user._id": 1,
+              }),
             "newMessage.message": 1,
             "newMessage.updatedAt": 1,
           },
@@ -198,15 +200,15 @@ class ChatRepo implements IChatRepo {
             _id: 1,
             ...(whom === "user"
               ? {
-                  "provider._id": 1,
-                  "provider.workshopName": 1,
-                  "provider.logoUrl": 1,
-                }
+                "provider._id": 1,
+                "provider.workshopName": 1,
+                "provider.logoUrl": 1,
+              }
               : {
-                  "user.name": 1,
-                  "user.logoUrl": 1,
-                  "user._id": 1,
-                }),
+                "user.name": 1,
+                "user.logoUrl": 1,
+                "user._id": 1,
+              }),
             "newMessage.message": 1,
             "newMessage.updatedAt": 1,
           },
@@ -269,15 +271,15 @@ class ChatRepo implements IChatRepo {
       const [Data] =
         providerOrUser === "user"
           ? await userModel.aggregate([
-              { $match: { _id: new mongoose.Types.ObjectId(id) } },
-              { $project: { _id: 0, name: 1, logoUrl: 1 } },
-            ])
+            { $match: { _id: new mongoose.Types.ObjectId(id) } },
+            { $project: { _id: 0, name: 1, logoUrl: 1 } },
+          ])
           : await providerModel.aggregate([
-              { $match: { _id: new mongoose.Types.ObjectId(id) } },
-              { $project: { _id: 0, workshopName: 1, logoUrl: 1 } },
-            ]);
-            console.log(Data);
-            
+            { $match: { _id: new mongoose.Types.ObjectId(id) } },
+            { $project: { _id: 0, workshopName: 1, logoUrl: 1 } },
+          ]);
+      console.log(Data);
+
       return { data: Data };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);

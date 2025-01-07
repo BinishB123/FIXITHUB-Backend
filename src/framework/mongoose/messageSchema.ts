@@ -1,10 +1,6 @@
 import { IChat, IMessage } from "../../entities/rules/IchatSchema";
 import mongoose, { Schema, model } from "mongoose";
 
-
-
-
-
 const messageSchema = new Schema<IMessage>(
   {
     sender: {
@@ -12,16 +8,15 @@ const messageSchema = new Schema<IMessage>(
       enum: ["user", "provider"],
       required: true,
     },
-    chatId:{
-        type:mongoose.Types.ObjectId,
-        required:true,
-        ref:"chats"
-
+    chatId: {
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: "chats",
     },
     message: {
       type: String,
       required: true,
-      trim:true
+      trim: true,
     },
     providerdelete: {
       type: Boolean,
@@ -31,19 +26,15 @@ const messageSchema = new Schema<IMessage>(
       type: Boolean,
       default: false,
     },
-    seen:{
-      type:Boolean,
-      default:false
-    }
+    seen: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
-
-
-
-
 
 const messageModel = model("messages", messageSchema);
 

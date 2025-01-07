@@ -13,7 +13,11 @@ const providingServicesSchema = new Schema<propvidingServicesSchema>({
       category: { type: String, required: true },
       subtype: [
         {
-          type: { type: Schema.Types.ObjectId,ref: "ServiceType" ,required: true },
+          type: {
+            type: Schema.Types.ObjectId,
+            ref: "ServiceType",
+            required: true,
+          },
           startingPrice: { type: Number, required: true },
         },
       ],
@@ -29,7 +33,11 @@ const providingServicesSchema = new Schema<propvidingServicesSchema>({
       category: { type: String, required: true },
       subtype: [
         {
-          type: {type: Schema.Types.ObjectId,ref: "ServiceType" , required: true },
+          type: {
+            type: Schema.Types.ObjectId,
+            ref: "ServiceType",
+            required: true,
+          },
           startingPrice: { type: Number, required: true },
         },
       ],

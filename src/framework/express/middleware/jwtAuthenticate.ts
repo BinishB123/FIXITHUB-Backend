@@ -24,7 +24,7 @@ const refreshAccessToken = async (
       process.env.REFRESHTOKENKEY as string
     ) as DecodedToken;
     if (!decoded) {
-      return 401
+      return 401;
     }
     if (type !== "admin") {
       const isAllowed = await checkBlockOrNot(decoded.id, type);
@@ -69,7 +69,6 @@ const verification = (type: string) => {
             return next();
           }
         } else {
-
           throw new CustomError("Access expired", HttpStatus.FORBIDDEN);
         }
       }
@@ -81,14 +80,16 @@ const verification = (type: string) => {
       // const currentTime = Math.floor(Date.now()/1000)
       // console.log(currentTime<decoded.exp)
       if (type !== decoded.role) {
-        throw new CustomError("Access Denied", HttpStatus.UNAUTHORIZED)
+        throw new CustomError("Access Denied", HttpStatus.UNAUTHORIZED);
       }
-
 
       if (type !== "admin") {
         const isAllowed = await checkBlockOrNot(decoded.id, type);
         if (!isAllowed) {
-          throw new CustomError("You are blocked by admin", HttpStatus.UNAUTHORIZED);
+          throw new CustomError(
+            "You are blocked by admin",
+            HttpStatus.UNAUTHORIZED
+          );
         }
       }
 
@@ -97,13 +98,13 @@ const verification = (type: string) => {
       res.clearCookie(`${type}AccessToken`, {
         httpOnly: true,
         sameSite: true,
-        path: '/'
-      })
+        path: "/",
+      });
       res.clearCookie(`${type}RefreshToken`, {
         httpOnly: true,
         sameSite: true,
-        path: '/'
-      })
+        path: "/",
+      });
       next(err);
     }
   };
@@ -117,7 +118,7 @@ const checkBlockOrNot = async (id: string, type: string): Promise<boolean> => {
         : await providerModel.findById(new mongoose.Types.ObjectId(id));
 
     if (!user || user.blocked) {
-      return false
+      return false;
     }
     return true;
   } catch (error) {

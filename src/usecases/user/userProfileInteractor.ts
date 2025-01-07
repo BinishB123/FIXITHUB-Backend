@@ -4,7 +4,7 @@ import IUserProfileInteractor from "../../entities/user/IuserProfileInteractor";
 import { INotifyGetterResponse } from "entities/user/IuserResponse";
 
 class UserProfileInteractor implements IUserProfileInteractor {
-  constructor(private readonly userRepo: isUserRepository) {}
+  constructor(private readonly userRepo: isUserRepository) { }
   async userUpdateData(data: {
     id: string;
     newData: string;
@@ -65,9 +65,6 @@ class UserProfileInteractor implements IUserProfileInteractor {
       throw new CustomError(error.message, error.statusCode);
     }
   }
-
-
-  
 }
 
 export default UserProfileInteractor;

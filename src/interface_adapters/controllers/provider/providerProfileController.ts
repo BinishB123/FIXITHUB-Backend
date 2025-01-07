@@ -10,13 +10,13 @@ class ProviderProfileController {
   constructor(
     private readonly providerProfileInteractor: IProfileInteractor,
     private readonly cloudinary: IUploadToCloudinary,
-    private readonly chatInteractor :IChatInteractor
-  ) {}
+    private readonly chatInteractor: IChatInteractor
+  ) { }
   async getDataToProfile(req: Request, res: Response) {
     try {
       const id: string | undefined = req.query.id + "";
 
-      if (!id) 
+      if (!id)
         return res
           .status(HttpStatus.FORBIDDEN)
           .json({ message: "provided id not passed" });
@@ -64,8 +64,8 @@ class ProviderProfileController {
 
   async addLogo(req: Request, res: Response) {
     try {
-        console.log(req.body );
-         
+      console.log(req.body);
+
       const { id } = req.body;
       const image = req.file?.buffer;
 
@@ -74,10 +74,10 @@ class ProviderProfileController {
           image,
           "FixitHub",
           "FixithubImages"
-        ); 
+        );
         if (cloudinaryresponse.success) {
           const data = {
-            id: id, 
+            id: id,
             url: cloudinaryresponse.url ? cloudinaryresponse.url : "",
           };
           const response = await this.providerProfileInteractor.addImage(data);
@@ -96,191 +96,225 @@ class ProviderProfileController {
     }
   }
 
-  async updateProfile(req:Request,res:Response){
+  async updateProfile(req: Request, res: Response) {
     try {
-      const { id,whichisTotChange,newOne} = req.body
-      const data = {id,whichisTotChange,newOne}
-      const response = await this.providerProfileInteractor.updateProfiledatas(data)
+      const { id, whichisTotChange, newOne } = req.body;
+      const data = { id, whichisTotChange, newOne };
+      const response =
+        await this.providerProfileInteractor.updateProfiledatas(data);
       if (!response.success) {
-         if (response.message==="500") {
-          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json("internal server error")
-         }else{
-          return res.status(HttpStatus.Unprocessable_Entity).json("something went wrong")
-         }
+        if (response.message === "500") {
+          return res
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json("internal server error");
+        } else {
+          return res
+            .status(HttpStatus.Unprocessable_Entity)
+            .json("something went wrong");
+        }
       }
-      return res.status(HttpStatus.OK).json(response)
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"internal server"})
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "internal server" });
     }
   }
-  async getAllBrands(req:Request,res:Response){
+  async getAllBrands(req: Request, res: Response) {
     try {
-      const id = req.query.id+"" 
-      const response = await this.providerProfileInteractor.getAllBrand(id)
+      const id = req.query.id + "";
+      const response = await this.providerProfileInteractor.getAllBrand(id);
       if (!response.success) {
-        if (response.message==="500") {
-          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"failed internal server error"})
+        if (response.message === "500") {
+          return res
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .json({ message: "failed internal server error" });
         }
-        return res.status(HttpStatus.Unprocessable_Entity).json({message:"failed to Fetch Data"})
+        return res
+          .status(HttpStatus.Unprocessable_Entity)
+          .json({ message: "failed to Fetch Data" });
       }
-      return res.status(HttpStatus.OK).json(response)
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({message:"failed internal server error"})
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .json({ message: "failed internal server error" });
     }
   }
 
-  async changePassword(req:Request,res:Response,next:NextFunction){
+  async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
-      const {id,currentpassowrd,newpassowrd} = req.body
-      if (!id||!currentpassowrd||!newpassowrd) {
-        return res.status(HttpStatus.Unprocessable_Entity).json({message:"Data missing something went wrong"})
+      const { id, currentpassowrd, newpassowrd } = req.body;
+      if (!id || !currentpassowrd || !newpassowrd) {
+        return res
+          .status(HttpStatus.Unprocessable_Entity)
+          .json({ message: "Data missing something went wrong" });
       }
-      const response = await this.providerProfileInteractor.changepassword({id,currentpassowrd,newpassowrd})
-     
-      return res.status(HttpStatus.OK).json({message:"password changed"})
-    } catch (error) {
-      next(error)
-     }
-  }
-  
-  async updateLogo(req:Request,res:Response,next:NextFunction){
-    try {
-      
-       
-             
-        const {id,url} = req.body
-        const image = req.file?.buffer;
-       
-        
-        
-        if(!id||!url||!image){
-          throw new CustomError("Data are Not Provided",HttpStatus.Unprocessable_Entity)
-        }
-        const deleted = await this.cloudinary.deleteFromCloudinary(url,"FixitHub")
-         
-        if (!deleted) {
-          throw new CustomError("Something Went Wrong",HttpStatus.Unprocessable_Entity)
+      const response = await this.providerProfileInteractor.changepassword({
+        id,
+        currentpassowrd,
+        newpassowrd,
+      });
 
-        }
-        if (image instanceof Buffer) {
-          const cloudinaryresponse = await this.cloudinary.uploadToCloudinary(
-            image,
-            "FixitHub",
-            "FixithubImages"
-          ); 
-          if (cloudinaryresponse.success) {
-            const data = {
-              id: id, 
-              url: cloudinaryresponse.url ? cloudinaryresponse.url : "",
-            };
-            const response = await this.providerProfileInteractor.updateLogo(data.url,data.id);
-            if (response.success) {
-              return res.status(HttpStatus.OK).json({ url: response.url });
-            }
+      return res.status(HttpStatus.OK).json({ message: "password changed" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateLogo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id, url } = req.body;
+      const image = req.file?.buffer;
+
+      if (!id || !url || !image) {
+        throw new CustomError(
+          "Data are Not Provided",
+          HttpStatus.Unprocessable_Entity
+        );
+      }
+      const deleted = await this.cloudinary.deleteFromCloudinary(
+        url,
+        "FixitHub"
+      );
+
+      if (!deleted) {
+        throw new CustomError(
+          "Something Went Wrong",
+          HttpStatus.Unprocessable_Entity
+        );
+      }
+      if (image instanceof Buffer) {
+        const cloudinaryresponse = await this.cloudinary.uploadToCloudinary(
+          image,
+          "FixitHub",
+          "FixithubImages"
+        );
+        if (cloudinaryresponse.success) {
+          const data = {
+            id: id,
+            url: cloudinaryresponse.url ? cloudinaryresponse.url : "",
+          };
+          const response = await this.providerProfileInteractor.updateLogo(
+            data.url,
+            data.id
+          );
+          if (response.success) {
+            return res.status(HttpStatus.OK).json({ url: response.url });
           }
-        } 
+        }
+      }
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async getChatId(req:Request,res:Response,next:NextFunction){
-    
-     console.log("vannu");
-     
+  async getChatId(req: Request, res: Response, next: NextFunction) {
+    console.log("vannu");
+
     try {
-      const {providerId,userId} = req.params
-      console.log(providerId,userId);
-      
-      const response  = await this.chatInteractor.getChatid(providerId,userId)
-      console.log("ress",response);
-      
-      return res.status(HttpStatus.OK).json(response)
-    } catch (error:any) {
-      console.log("56789",error.message);
-      
-      next(error)
+      const { providerId, userId } = req.params;
+      console.log(providerId, userId);
+
+      const response = await this.chatInteractor.getChatid(providerId, userId);
+      console.log("ress", response);
+
+      return res.status(HttpStatus.OK).json(response);
+    } catch (error: any) {
+      console.log("56789", error.message);
+
+      next(error);
     }
   }
 
-  async getOneToneChat(req:Request,res:Response,next:NextFunction){
+  async getOneToneChat(req: Request, res: Response, next: NextFunction) {
     try {
-        const {chatid,whoWantsData} = req.params
-        const response = await this.chatInteractor.getChatOfOneToOne(chatid,whoWantsData)
-        return res.status(HttpStatus.OK).json(response)
-      
+      const { chatid, whoWantsData } = req.params;
+      const response = await this.chatInteractor.getChatOfOneToOne(
+        chatid,
+        whoWantsData
+      );
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async fetchChat(req:Request,res:Response,next:NextFunction){
+  async fetchChat(req: Request, res: Response, next: NextFunction) {
     try {
-        const {whom,id} = req.params
-        const response = await this.chatInteractor.fetchChats(whom,id)
-        return res.status(HttpStatus.OK).json(response)
+      const { whom, id } = req.params;
+      const response = await this.chatInteractor.fetchChats(whom, id);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async addMessage(req:Request,res:Response,next:NextFunction){
+  async addMessage(req: Request, res: Response, next: NextFunction) {
     try {
-        const {sender,chatId,message} = req.body
-        console.log(chatId);
-        
-        const response = await this.chatInteractor.addNewMessage(sender,chatId,message)
-        return res.status(HttpStatus.OK).json(response)
+      const { sender, chatId, message } = req.body;
+      console.log(chatId);
+
+      const response = await this.chatInteractor.addNewMessage(
+        sender,
+        chatId,
+        message
+      );
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async notificationCountUpdater(req:Request,res:Response,next:NextFunction){
+  async notificationCountUpdater(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
-       const {id} = req.params
-       const response = await this.providerProfileInteractor.notificationCountUpdater(id)
-       return res.status(HttpStatus.OK).json(response)
+      const { id } = req.params;
+      const response =
+        await this.providerProfileInteractor.notificationCountUpdater(id);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-       next(error)
+      next(error);
     }
   }
-  
+
   async notificationGetter(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params
-     
-      
-      const response = await this.providerProfileInteractor.notificationsGetter(id)
-      return res.status(HttpStatus.OK).json(response)
+      const { id } = req.params;
+
+      const response =
+        await this.providerProfileInteractor.notificationsGetter(id);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
   async getMonthlyRevenue(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params
-     
-      
-      const response = await this.providerProfileInteractor.getMonthlyRevenue(id)
-      return res.status(HttpStatus.OK).json(response)
+      const { id } = req.params;
+
+      const response =
+        await this.providerProfileInteractor.getMonthlyRevenue(id);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
   async getTopBookedService(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params
-      const response = await this.providerProfileInteractor.TopServicesBooked(id)
-      return res.status(HttpStatus.OK).json(response)
+      const { id } = req.params;
+      const response =
+        await this.providerProfileInteractor.TopServicesBooked(id);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
-
-
 }
 
 export default ProviderProfileController;

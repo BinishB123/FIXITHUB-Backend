@@ -10,7 +10,7 @@ import { response } from "express";
 import CustomError from "../../framework/services/errorInstance";
 
 class ProviderServicesInteractor implements IproviderServiceInteractor {
-  constructor(private readonly providerRepo: IProviderRepository) { }
+  constructor(private readonly providerRepo: IProviderRepository) {}
 
   async getProviderServices(
     id: string,
@@ -79,16 +79,16 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
               isAdded: true,
               subType:
                 service.subTypes?.map((item) => {
-
-
                   return {
-                    isAdded: checker.subtype?.some((sub) => sub.type + "" === item._id + ""),
+                    isAdded: checker.subtype?.some(
+                      (sub) => sub.type + "" === item._id + ""
+                    ),
                     priceRange:
-                      checker.subtype?.find((sub) => sub.type + "" === item._id + "")
-                        ?.startingPrice ?? undefined,
+                      checker.subtype?.find(
+                        (sub) => sub.type + "" === item._id + ""
+                      )?.startingPrice ?? undefined,
                     type: item.type,
-                    _id: item._id
-
+                    _id: item._id,
                   };
                 }) || [],
             };
@@ -105,7 +105,7 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
                   return {
                     isAdded: false,
                     type: item.type,
-                    _id: item._id
+                    _id: item._id,
                   };
                 }) || [],
             };
@@ -173,7 +173,7 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
               service.subTypes?.map((item) => ({
                 isAdded: false,
                 type: item.type,
-                _id: item._id
+                _id: item._id,
               })) || [],
           };
           providerGeneralService.push(generalService);
@@ -212,12 +212,17 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
     }
   }
 
-  async removeGeneralOrRoadService(data: { workshopId: string; typeid: string; type: string; vehicleType: string; }): Promise<{ success?: boolean; }> {
+  async removeGeneralOrRoadService(data: {
+    workshopId: string;
+    typeid: string;
+    type: string;
+    vehicleType: string;
+  }): Promise<{ success?: boolean }> {
     try {
-      const response = await this.providerRepo.removeGeneralOrRoadService(data)
-      return response
+      const response = await this.providerRepo.removeGeneralOrRoadService(data);
+      return response;
     } catch (error: any) {
-      throw new CustomError(error.message, error.statusCode)
+      throw new CustomError(error.message, error.statusCode);
     }
   }
 
@@ -238,72 +243,114 @@ class ProviderServicesInteractor implements IproviderServiceInteractor {
     }
   }
 
-  async editSubType(providerid: string, serviceid: string, subtype: { type: string; startingprice: number; vehicleType: string; }): Promise<{ success: boolean; message: string; }> {
+  async editSubType(
+    providerid: string,
+    serviceid: string,
+    subtype: { type: string; startingprice: number; vehicleType: string }
+  ): Promise<{ success: boolean; message: string }> {
     try {
-      const updated = await this.providerRepo.editSubType(providerid, serviceid, subtype)
-      return updated
+      const updated = await this.providerRepo.editSubType(
+        providerid,
+        serviceid,
+        subtype
+      );
+      return updated;
     } catch (error) {
-      return { success: false, message: "" }
+      return { success: false, message: "" };
     }
   }
 
-  async deleteSubtype(providerid: string, serviceid: string, subtype: { type: string; }, vehicleType: string): Promise<{ success: boolean; message: string; }> {
+  async deleteSubtype(
+    providerid: string,
+    serviceid: string,
+    subtype: { type: string },
+    vehicleType: string
+  ): Promise<{ success: boolean; message: string }> {
     try {
-      const subTypeDeleteResponse = await this.providerRepo.deleteSubtype(providerid, serviceid, subtype, vehicleType)
-      return subTypeDeleteResponse
+      const subTypeDeleteResponse = await this.providerRepo.deleteSubtype(
+        providerid,
+        serviceid,
+        subtype,
+        vehicleType
+      );
+      return subTypeDeleteResponse;
     } catch (error) {
-      return { success: false, message: "" }
+      return { success: false, message: "" };
     }
   }
 
-  async getallBrands(id: string): Promise<{ succes: boolean; message: string; brands?: { _id: string; brand: string; isAdded: boolean }[]; }> {
+  async getallBrands(
+    id: string
+  ): Promise<{
+    succes: boolean;
+    message: string;
+    brands?: { _id: string; brand: string; isAdded: boolean }[];
+  }> {
     try {
-      const response = await this.providerRepo.getallBrands(id)
+      const response = await this.providerRepo.getallBrands(id);
 
       if (response.succes) {
         if (response.supportedBrands?.length === 0) {
           if (response.brands) {
             const brand = response.brands.map((data) => {
-              return { ...data, isAdded: false }
-            })
-            return { succes: response.succes, message: response.message, brands: brand }
+              return { ...data, isAdded: false };
+            });
+            return {
+              succes: response.succes,
+              message: response.message,
+              brands: brand,
+            };
           }
-
         } else {
           if (response.brands) {
             const brand = response.brands.map((brand) => {
-              return { ...brand, isAdded: response.supportedBrands?.some((data) => data.brand + "" == brand._id + "") || false }
-            })
+              return {
+                ...brand,
+                isAdded:
+                  response.supportedBrands?.some(
+                    (data) => data.brand + "" == brand._id + ""
+                  ) || false,
+              };
+            });
 
-            return { succes: response.succes, message: response.message, brands: brand }
+            return {
+              succes: response.succes,
+              message: response.message,
+              brands: brand,
+            };
           }
         }
-        return { succes: response.succes, message: response.message }
+        return { succes: response.succes, message: response.message };
       }
-      return { succes: response.succes, message: response.message }
+      return { succes: response.succes, message: response.message };
     } catch (error) {
-      return { succes: false, message: "500" }
+      return { succes: false, message: "500" };
     }
   }
 
-  async addBrands(data: { id: string; brandid: string; }): Promise<{ success: boolean; message: string; }> {
+  async addBrands(data: {
+    id: string;
+    brandid: string;
+  }): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await this.providerRepo.addBrands(data)
-      return response
+      const response = await this.providerRepo.addBrands(data);
+      return response;
     } catch (error) {
-      return { success: false, message: "500" }
+      return { success: false, message: "500" };
     }
   }
 
-  async deleteBrands(data: { id: string; brandid: string; }): Promise<{ success: boolean; message: string; }> {
+  async deleteBrands(data: {
+    id: string;
+    brandid: string;
+  }): Promise<{ success: boolean; message: string }> {
     try {
-      const response = await this.providerRepo.deleteBrand(data)
-      return response
+      const response = await this.providerRepo.deleteBrand(data);
+      return response;
     } catch (error) {
-      return { success: false, message: "500" }
+      return { success: false, message: "500" };
     }
   }
-
 }
 
 export default ProviderServicesInteractor;

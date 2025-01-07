@@ -1,20 +1,18 @@
 import AdminRepository from "../../../../interface_adapters/repositories/AdminRepo";
-import AdminUser from '../../../../usecases/admin/adminUser'
+import AdminUser from "../../../../usecases/admin/adminUser";
 import AdminUserController from "../../../../interface_adapters/controllers/admin/adminUserController";
 import express from "express";
 import verification from "../../../express/middleware/jwtAuthenticate";
 
-const adminUserRouter = express.Router()
-const adminUserRepo = new AdminRepository()
-const adminuserinteractor =  new AdminUser(adminUserRepo)
-const controller = new AdminUserController(adminuserinteractor)
+const adminUserRouter = express.Router();
+const adminUserRepo = new AdminRepository();
+const adminuserinteractor = new AdminUser(adminUserRepo);
+const controller = new AdminUserController(adminuserinteractor);
 
+adminUserRouter.get("/getuser", controller.getUser.bind(controller));
+adminUserRouter.patch(
+    "/blockAndUnblock",
+    controller.userBlockAndUnblock.bind(controller)
+);
 
-adminUserRouter.get('/getuser',controller.getUser.bind(controller))
-adminUserRouter.patch('/blockAndUnblock',controller.userBlockAndUnblock.bind(controller))
-
-
-
-
-
-export default adminUserRouter
+export default adminUserRouter;

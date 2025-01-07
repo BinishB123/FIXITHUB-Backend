@@ -14,7 +14,6 @@ const CheckerDatesIsThereOrNot = async (
     const date = await BookingDateModel.findOne({
       _id: new mongoose.Types.ObjectId(idOfdDate),
     });
-    
 
     if (!date) {
       throw new CustomError(

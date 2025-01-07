@@ -6,22 +6,46 @@ import JwtServices from "../../../services/jwt";
 import verification from "../../../../framework/express/middleware/jwtAuthenticate";
 import express from "express";
 
-const providerAuthRouter = express.Router()
-const respository = new ProviderRepository()
-const mailer = new Mailer()
-const jwtServices = new JwtServices(process.env.ACCESSTOKENKEY + "", process.env.REFRESHTOKENKEY + "")
-const providerAuthInteractor = new ProviderAuthInteractor(respository, mailer, jwtServices)
-const providerAuthController = new ProviderAuthController(providerAuthInteractor)
+const providerAuthRouter = express.Router();
+const respository = new ProviderRepository();
+const mailer = new Mailer();
+const jwtServices = new JwtServices(
+    process.env.ACCESSTOKENKEY + "",
+    process.env.REFRESHTOKENKEY + ""
+);
+const providerAuthInteractor = new ProviderAuthInteractor(
+    respository,
+    mailer,
+    jwtServices
+);
+const providerAuthController = new ProviderAuthController(
+    providerAuthInteractor
+);
 
+providerAuthRouter.post(
+    "/sendotp",
+    providerAuthController.sendOtp.bind(providerAuthController)
+);
+providerAuthRouter.post(
+    "/verifyotp",
+    providerAuthController.verifyOtp.bind(providerAuthController)
+);
+providerAuthRouter.post(
+    "/register",
+    providerAuthController.registerProvider.bind(providerAuthController)
+);
+providerAuthRouter.post(
+    "/signin",
+    providerAuthController.signInProvider.bind(providerAuthController)
+);
+providerAuthRouter.get(
+    "/checker",
+    verification("provider"),
+    providerAuthController.checker.bind(providerAuthController)
+);
+providerAuthRouter.delete(
+    "/logout",
+    providerAuthController.logot.bind(providerAuthController)
+);
 
-providerAuthRouter.post('/sendotp', providerAuthController.sendOtp.bind(providerAuthController))
-providerAuthRouter.post('/verifyotp', providerAuthController.verifyOtp.bind(providerAuthController))
-providerAuthRouter.post('/register', providerAuthController.registerProvider.bind(providerAuthController))
-providerAuthRouter.post('/signin', providerAuthController.signInProvider.bind(providerAuthController))
-providerAuthRouter.get('/checker',verification("provider"),providerAuthController.checker.bind(providerAuthController))
-providerAuthRouter.delete('/logout', providerAuthController.logot.bind(providerAuthController))
-
-
-export default providerAuthRouter
-
-
+export default providerAuthRouter;
