@@ -267,3 +267,17 @@ export interface ReviewResponse {
     name:string
   }
 }
+
+
+export interface reportData{
+     _id?:ObjectId|string
+     userId:string|ObjectId,
+    providerId:string|ObjectId,
+    BookingId:string|ObjectId,
+    report:string,
+    provider?:{
+      workshopName:string,
+      logoUrl:string
+    }
+    status?: "Pending"|"In Progress"|"Approved"|"Rejected"|"Completed"
+}

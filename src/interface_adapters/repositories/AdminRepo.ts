@@ -1,6 +1,7 @@
 import {
   IdatasOfGeneralService,
   Iproviders,
+  reportData,
   userdata,
 } from "../../entities/rules/admin";
 import IAdminRepo from "../../entities/irepositeries/IAdminRepo";
@@ -16,6 +17,7 @@ import mongoose from "mongoose";
 import CustomError from "../../framework/services/errorInstance";
 import HttpStatus from "../../entities/rules/statusCode";
 import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
+import reportModel from "../../framework/mongoose/reportSchema";
 
 class AdminRepository implements IAdminRepo {
   async adminSignIn(
@@ -522,6 +524,152 @@ class AdminRepository implements IAdminRepo {
         { $sort: { count: -1 } },
       ]);
 
+      return { data: data };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getReport(): Promise<{ data: reportData[] | [] }> {
+    try {
+      const data = await reportModel.aggregate([
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $lookup: {
+            from: "providers",
+            localField: "providerId",
+            foreignField: "_id",
+            as: "provider",
+          },
+        },
+        { $unwind: "$user" },
+        { $unwind: "$provider" },
+        {
+          $project: {
+            _id: 1,
+            "user.name": 1,
+            "user.logoUrl": 1,
+            "provider.workshopName": 1,
+            "provider.logoUrl": 1,
+            userId: 1,
+            providerId: 1,
+            BookingId: 1,
+            report: 1,
+            status: 1,
+          },
+        },
+      ]);
+
+      return { data: data.length > 0 ? data : [] };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async editReport(id: string, status: string): Promise<{ success?: boolean }> {
+    try {
+      const updateOne = await reportModel.updateOne(
+        { _id: new mongoose.Types.ObjectId(id) },
+        {
+          $set: {
+            status: status,
+          },
+        }
+      );
+      if (updateOne.modifiedCount === 0) {
+        throw new CustomError(
+          "Something went wrong try again after few minutes",
+          HttpStatus.Unprocessable_Entity
+        );
+      }
+      return { success: true };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getReportDeatils(id: string): Promise<{ data: reportData }> {
+    try {
+      const [data] = await reportModel.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(id) } },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $lookup: {
+            from: "providers",
+            localField: "providerId",
+            foreignField: "_id",
+            as: "provider",
+          },
+        },
+        {
+          $lookup: {
+            from: "servicebookings",
+            localField: "BookingId",
+            foreignField: "_id",
+            as: "bookings",
+          },
+        },
+        { $unwind: "$bookings" },
+        {
+          $lookup: {
+            from: "bookingdates",
+            localField: "bookings.date",
+            foreignField: "_id",
+            as: "bookeddate",
+          },
+        },  
+        {
+          $lookup: {
+            from: "servicetypes",
+            localField: "bookings.serviceType",
+            foreignField: "_id",
+            as: "servicename",
+          },
+        },
+        { $unwind: "$user" },
+        { $unwind: "$provider" },
+        { $unwind: "$bookeddate" },
+        { $unwind: "$servicename" },
+        {
+          $project: {
+            _id: 1,
+            "user.name": 1,
+            "user.logoUrl": 1,
+            "provider.workshopName": 1,
+            "provider.logoUrl": 1,
+            userId: 1,
+            providerId: 1,
+            BookingId: 1,
+            report: 1,
+            status: 1,
+            "bookings.vechileDetails": 1,
+            "bookings.selectedService": 1,
+            "bookings.advanceAmount": 1,
+            "bookings.advance": 1,
+            "bookings.status": 1,
+            "bookings.amountpaid": 1,
+            "bookings.paymentStatus": 1,
+            "bookeddate.date": 1,
+            "servicename.serviceType": 1,
+          },
+        },
+      ]);
+  console.log(data);
+  
       return { data: data };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);

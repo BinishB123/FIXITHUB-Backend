@@ -1,4 +1,8 @@
-import { IdatasOfGeneralService, userdata } from "../../entities/rules/admin";
+import {
+  IdatasOfGeneralService,
+  reportData,
+  userdata,
+} from "../../entities/rules/admin";
 import { Iproviders } from "../../entities/rules/admin";
 
 interface IAdminRepo {
@@ -80,6 +84,9 @@ interface IAdminRepo {
   TopServicesBooked(
     id: string
   ): Promise<{ data: { serviceType: string; count: number }[] | [] }>;
+  getReport(): Promise<{ data: reportData[] | [] }>;
+  editReport(id: string, status: string): Promise<{ success?: boolean }>;
+  getReportDeatils(id: string): Promise<{ data: reportData }>;
 }
 
 export default IAdminRepo;

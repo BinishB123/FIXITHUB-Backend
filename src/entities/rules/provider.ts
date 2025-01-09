@@ -189,6 +189,14 @@ interface ServiceName {
   serviceType: string;
 }
 
+
+interface SelectedService {
+  typeId: ObjectId;
+  serviceName: string;
+  price: number;
+  _id: ObjectId;
+}
+
 export interface ResponseAccordingToDate {
   _id: ObjectId;
   selectedService: SelectedService[];
@@ -296,10 +304,8 @@ export interface INotifyGetterResponse {
   message: IMessage; // Reference the extracted type
 }
 
-
-
 export interface ReviewResponse {
-  _id: ObjectId;  
+  _id: ObjectId;
   userId: ObjectId;
   ServiceId: ObjectId;
   bookingId: ObjectId;
@@ -307,9 +313,11 @@ export interface ReviewResponse {
   reply: string | null;
   like: boolean;
   images: { url: string }[];
-   user:{
-    _id:ObjectId
-    logoUrl:string
-    name:string
-  }
+  user: {
+    _id: ObjectId;
+    logoUrl: string;
+    name: string;
+  };
 }
+
+

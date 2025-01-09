@@ -14,6 +14,7 @@ import {
     IgetservicesResponse,
     IRequirementToFetchShops,
     NotifyGetterResponse,
+    reportData,
     ResponsegetBookingGreaterThanTodaysDate,
     responseGetReviewDetails,
     reviewAddedResponse,
@@ -31,6 +32,7 @@ import ServiceBookingModel from "../../framework/mongoose/ServiceBookingModel";
 import chatModel from "../../framework/mongoose/ChatSchema";
 import messageModel from "../../framework/mongoose/messageSchema";
 import reviewModel from "../../framework/mongoose/reviewSchema";
+import reportModel from "../../framework/mongoose/reportSchema";
 
 class UserRepository implements isUserRepository {
     // this method is for saving the otp in dbs
@@ -1047,9 +1049,71 @@ class UserRepository implements isUserRepository {
                     },
                 },
             ]);
-            console.log(review);
 
             return { feedBacks: review ? review : [] };
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode);
+        }
+    }
+
+    async createReport(data: reportData): Promise<{ success?: boolean }> {
+        console.log("data", data);
+
+        try {
+
+            const checker = await reportModel.findOne({BookingId:data.BookingId})
+            if (checker) {
+                throw new CustomError("Already Reported",HttpStatus.CONFLICT)
+            }
+
+            const created = await reportModel.create({
+                userId: data.userId,
+                providerId: data.providerId,
+                BookingId: data.BookingId,
+                report: data.report,
+            });
+            if (!created) {
+                throw new CustomError(
+                    "Can't create something went wrong",
+                    HttpStatus.Unprocessable_Entity
+                );
+            }
+            return { success: true };
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode);
+        }
+    }
+
+    async getReport(id: string): Promise<{ data: reportData[] | [] }> {
+        try {
+             
+
+            const data: reportData[] | [] = (await reportModel.aggregate([
+                { $match: { userId: new mongoose.Types.ObjectId(id) } },
+                {
+                    $lookup: {
+                        from: "providers",
+                        localField: "providerId",
+                        foreignField: "_id",
+                        as: "provider",
+                    },
+                },
+                { $unwind: "$provider" },
+                {
+                    $project: {
+                        _id: 1,
+                        userId: 1,
+                        providerId: 1,
+                        BookingId: 1,
+                        report: 1,
+                        "provider.workshopName": 1,
+                        "provider.logoUrl": 1,
+
+                        status: 1,
+                    },
+                },
+            ])) as reportData[];
+            return { data: data ? data : [] };
         } catch (error: any) {
             throw new CustomError(error.message, error.statusCode);
         }

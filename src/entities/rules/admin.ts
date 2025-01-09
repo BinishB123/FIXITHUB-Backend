@@ -1,3 +1,5 @@
+import { ObjectId } from "mongoose"
+
 export interface userdata {
     id: string,
     name: string,
@@ -49,3 +51,95 @@ export interface subtypeSchemaModel{
     _id: string;
      type:string
 }
+
+
+
+
+
+
+  interface SelectedService {
+    typeId: ObjectId;
+    serviceName: string;
+    price: number;
+    _id: ObjectId;
+  }
+  
+  interface VehicleDetails {
+    brand: ObjectId;
+    model: string;
+    fueltype: string;
+    kilometer: number;
+  }
+  
+
+  
+  interface BookedDate {
+    date: Date;
+  }
+  
+  interface ServiceName {
+    serviceType: string;
+  }
+  
+  
+  interface SelectedService {
+    typeId: ObjectId;
+    serviceName: string;
+    price: number;
+    _id: ObjectId;
+  }
+  
+  export interface ResponseAccordingToDate {
+    _id: ObjectId;
+    selectedService: SelectedService[];
+    vechileDetails: VehicleDetails;
+    advanceAmount: number;
+    advance: boolean;
+    status: string;
+    amountpaid: number;
+    paymentStatus: string;
+    bookeddate: BookedDate;
+    servicename: ServiceName;
+  }
+  
+  export interface Booking {
+    _id: ObjectId;
+    selectedService: SelectedService[];
+    vechileDetails: VehicleDetails;
+    advanceAmount: number;
+    advance: boolean;
+    status: string;
+    amountpaid: number;
+    paymentStatus: string;
+    user: {
+      _id: ObjectId;
+      name: string;
+      mobile: number;
+      logoUrl: string;
+    };
+    bookeddate: BookedDate;
+    servicename: ServiceName;
+    brand: {
+      brand: string;
+    };
+    suggestions: string;
+  }
+  
+
+  export interface reportData {
+    _id?: ObjectId | string;
+    userId: string | ObjectId;
+    providerId: string | ObjectId;
+    BookingId: string | ObjectId;
+    report: string;
+    provider?: {
+      workshopName: string;
+      logoUrl: string;
+    };
+    user?: {
+      name: string;
+      logoUrl: string;
+    };
+    status?: "Pending" | "In Progress" | "Approved" | "Rejected" | "Completed";
+    booking?:ResponseAccordingToDate
+  }

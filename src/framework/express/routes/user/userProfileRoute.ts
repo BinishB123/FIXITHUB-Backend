@@ -53,4 +53,13 @@ userprofileRouter.get(
   userProfileController.notificationGetter.bind(userProfileController)
 );
 
+userprofileRouter.post(
+  "/createReport",
+  userProfileController.createReport.bind(userProfileController)
+);
+userprofileRouter.get(
+  "/getreport/:id",
+  userProfileController.getReports.bind(userProfileController)
+);
+
 export default userprofileRouter;

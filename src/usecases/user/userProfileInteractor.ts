@@ -1,7 +1,7 @@
 import CustomError from "../../framework/services/errorInstance";
 import isUserRepository from "../../entities/irepositeries/iUserRepository";
 import IUserProfileInteractor from "../../entities/user/IuserProfileInteractor";
-import { INotifyGetterResponse } from "entities/user/IuserResponse";
+import { INotifyGetterResponse, reportData } from "entities/user/IuserResponse";
 
 class UserProfileInteractor implements IUserProfileInteractor {
   constructor(private readonly userRepo: isUserRepository) { }
@@ -65,6 +65,28 @@ class UserProfileInteractor implements IUserProfileInteractor {
       throw new CustomError(error.message, error.statusCode);
     }
   }
+  
+  async createReport(data: reportData): Promise<{ success?: boolean; }> {
+      try {
+         const response = await this.userRepo.createReport({...data})
+         return response
+        
+      } catch (error: any) {
+        throw new CustomError(error.message, error.statusCode);
+      }
+  }
+
+  async getReport(id: string): Promise<{ data: reportData[] | []; }> {
+    try {
+      const response = await this.userRepo.getReport(id)
+      return response
+     
+   } catch (error: any) {
+     throw new CustomError(error.message, error.statusCode);
+   }
+      
+  }
+
 }
 
 export default UserProfileInteractor;
