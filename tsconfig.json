@@ -6,7 +6,8 @@
     "outDir": "./dist",                              // Transpiled JavaScript files will be placed in the `dist` directory.
     "strict": true,                                  // Enables all strict type-checking options.
     "esModuleInterop": true,                         // Ensures compatibility with CommonJS modules (like `require` in JS).
-    "skipLibCheck": true,                            // Skips type checking of declaration files in `node_modules` to speed up compilation.
+    "skipLibCheck": true,     
+    "typeRoots": ["node_modules/@types"],            // Skips type checking of declaration files in `node_modules` to speed up compilation.
     "forceConsistentCasingInFileNames": true,        // Ensures consistent file naming casing across platforms.
     "baseUrl": "./src",                              // Base URL for module resolution (relative to `src` folder).
   },

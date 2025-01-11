@@ -23,7 +23,7 @@ adminSettingsRoute.post(
     "/addbrand",
     adminSettingsController.addBrand.bind(adminSettingsController)
 );
-adminSettingsRoute.get(
+adminSettingsRoute.get( 
     "/settingsDatas",
     adminSettingsController.getAllSettingsDatas.bind(adminSettingsController)
 );

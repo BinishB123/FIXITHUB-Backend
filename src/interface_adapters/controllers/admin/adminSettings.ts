@@ -9,7 +9,7 @@ class AdminSettingController {
     try {
       const { type } = req.body;
       const response = await this.adminSettingsInter.adminAddvehicleType(type);
-      if (response.success) {
+      if (response.success) { 
         return res
           .status(HttpStatus.CREATED)
           .json({ success: true, message: "created" });
