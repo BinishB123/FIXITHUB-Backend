@@ -62,9 +62,9 @@ providerProfileRoute.get(
     "/notificationCounterUpdater/:id",
     providerProfileController.notificationCountUpdater.bind(
         providerProfileController
-    )
+    )  
 );
-providerProfileRoute.get(
+providerProfileRoute.get(   
     "/notificationGetter/:id",
     providerProfileController.notificationGetter.bind(providerProfileController)
 );
@@ -77,4 +77,7 @@ providerProfileRoute.get(
     providerProfileController.getTopBookedService.bind(providerProfileController)
 );
 
+providerProfileRoute.get('/get-sales-report/:id/:month/:year',providerProfileController.getSalesReport.bind(providerProfileController))
+
 export default providerProfileRoute;
+            

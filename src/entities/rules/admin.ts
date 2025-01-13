@@ -143,3 +143,32 @@ export interface subtypeSchemaModel{
     status?: "Pending" | "In Progress" | "Approved" | "Rejected" | "Completed";
     booking?:ResponseAccordingToDate
   }
+
+
+
+  interface sel{
+  
+    typeId :ObjectId | string
+    serviceName:string
+    price:number
+    _id:ObjectId|string
+ }
+export interface IASalesReport {
+  _id: ObjectId | string,
+  service: {
+    serviceType: string
+  }
+  user: {
+    name: string,
+  },
+  provider:{
+    workshopName: string;
+  }
+  selectedDate: {
+    date: Date
+  }
+  selectedService: sel[]
+
+
+  
+}

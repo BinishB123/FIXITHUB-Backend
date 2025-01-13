@@ -10,6 +10,7 @@ import {
   ResponseAccordingToDate,
   ResponsegetBookingStillTodaysDate,
   ReviewResponse,
+  SalesReport,
   SigIn,
   SignResponse,
   UnreadMessageCount,
@@ -1426,6 +1427,88 @@ class ProviderRepository implements IProviderRepository {
       console.log("data", data);
 
       return { data: data };
+    } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getSalesReport(
+    id: string,
+    year: number,
+    month: number
+  ): Promise<{ report: SalesReport[] | [] }> {
+    try {
+      
+
+      const data = await ServiceBookingModel.aggregate([
+        {
+          $match: {
+            $and: [
+              { providerId: new mongoose.Types.ObjectId(id) },
+              { status: "completed" },
+              { paymentStatus: "paid" },
+            ],
+          },
+        },
+        {
+          $lookup: {
+            from: "bookingdates",
+            localField: "date",
+            foreignField: "_id",
+            as: "selectedDate",
+          },
+        },
+        { $unwind: "$selectedDate" },
+        {
+          $match: {
+            "selectedDate.date": {
+              $gte: new Date(year, month, 1),
+              $lt: new Date(year, month + 1, 1),
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        { $unwind: "$user" },
+        {
+          $lookup: {
+            from: "servicetypes",
+            localField: "serviceType",
+            foreignField: "_id",
+            as: "service",
+          },
+        },
+        { $unwind: "$service" },
+        {
+          $addFields: {
+            totalPrice: {
+              $reduce: {
+                input: "$selectedService",
+                initialValue: 0,
+                in: { $add: ["$$value", "$$this.price"] },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            "service.serviceType": 1,
+            "user.name": 1,
+            "selectedDate.date": 1,
+            selectedService: 1,
+            totalPrice:1
+          },
+        },
+      ]);
+
+      return { report: data };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }

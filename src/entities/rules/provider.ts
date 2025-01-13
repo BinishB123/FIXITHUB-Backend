@@ -321,3 +321,28 @@ export interface ReviewResponse {
 }
 
 
+ interface sel{
+  
+    typeId :ObjectId | string
+    serviceName:string
+    price:number
+    _id:ObjectId|string
+ }
+export interface SalesReport {
+  _id: ObjectId | string,
+  service: {
+    serviceType: string
+  }
+  user: {
+    name: string,
+  }
+  selectedDate: {
+    date: Date
+  }
+  totalPrice:number
+  selectedService: sel[]
+
+
+  
+}
+

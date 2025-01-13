@@ -147,27 +147,33 @@ class UserProfileController {
     }
   }
 
-  async createReport(req:Request,res:Response,next:NextFunction){
+  async createReport(req: Request, res: Response, next: NextFunction) {
     try {
-      const { userId,providerId,BookingId,report} = req.body.data
-      
-      const response = await this.userInteractor.createReport({userId,providerId,BookingId,report})
-      return res.status(HttpStatus.OK).json(response)
+      const { userId, providerId, BookingId, report } = req.body.data;
+
+      const response = await this.userInteractor.createReport({
+        userId,
+        providerId,
+        BookingId,
+        report,
+      });
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async getReports(req:Request,res:Response,next:NextFunction){
+  async getReports(req: Request, res: Response, next: NextFunction) {
     try {
-        const {id} = req.params
-        const response = await this.userInteractor.getReport(id)
-        return res.status(HttpStatus.OK).json(response)
-      
+      const { id } = req.params;
+      const response = await this.userInteractor.getReport(id);
+      return res.status(HttpStatus.OK).json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
+  
+  
 }
 
 export default UserProfileController;

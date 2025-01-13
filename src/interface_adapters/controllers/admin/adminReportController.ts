@@ -34,6 +34,16 @@ class AdminReportController {
             next(error)
         }
     }
+
+    async getSalesReport(req:Request,res:Response,next:NextFunction){
+        try {
+            const {year,month} = req.params
+            const response = await  this.reportInteractor.getSalesReport(parseInt(year),parseInt(month))
+            res.status(HttpStatus.OK).json(response)
+        } catch (error) {
+            next(error)
+        }
+    }
 }
 
 export default AdminReportController

@@ -20,7 +20,7 @@ class BookingController {
                 data,
                 retrievePaymentIntent.paymentInentID + ""
             );
-            res.redirect("http://localhost:5173/success");
+            res.redirect(process.env.SUCCESS_URL as string);
         } catch (error) {
             next(error);
         }
@@ -29,9 +29,8 @@ class BookingController {
     async afterFullpaymentDone(req: Request, res: Response, next: NextFunction) {
         try {
             const { docid } = req.params;
-            const response =
-                await this.UserServiceInteractor.afterFullpaymentDone(docid);
-            res.redirect(`http://localhost:5173/profile/serviceHistory?id=${docid}`);
+            const response = await this.UserServiceInteractor.afterFullpaymentDone(docid);
+            res.redirect(process.env.SERVICE_HISTORY+`?id=${docid}`);
         } catch (error) {
             next(error);
         }

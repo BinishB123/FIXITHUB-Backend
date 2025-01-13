@@ -2,6 +2,7 @@ import CustomError from "../../framework/services/errorInstance";
 import IAdminRepo from "../../entities/irepositeries/IAdminRepo";
 import { IAdminReportInteractor } from "../../entities/rules/IadminReport";
 import { reportData } from "../../entities/user/IuserResponse";
+import { IASalesReport } from "entities/rules/admin";
 
 class AdminReportInteractor implements IAdminReportInteractor {
     constructor(private readonly adminRepo: IAdminRepo) { }
@@ -27,6 +28,15 @@ class AdminReportInteractor implements IAdminReportInteractor {
         try {
             const response = await this.adminRepo.getReportDeatils(id);
             return response;
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode);
+        }
+    }
+
+    async getSalesReport(year: number, month: number): Promise<{ report: IASalesReport[] | []; }> {
+        try {
+            const response = await this.adminRepo.getSalesReport(year,month)
+            return response
         } catch (error: any) {
             throw new CustomError(error.message, error.statusCode);
         }

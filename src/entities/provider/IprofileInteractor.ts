@@ -1,6 +1,7 @@
 import {
   INotifyGetterResponse,
   IproviderReponseData,
+  SalesReport,
 } from "../../entities/rules/provider";
 
 interface IProfileInteractor {
@@ -46,6 +47,8 @@ interface IProfileInteractor {
   TopServicesBooked(
     id: string
   ): Promise<{ data: { serviceType: string; count: number }[] | [] }>;
+    getSalesReport(id:string,year:number,month:number):Promise<{report:SalesReport[]|[]}>
+  
 }
 
 export default IProfileInteractor;

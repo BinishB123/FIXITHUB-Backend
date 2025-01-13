@@ -13,6 +13,7 @@ const adminReportRoute = express.Router()
 adminReportRoute.get('/getreport',controller.getReport.bind(controller))
 adminReportRoute.patch('/ediReport/:id/:status',controller.editReport.bind(controller))
 adminReportRoute.get('/reportdetails/:id',controller.getReportDeatils.bind(controller))
+adminReportRoute.get('/get-salesReport/:year/:month',controller.getSalesReport.bind(controller))
 
 
 export default adminReportRoute

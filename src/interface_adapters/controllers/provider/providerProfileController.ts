@@ -315,6 +315,17 @@ class ProviderProfileController {
       next(error);
     }
   }
+
+
+  async getSalesReport(req:Request,res:Response,next:NextFunction){
+    try {
+      const {id,year,month} = req.params
+      const response = await this.providerProfileInteractor.getSalesReport(id,parseInt(year),parseInt(month))
+      return res.status(HttpStatus.OK).json(response)
+    }  catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default ProviderProfileController;

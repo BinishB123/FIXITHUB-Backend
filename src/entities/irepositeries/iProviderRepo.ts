@@ -9,10 +9,12 @@ import {
   NotifyGetterResponse,
   UnreadMessageCount,
   ReviewResponse,
+  SalesReport,
 } from "../../entities/rules/provider";
 import { ProvidingServices } from "../../entities/provider/IService";
 import { servicetype } from "../../entities/rules/admin";
 import { ObjectId } from "mongoose";
+import { promises } from "node:dns";
 
 interface IProviderRepository {
   sendOtp(otp: string, email: string): Promise<{ created: boolean }>;
@@ -157,6 +159,7 @@ interface IProviderRepository {
   TopServicesBooked(
     id: string
   ): Promise<{ data: { serviceType: string; count: number }[] | [] }>;
+  getSalesReport(id:string,year:number,month:number):Promise<{report:SalesReport[]|[]}>
 }
 
 export default IProviderRepository;

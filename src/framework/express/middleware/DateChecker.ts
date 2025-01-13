@@ -8,7 +8,7 @@ const CheckerDatesIsThereOrNot = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+) => {  
   try {
     const idOfdDate: string = req.body.idOfdDate;
     const date = await BookingDateModel.findOne({

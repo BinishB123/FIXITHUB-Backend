@@ -1,4 +1,5 @@
 import {
+  IASalesReport,
   IdatasOfGeneralService,
   Iproviders,
   reportData,
@@ -668,10 +669,74 @@ class AdminRepository implements IAdminRepo {
           },
         },
       ]);
-  console.log(data);
   
       return { data: data };
     } catch (error: any) {
+      throw new CustomError(error.message, error.statusCode);
+    }
+  }
+
+  async getSalesReport( year: number, month: number): Promise<{ report: IASalesReport[] | []; }> {
+     try {
+      const data = await ServiceBookingModel.aggregate([
+        {
+          $lookup: {
+            from: "bookingdates",
+            localField: "date",
+            foreignField: "_id",
+            as: "selectedDate",
+          },
+        },
+        { $unwind: "$selectedDate" },
+        {
+          $match: {
+            "selectedDate.date": {
+              $gte: new Date(year, month, 1),
+              $lt: new Date(year, month + 1, 1),
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "userId",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $lookup: {
+            from: "providers",
+            localField: "providerId",
+            foreignField: "_id",
+            as: "provider",
+          },
+        },
+        {$unwind:"$provider"},
+        { $unwind: "$user" },
+        {
+          $lookup: {
+            from: "servicetypes",
+            localField: "serviceType",
+            foreignField: "_id",
+            as: "service",
+          },
+        },
+        { $unwind: "$service" },
+        {
+          $project: {
+            _id: 1,
+            "service.serviceType": 1,
+            "user.name": 1,
+            "selectedDate.date": 1,
+            "provider.workshopName":1,
+            selectedService: 1,
+          },
+        },
+      ]);
+  
+      return {report:data}
+     } catch  (error: any) {
       throw new CustomError(error.message, error.statusCode);
     }
   }

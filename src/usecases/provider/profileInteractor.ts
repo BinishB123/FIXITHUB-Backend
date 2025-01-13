@@ -1,6 +1,7 @@
 import {
     INotifyGetterResponse,
     IproviderReponseData,
+    SalesReport,
 } from "../../entities/rules/provider";
 import IProviderRepository from "../../entities/irepositeries/iProviderRepo";
 import IProfileInteractor from "../../entities/provider/IprofileInteractor";
@@ -154,6 +155,15 @@ class ProviderProfileInteractor implements IProfileInteractor {
         try {
             const response = await this.providerRepo.TopServicesBooked(id);
             return response;
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode);
+        }
+    }
+
+   async getSalesReport(id: string, year: number, month: number): Promise<{ report: SalesReport[] | []; }> {
+        try {
+            const response = await this.providerRepo.getSalesReport(id,year,month)
+            return response
         } catch (error: any) {
             throw new CustomError(error.message, error.statusCode);
         }
