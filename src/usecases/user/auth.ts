@@ -70,9 +70,7 @@ class UserAuthInteractor implements IuserauthInteractor {
         };
     }
 
-    async signin(
-        userData: userSignIn
-    ): Promise<{
+    async signin(userData: userSignIn): Promise<{
         user?: userResponseData;
         success: boolean;
         message?: string;
@@ -116,6 +114,15 @@ class UserAuthInteractor implements IuserauthInteractor {
     async checker(id: string): Promise<{ success?: boolean; message?: string }> {
         try {
             const response = await this.userRepository.checker(id);
+            return response;
+        } catch (error: any) {
+            throw new CustomError(error.message, error.statusCode, error.reasons);
+        }
+    }
+
+    async getBrands(): Promise<{ brands: string[] }> {
+        try {
+            const response = await this.userRepository.getBrands();
             return response;
         } catch (error: any) {
             throw new CustomError(error.message, error.statusCode, error.reasons);

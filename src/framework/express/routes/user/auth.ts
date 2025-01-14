@@ -35,4 +35,6 @@ userAuthRouter.get(
     controller.checker.bind(controller)
 );
 
+userAuthRouter.get('/getBrands',controller.getBrands.bind(controller))
+
 export default userAuthRouter;

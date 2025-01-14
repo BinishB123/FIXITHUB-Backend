@@ -88,8 +88,10 @@ interface IAdminRepo {
   getReport(): Promise<{ data: reportData[] | [] }>;
   editReport(id: string, status: string): Promise<{ success?: boolean }>;
   getReportDeatils(id: string): Promise<{ data: reportData }>;
-   getSalesReport(year:number,month:number):Promise<{report:IASalesReport[]|[]}>
-  
+  getSalesReport(
+    year: number,
+    month: number
+  ): Promise<{ report: IASalesReport[] | [] }>;
 }
 
 export default IAdminRepo;

@@ -748,18 +748,19 @@ class UserRepository implements isUserRepository {
 
     async notificationCountUpdater(id: string): Promise<{ count: number }> {
         try {
-          
-          
+
+
             const message = await messageModel.aggregate([
-               { $match:{$and:[ { sender: "provider" },{ seen: false }]} },
-                      {$lookup:{
-                        from:"chats",
-                        localField:"chatId",
-                        foreignField:"_id",
-                        as:"chat"
-                      }  
-                    },
-                    {$match:{"chat.userId":new mongoose.Types.ObjectId(id)}}
+                { $match: { $and: [{ sender: "provider" }, { seen: false }] } },
+                {
+                    $lookup: {
+                        from: "chats",
+                        localField: "chatId",
+                        foreignField: "_id",
+                        as: "chat"
+                    }
+                },
+                { $match: { "chat.userId": new mongoose.Types.ObjectId(id) } }
             ]);
 
             return { count: message.length };
@@ -1060,9 +1061,9 @@ class UserRepository implements isUserRepository {
 
         try {
 
-            const checker = await reportModel.findOne({BookingId:data.BookingId})
+            const checker = await reportModel.findOne({ BookingId: data.BookingId })
             if (checker) {
-                throw new CustomError("Already Reported",HttpStatus.CONFLICT)
+                throw new CustomError("Already Reported", HttpStatus.CONFLICT)
             }
 
             const created = await reportModel.create({
@@ -1085,7 +1086,7 @@ class UserRepository implements isUserRepository {
 
     async getReport(id: string): Promise<{ data: reportData[] | [] }> {
         try {
-             
+
 
             const data: reportData[] | [] = (await reportModel.aggregate([
                 { $match: { userId: new mongoose.Types.ObjectId(id) } },
@@ -1116,6 +1117,19 @@ class UserRepository implements isUserRepository {
         } catch (error: any) {
             throw new CustomError(error.message, error.statusCode);
         }
+    }
+
+
+  async getBrands(): Promise<{ brands: string[]; }> {
+    try {
+        const brands = await brandModel.aggregate([
+            { $project: { _id: 0, brand: 1 } },
+          ]);
+          return {brands:brands}
+    } catch (error:any) {
+        throw new CustomError(error.message,error.statusCode)
+    }
+        
     }
 }
 

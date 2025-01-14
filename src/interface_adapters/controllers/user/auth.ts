@@ -134,6 +134,15 @@ class AuthController {
             next(error);
         }
     }
+
+    async getBrands(req:Request,res:Response,next:NextFunction){
+        try {
+            const response = await this.interactor.getBrands()
+            return res.status(HttpStatus.OK).json(response)
+        } catch (error) {
+           next(error)  
+        }
+    }
 }
 
 export default AuthController;

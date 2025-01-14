@@ -122,6 +122,7 @@ interface isUserRepository {
     ): Promise<{ feedBacks?: ReviewResponse[] | [] }>;
     createReport(data: reportData): Promise<{ success?: boolean }>;
     getReport(id:string): Promise<{data:reportData[]|[]}>
+    getBrands():Promise<{brands:string[]}>
 }
 
 export default isUserRepository;
