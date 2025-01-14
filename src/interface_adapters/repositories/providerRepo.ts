@@ -925,6 +925,7 @@ class ProviderRepository implements IProviderRepository {
               status: 1,
               amountpaid: 1,
               paymentStatus: 1,
+              "user._id":1,
               "user.name": 1,
               "bookeddate.date": 1,
               "servicename.serviceType": 1,
