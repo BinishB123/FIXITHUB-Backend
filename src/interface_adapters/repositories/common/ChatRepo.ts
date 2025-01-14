@@ -230,12 +230,12 @@ class ChatRepo implements IChatRepo {
       const createdMesage = await messageModel.create({
         sender: sender,
         chatId: chatId,
-        message: message,
+        message: message, 
       });
-      const update = await chatModel.updateOne({
+      const update = await chatModel.updateOne({_id:new mongoose.Types.ObjectId(chatId)},{
         latestMessage: createdMesage._id,
       });
-
+      
       return { success: true, messageCreated: createdMesage };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);

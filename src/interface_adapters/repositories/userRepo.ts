@@ -748,19 +748,18 @@ class UserRepository implements isUserRepository {
 
     async notificationCountUpdater(id: string): Promise<{ count: number }> {
         try {
-            // const bookingReadyToDelivery = await ServiceBookingModel.aggregate([
-            //     {$match: { userId: new mongoose.Types.ObjectId(id) } },
-            //     {$match: { status: "completed" }},
-            //     {$match:{ paymentStatus: "pending" }}
-            //   ]);
-
-            const chat = await chatModel.findOne({
-                userId: new mongoose.Types.ObjectId(id),
-            });
+          
+          
             const message = await messageModel.aggregate([
-                { $match: { chatId: new mongoose.Types.ObjectId(chat?._id + "") } },
-                { $match: { sender: "provider" } },
-                { $match: { seen: false } },
+               { $match:{$and:[ { sender: "provider" },{ seen: false }]} },
+                      {$lookup:{
+                        from:"chats",
+                        localField:"chatId",
+                        foreignField:"_id",
+                        as:"chat"
+                      }  
+                    },
+                    {$match:{"chat.userId":new mongoose.Types.ObjectId(id)}}
             ]);
 
             return { count: message.length };

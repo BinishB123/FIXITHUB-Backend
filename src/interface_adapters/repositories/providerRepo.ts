@@ -1164,21 +1164,24 @@ class ProviderRepository implements IProviderRepository {
 
   async notificationCountUpdater(id: string): Promise<{ count: number }> {
     try {
-      // const bookingReadyToDelivery = await ServiceBookingModel.aggregate([
-      //     {$match: { userId: new mongoose.Types.ObjectId(id) } },
-      //     {$match: { status: "completed" }},
-      //     {$match:{ paymentStatus: "pending" }}
-      //   ]);
 
-      const chat = await chatModel.findOne({
-        providerId: new mongoose.Types.ObjectId(id),
-      });
+
+      
+      
       const message = await messageModel.aggregate([
-        { $match: { chatId: new mongoose.Types.ObjectId(chat?._id + "") } },
-        { $match: { sender: "user" } },
-        { $match: { seen: false } },
+        { $match:{$and:[ { sender: "user" },{ seen: false }]} },
+        {$lookup:{
+          from:"chats",
+          localField:"chatId",
+          foreignField:"_id",
+          as:"chat"
+        }  
+      },
+      {$match:{"chat.providerId":new mongoose.Types.ObjectId(id)}}
+       
       ]);
-
+     console.log(message.length);
+     
       return { count: message.length };
     } catch (error: any) {
       throw new CustomError(error.message, error.statusCode);
