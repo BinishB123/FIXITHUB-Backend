@@ -45,15 +45,16 @@ class AuthController {
                 res.cookie("userRefreshToken", response.refreshToken, {
                     httpOnly: true,
                     sameSite: true,
+                    secure:true,
                     path: "/",
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    maxAge: 7 * 24 * 60 * 60 * 1000, 
                 });
 
                 res.cookie("userAccessToken", response.acessToken, {
                     httpOnly: true,
                     sameSite: true,
-
                     maxAge: 30 * 60 * 1000,
+                    secure:true
                 });
                 return res
                     .status(200)
@@ -105,15 +106,17 @@ class AuthController {
         } else {
             res.cookie("userRefreshToken", response.refreshToken, {
                 httpOnly: true,
-                sameSite: true,
+                sameSite: "none",
                 path: "/",
                 maxAge: 7 * 24 * 60 * 60 * 1000,
+                secure:true
             });
 
             res.cookie("userAccessToken", response.accesToken, {
                 httpOnly: true,
-                sameSite: true,
+                sameSite: "none",
                 maxAge: 60 * 60 * 1000,
+                secure:true
             });
             return res
                 .status(200)

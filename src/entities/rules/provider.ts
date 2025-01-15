@@ -177,7 +177,7 @@ interface VehicleDetails {
 }
 
 interface User {
-  _id:ObjectId
+  _id:ObjectId 
   name: string;
   mobile: number;
 }

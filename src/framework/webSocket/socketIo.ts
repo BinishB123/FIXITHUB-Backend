@@ -21,7 +21,7 @@ const usersAndProvidersSocketId: user_and_Providers_socketid = {};
 export const SocketIntalization = (server: HttpServer) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: process.env.ORGIN,
     },
   });
 

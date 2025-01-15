@@ -134,15 +134,17 @@ class ProviderAuthController {
 
         res.cookie("providerRefreshToken", interactorResponse.refreshToken, {
             httpOnly: true,
-            sameSite: true,
+            sameSite: "none",
             path: "/",
             maxAge: 24 * 60 * 60 * 1000,
+            secure:true
         });
 
         res.cookie("providerAccessToken", interactorResponse.accessToken, {
             httpOnly: true,
-            sameSite: true,
+            sameSite: "none",
             maxAge: 60 * 60 * 1000,
+            secure:true
         });
 
         res

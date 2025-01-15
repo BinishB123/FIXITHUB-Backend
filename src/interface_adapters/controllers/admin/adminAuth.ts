@@ -21,7 +21,7 @@ class AdminAuthController {
 
             res.cookie('adminRefreshToken', response.refreshToken, {
                 httpOnly: true,
-                sameSite: true,
+                sameSite: "none",
                 path: '/',
                 maxAge: 24 * 60 * 60 * 1000,
                 secure: true
@@ -29,7 +29,7 @@ class AdminAuthController {
 
             res.cookie('adminAccessToken', response.accessToken, {
                 httpOnly: true,
-                sameSite: true,
+                sameSite: "none",
                 maxAge: 60 * 60 * 1000
             })
             return res.status(200).json({ success: true })
@@ -57,7 +57,7 @@ class AdminAuthController {
     async checker(req:Request,res:Response){
         return res.status(200).json({success:true})
     }
-    
+     
 }
 
 export default AdminAuthController

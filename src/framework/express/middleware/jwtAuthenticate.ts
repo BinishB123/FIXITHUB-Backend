@@ -50,6 +50,8 @@ const refreshAccessToken = async (
 const verification = (type: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log(req.cookies[`${type}AccessToken`]);
+      
       const accessToken = req.cookies?.[`${type}AccessToken`];
       if (!accessToken) {
         const refreshToken = req.cookies?.[`${type}RefreshToken`];
