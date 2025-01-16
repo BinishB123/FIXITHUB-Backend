@@ -96,6 +96,8 @@ class AuthController {
     }
 
     async signIn(req: Request, res: Response) {
+        console.log(req.body);
+        
         const { SignInData } = req.body;
         const response = await this.interactor.signin(SignInData);
 
