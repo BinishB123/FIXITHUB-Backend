@@ -31,8 +31,8 @@ class StripePayment implements IStripe {
             },
           },
         ],
-        success_url: `http://localhost:3000/api/user/servicebooking/succesBooking?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `http://localhost:5173`,
+        success_url: `https://api.binish.site/api/user/servicebooking/succesBooking?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `https://binish.site/`,
       });
 
       if (!session) {

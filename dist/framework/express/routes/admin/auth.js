@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const AdminRepo_1 = __importDefault(require("../../../../interface_adapters/repositories/AdminRepo"));
+const express_1 = __importDefault(require("express"));
+const adminAuth_1 = __importDefault(require("../../../../usecases/admin/adminAuth"));
+const adminAuth_2 = __importDefault(require("../../../../interface_adapters/controllers/admin/adminAuth"));
+const jwt_1 = __importDefault(require("../../../../framework/services/jwt"));
+const jwtAuthenticate_1 = __importDefault(require("../../../express/middleware/jwtAuthenticate"));
+const AdminAuthRouter = express_1.default.Router();
+const repository = new AdminRepo_1.default();
+const jwtServices = new jwt_1.default(process.env.ACCESSTOKENKEY + "", process.env.REFRESHTOKENKEY + "");
+const interactor = new adminAuth_1.default(repository, jwtServices);
+const controller = new adminAuth_2.default(interactor);
+AdminAuthRouter.post("/signin", controller.signIn.bind(controller));
+AdminAuthRouter.get("/logout", controller.logout.bind(controller));
+AdminAuthRouter.get("/checker", (0, jwtAuthenticate_1.default)("admin"), controller.checker.bind(controller));
+exports.default = AdminAuthRouter;

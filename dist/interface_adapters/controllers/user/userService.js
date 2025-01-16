@@ -1,0 +1,246 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const statusCode_1 = __importDefault(require("../../../entities/rules/statusCode"));
+const errorInstance_1 = __importDefault(require("../../../framework/services/errorInstance"));
+class UserServiceContoller {
+    constructor(UserServiceInteractor, stripe, cloduinary) {
+        this.UserServiceInteractor = UserServiceInteractor;
+        this.stripe = stripe;
+        this.cloduinary = cloduinary;
+    }
+    async getServices(req, res) {
+        try {
+            const { category } = req.params;
+            if (!category) {
+                return res
+                    .status(statusCode_1.default.Unprocessable_Entity)
+                    .json({ message: "no category provided" });
+            }
+            const response = await this.UserServiceInteractor.getServices(category);
+            if (!response.success) {
+                if (response.message === "500") {
+                    return res
+                        .status(statusCode_1.default.INTERNAL_SERVER_ERROR)
+                        .json({ message: "" });
+                }
+                return res
+                    .status(statusCode_1.default.Unprocessable_Entity)
+                    .json({ message: "failed data fetching" });
+            }
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            return res
+                .status(statusCode_1.default.INTERNAL_SERVER_ERROR)
+                .json({ message: "failed" });
+        }
+    }
+    async getAllBrands(req, res) {
+        try {
+            const response = await this.UserServiceInteractor.getAllBrand();
+            if (!response.success) {
+                return res.status(statusCode_1.default.NOT_FOUND).json({ message: "failed" });
+            }
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            return res
+                .status(statusCode_1.default.INTERNAL_SERVER_ERROR)
+                .json({ message: "Internal Server Error" });
+        }
+    }
+    async getAllshops(req, res) {
+        try {
+            const long = parseFloat(req.query.long + "");
+            const lat = parseFloat(req.query.lat + "");
+            const data = {
+                vehicleType: req.query.vehicleType + "",
+                serviceId: req.query.serviceId + "",
+                coordinates: [long, lat],
+                category: req.query.category + "",
+                brand: req.query.brand + "",
+            };
+            const response = await this.UserServiceInteractor.getAllShops(data);
+            if (!response.success) {
+                return res
+                    .status(statusCode_1.default.INTERNAL_SERVER_ERROR)
+                    .json({ message: "failed to Fetch Data" });
+            }
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            return res
+                .status(statusCode_1.default.INTERNAL_SERVER_ERROR)
+                .json({ message: "failed to fetch the data" });
+        }
+    }
+    async getshopProfileWithSelectedServices(req, res) {
+        try {
+            const data = {
+                serviceId: req.query.serviceId + "",
+                vehicleType: req.query.vehicleType + "",
+                providerId: req.query.providerId + "",
+            };
+            const response = await this.UserServiceInteractor.getshopProfileWithSelectedServices(data);
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            return res
+                .status(statusCode_1.default.INTERNAL_SERVER_ERROR)
+                .json({ message: "failed" });
+        }
+    }
+    async getBookingDates(req, res, next) {
+        try {
+            const { id } = req.params;
+            const response = await this.UserServiceInteractor.getBookingDates(id);
+            res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async checkOut_Session(req, res, next) {
+        try {
+            const { dataRequiredBooking, initailAmountToPay } = req.body;
+            req.session.dataRequiredForBooking = dataRequiredBooking;
+            console.log(req.session.dataRequiredForBooking);
+            req.session.save();
+            const response = await this.stripe.userCheckoutSession(initailAmountToPay);
+            return res
+                .status(statusCode_1.default.OK)
+                .json({ sessionId: response.sessionid, url: response.url });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getLatestBooking(req, res, next) {
+        try {
+            const { userid, startindex, endindex } = req.params;
+            const response = await this.UserServiceInteractor.getLatestBooking(userid);
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getServiceHistory(req, res, next) {
+        try {
+            const { userid, startindex, endindex } = req.params;
+            const response = await this.UserServiceInteractor.getServiceHistory(userid, parseInt(startindex), parseInt(endindex));
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async fullpayment(req, res, next) {
+        try {
+            const { selectedServices, docId } = req.body;
+            const response = await this.stripe.fullpayment(selectedServices, docId);
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async cancelBooking(req, res, next) {
+        try {
+            const { id, amountToRefund, date } = req.body;
+            const response = await this.UserServiceInteractor.cancelBooking(id, amountToRefund, date);
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async addReview(req, res, next) {
+        try {
+            const { userId, providerId, serviceId, review, bookingId } = req.body;
+            const images = [];
+            if (Array.isArray(req.files)) {
+                req.files.forEach((file) => {
+                    images.push(file.buffer);
+                });
+            }
+            this.cloduinary
+                .uploadArrayOfImages(images, "FixitHub", "FixithubImages")
+                .then(async (response) => {
+                const resp = await this.UserServiceInteractor.addReview({ userId, providerId, serviceId, review, bookingId }, response.results);
+                console.log("res", resp);
+                return res.status(statusCode_1.default.OK).json(resp);
+            })
+                .catch((error) => {
+                throw new errorInstance_1.default("Image Adding Failed While AddingReview", statusCode_1.default.INTERNAL_SERVER_ERROR);
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getReviewDeatils(req, res, next) {
+        try {
+            const { id } = req.params;
+            const response = await this.UserServiceInteractor.getReviewDetails(id);
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async deleteOneImage(req, res, next) {
+        try {
+            const { id, url } = req.body;
+            this.cloduinary.deleteFromCloudinary(url, "FixitHub").then(async () => {
+                const response = await this.UserServiceInteractor.deleteOneImage(id, url);
+                return res.status(statusCode_1.default.OK).json(response);
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async editReview(req, res, next) {
+        try {
+            const { id, newReview } = req.body;
+            const response = await this.UserServiceInteractor.editReview(id, newReview);
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async addOneImage(req, res, next) {
+        try {
+            const { id } = req.body;
+            const image = req.file?.buffer;
+            if (image instanceof Buffer) {
+                const cloudinaryresponse = await this.cloduinary.uploadToCloudinary(image, "FixitHub", "FixithubImages");
+                if (cloudinaryresponse.success) {
+                    const response = await this.UserServiceInteractor.addOneImage(id, cloudinaryresponse.url ? cloudinaryresponse.url : "");
+                    if (response.success) {
+                        return res.status(statusCode_1.default.OK).json({ url: response.url });
+                    }
+                }
+            }
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async getFeedBacks(req, res, next) {
+        try {
+            const { id, limit } = req.params;
+            const response = await this.UserServiceInteractor.getFeedBacks(id, parseInt(limit));
+            return res.status(statusCode_1.default.OK).json(response);
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+}
+exports.default = UserServiceContoller;

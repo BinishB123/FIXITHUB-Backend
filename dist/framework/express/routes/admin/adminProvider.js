@@ -1,0 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const AdminRepo_1 = __importDefault(require("../../../../interface_adapters/repositories/AdminRepo"));
+const adminProvider_1 = __importDefault(require("../../../../usecases/admin/adminProvider"));
+const adminProvider_2 = __importDefault(require("../../../../interface_adapters/controllers/admin/adminProvider"));
+const mailer_1 = __importDefault(require("../../../../framework/services/mailer"));
+const adminProviderRoute = express_1.default.Router();
+const repository = new AdminRepo_1.default();
+const interactor = new adminProvider_1.default(repository);
+const mailer = new mailer_1.default();
+const controller = new adminProvider_2.default(interactor, mailer);
+adminProviderRoute.get("/getpendingproviders", controller.getPendingProviders.bind(controller));
+adminProviderRoute.get("/getproviders", controller.getProviders.bind(controller));
+adminProviderRoute.patch("/acceptorreject", controller.adminAcceptOrReject.bind(controller));
+adminProviderRoute.patch("/blockorunblock", controller.providerBlockOrUnblock.bind(controller));
+adminProviderRoute.get("/monthly-revenue", controller.getMonthlyRevenue.bind(controller));
+adminProviderRoute.get("/top-booked-Service", controller.getTopBookedService.bind(controller));
+exports.default = adminProviderRoute;
