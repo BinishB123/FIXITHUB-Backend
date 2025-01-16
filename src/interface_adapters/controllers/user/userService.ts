@@ -238,6 +238,8 @@ class UserServiceContoller {
         id,
         newReview
       );
+      console.log("okkk");
+      
       return res.status(HttpStatus.OK).json(response);
     } catch (error) {
       next(error);
