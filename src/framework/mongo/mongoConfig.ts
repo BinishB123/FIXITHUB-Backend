@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+console.log("ham",process.env.MONGODB);
+
 const connectDb = async (): Promise<void> => {
     console.log("env",process.env.MONGODB);
     try {
