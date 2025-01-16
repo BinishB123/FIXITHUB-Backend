@@ -10,11 +10,12 @@ const connectDb = async (): Promise<void> => {
         console.log("MONGO connected");
 
     } catch (error: any) {
+        console.log("env",process.env.MONGODB);
         console.log("error ", error.message);
         return
 
 
-    }    
+    }     
 } 
 
 export default connectDb               
