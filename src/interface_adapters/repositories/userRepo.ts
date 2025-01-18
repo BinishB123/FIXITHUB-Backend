@@ -1131,6 +1131,20 @@ class UserRepository implements isUserRepository {
     }
         
     }
+
+    async getShops(): Promise<{ shops: any[]; }> {
+        try {
+            const shops = await providerModel.find()
+            return {shops:shops}
+            
+        } catch (error:any) {
+            throw new CustomError(error.message,error.statusCode)
+        }
+        
+    }
+
+
+    
 }
 
 export default UserRepository;

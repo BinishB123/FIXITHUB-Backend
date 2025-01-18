@@ -123,6 +123,7 @@ interface isUserRepository {
     createReport(data: reportData): Promise<{ success?: boolean }>;
     getReport(id:string): Promise<{data:reportData[]|[]}>
     getBrands():Promise<{brands:string[]}>
+    getShops():Promise<{shops:any[]}>
 }
 
 export default isUserRepository;

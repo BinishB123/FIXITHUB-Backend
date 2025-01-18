@@ -298,6 +298,29 @@ class UserServiceInteractor implements IuserService {
       throw new CustomError(error.message, error.statusCode);
     }
   }
+
+  // async getShops(): Promise<{ shops: any[] | []; }> {
+  //     try {
+  //       const response = await this.userRepo.getShops()
+  //       if (response) {
+  //         const Data = await response.shops.filter((data)=>{
+  //             if (data.supportedBrands.length>0) {
+  //               return data
+  //             }
+
+  //         })
+
+  //         return {shops:Data}
+
+  //       }else{
+  //         throw new CustomError("")
+  //       }
+        
+  //     } catch (error) {
+        
+  //     }
+  // }
+
 }
 
 export default UserServiceInteractor;

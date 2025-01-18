@@ -90,6 +90,8 @@ interface IuserServiceInteractor {
                limit:number
      
            ): Promise<{ feedBacks?: ReviewResponse[] | [] }>;
+
+        //    getShops():Promise<{shops:any[]|[]}>
 }
 
 export default IuserServiceInteractor;
