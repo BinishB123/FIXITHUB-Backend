@@ -48,7 +48,7 @@ Ensure you have the following installed:
 3. **Create a `.env` file in the root directory and add the following:**
    ```ini
    MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/<dbname>
-   CLOUDINARY_CLOUD_NAME=di2aukh32
+   CLOUDINARY_CLOUD_NAME=add your
    CLOUDINARY_API_KEY=your_cloudinary_api_key
    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
    STRIPE_SECRET_KEY=your_stripe_secret_key
