@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: "https://binish.site/",
+    origin: "https://binish.site",
     methods: "GET,PUT,POST,PATCH,OPTIONS,DELETE",
     allowedHeaders: ["Content-Type", "Authorization", "Cache-Control"],
     credentials: true,
