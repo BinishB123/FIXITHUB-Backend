@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 
 app.use(
   cors({
-    origin: process.env.ORGIN,
+    origin: "*",
     methods: "GET,PUT,POST,PATCH,OPTIONS,DELETE",
     allowedHeaders: ["Content-Type", "Authorization", "Cache-Control"],
     credentials: true,
