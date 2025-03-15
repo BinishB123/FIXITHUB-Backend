@@ -17,6 +17,7 @@ type user_and_Providers_socketid = {
   [key: string]: string;
 };
 const usersAndProvidersSocketId: user_and_Providers_socketid = {};
+console.log(usersAndProvidersSocketId);
 
 export const SocketIntalization = (server: HttpServer) => {
   const io = new Server(server, {
@@ -29,6 +30,8 @@ export const SocketIntalization = (server: HttpServer) => {
     const loggedUserId = socket.handshake.query.loggedUserId;
     if (loggedUserId) {
       usersAndProvidersSocketId[loggedUserId + ""] = socket.id;
+      console.log("online users =",usersAndProvidersSocketId);
+      
       io.emit("setup", { id: loggedUserId });
     }
 
@@ -37,6 +40,12 @@ export const SocketIntalization = (server: HttpServer) => {
     });
 
     socket.on("send-message", (messageDetails) => {
+      console.log(messageDetails);
+      console.log(usersAndProvidersSocketId);
+      
+      
+      console.log("send-m",);
+      
       chatInteractor
         .addNewMessage(
           messageDetails.sender,

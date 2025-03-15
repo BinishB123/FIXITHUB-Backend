@@ -65,14 +65,7 @@ Ensure you have the following installed:
    ```
 5. The backend will be running at `http://localhost:3000` (or your configured port).
 
-## API Endpoints
-| Method | Endpoint | Description |
-|--------|---------|-------------|
-| POST   | `/api/auth/login` | Login a user |
-| POST   | `/api/auth/register` | Register a user |
-| GET    | `/api/users` | Get all users |
-| GET    | `/api/providers` | Get all providers |
-| POST   | `/api/bookings` | Create a booking |
+
 
 _For a full list of API endpoints, check the documentation._
 

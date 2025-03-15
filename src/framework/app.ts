@@ -26,13 +26,13 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  console.log(req.method, req.hostname, req.path, req.body, req.params);
+  console.log(req.method, req.hostname);
   next();
 });
 
 app.use(
   cors({
-    origin: "https://binish.site",
+    origin: process.env.ORGIN,
     methods: "GET,PUT,POST,PATCH,OPTIONS,DELETE",
     allowedHeaders: ["Content-Type", "Authorization", "Cache-Control"],
     credentials: true,

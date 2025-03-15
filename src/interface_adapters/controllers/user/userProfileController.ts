@@ -98,7 +98,6 @@ class UserProfileController {
   async addMessage(req: Request, res: Response, next: NextFunction) {
     try {
       const { sender, chatId, message } = req.body;
-      console.log(chatId);
 
       const response = await this.chatInteractor.addNewMessage(
         sender,
